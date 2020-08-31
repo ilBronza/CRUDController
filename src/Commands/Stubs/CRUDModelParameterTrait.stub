@@ -1,0 +1,52 @@
+<?php
+
+namespace {{ namespace }};
+
+trait CRUD{{ model }}ParametersTrait
+{
+    public static $tables = [
+
+        'index' => [
+            'fields' => 
+            [
+            /**
+                'mySelfEdit' => 'edit',
+                'mySelfSee' => 'see',
+                'rag_soc' => 'flat',
+                'destination' => 'flat',
+                'supplier' => 'flat',
+                'zone' => 'flat',
+            **/
+            ]
+        ]
+    ];
+
+    static $formFields = [
+        'common' => [
+            'default' => [
+                'db_field_name_1' => ['text' => 'string|required|max:255'],
+                'db_field_name_2' => ['number' => 'numeric|required']
+            ]
+        ],
+        'edit' => [
+            'default' => [
+            ]
+        ],
+        /**
+        'onlyEdit' => [
+            'default' => [
+            ]
+        ],
+        **/
+        'create' => [
+            'default' => [
+            ]
+        ]
+        /**
+        'onlyCreate' => [
+            'default' => [
+            ]
+        ],
+        **/
+    ];    
+}
