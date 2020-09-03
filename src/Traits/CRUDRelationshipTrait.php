@@ -41,6 +41,12 @@ trait CRUDRelationshipTrait
 		$this->modelInstance->{$relationship}()->sync($related);
 	}
 
+	private function relateBelongsToElements(string $relationship, $related)
+	{
+		$this->modelInstance->{$relationship}()->associate($related);
+		$this->modelInstance->save();
+	}
+
 	private function tryCustomMethod(string $relationship, $values)
 	{
 		$customAssociationMethod = 'relate' . ucfirst($relationship);

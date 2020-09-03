@@ -5,8 +5,11 @@ namespace {{ namespace }};
 use App\Http\Controllers\CRUDTraits\CRUD{{ model }}ParametersTrait;
 
 use App\{{ model }};
+use App\{{ parentmodel }};
+
 use Illuminate\Http\Request;
-use ilBronza\CRUD\CRUD;
+use Illuminate\Support\Facades\Route;
+use ilBronza\CRUD\BelongsToCRUDController;
 
 use ilBronza\CRUD\Traits\CRUDBelongsToManyTrait;
 use ilBronza\CRUD\Traits\CRUDRelationshipTrait;
@@ -14,18 +17,16 @@ use ilBronza\CRUD\Traits\CRUDRelationshipTrait;
 use ilBronza\CRUD\Traits\CRUDCreateStoreTrait;
 use ilBronza\CRUD\Traits\CRUDEditUpdateTrait;
 use ilBronza\CRUD\Traits\CRUDIndexTrait;
-use ilBronza\CRUD\Traits\CRUDPlainIndexTrait;
 use ilBronza\CRUD\Traits\CRUDShowTrait;
 
 use ilBronza\CRUD\Traits\CRUDDeleteTrait;
 use ilBronza\CRUD\Traits\CRUDDestroyTrait;
 
-class {{ class }} extends CRUD
+class {{ class }} extends BelongsToCRUDController
 {
     use CRUD{{ model }}ParametersTrait;
 
     use CRUDShowTrait;
-    use CRUDPlainIndexTrait;
     use CRUDIndexTrait;
     use CRUDEditUpdateTrait;
     use CRUDCreateStoreTrait;
@@ -36,6 +37,8 @@ class {{ class }} extends CRUD
     use CRUDRelationshipTrait;
     use CRUDBelongsToManyTrait;
 
+    public $parentModel;
+    public $parentModelClass = '{{ parentmodel }}';
     public $modelClass = '\App\{{ model }}';
 
     public $allowedMethods = ['index', 'show', 'edit', 'update', 'create', 'store', 'delete'];
@@ -46,27 +49,46 @@ class {{ class }} extends CRUD
 
     public $showMethodRelationships = ['posts', 'users', 'operations'];
 
-    public function getIndexElements()
+    public function __construct()
     {
-        return {{ model }}::all();
+        parent::__construct();
+
+        $this->parentModel = {{ parentmodel }}::findOrFail(
+            Route::current()->parameter('{{ parentmodelVariable }}')
+        );
     }
 
-    public function show({{ model }} ${{ modelVariable }})
+    public function index({{ parentmodel }} ${{ parentmodelVariable }})
+    {
+        return $this->_index();
+    }
+
+    public function getIndexElements()
+    {
+        return $this->parentModel->{{ pluralModel }}()->get();
+    }
+
+    public function show({{ parentmodel }} ${{ parentmodelVariable }}, {{ model }} ${{ modelVariable }})
     {
         return $this->_show(${{ modelVariable }});
     }
 
-    public function edit({{ model }} ${{ modelVariable }})
+    public function edit({{ parentmodel }} ${{ parentmodelVariable }}, {{ model }} ${{ modelVariable }})
     {
         return $this->_edit(${{ modelVariable }});
     }
 
-    public function update(Request $request, {{ model }} ${{ modelVariable }})
+    public function update(Request $request, {{ parentmodel }} ${{ parentmodelVariable }}, {{ model }} ${{ modelVariable }})
     {
         return $this->_update($request, ${{ modelVariable }});
     }
 
-    public function delete({{ model }} ${{ modelVariable }})
+    public function store(Request $request, {{ parentmodel }} ${{ parentmodelVariable }})
+    {
+        return $this->_store($request);
+    }
+
+    public function delete({{ parentmodel }} ${{ parentmodelVariable }}, {{ model }} ${{ modelVariable }})
     {
         return $this->_delete(${{ modelVariable }});
     }

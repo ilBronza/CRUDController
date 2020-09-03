@@ -39,12 +39,7 @@ trait CRUDEditUpdateTrait
 	 **/
 	public function getUpdateModelAction()
 	{
-		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
-			'update'
-		]);
-
-		return route($actionString, [$this->modelInstance]);
+		return $this->getRouteUrlByType('update');
 	}
 
 	/**
@@ -66,8 +61,8 @@ trait CRUDEditUpdateTrait
 			abort(403);
 	}
 
-    public function loadEditRelationshipsValues()
-    {
+	public function loadEditRelationshipsValues()
+	{
         foreach($this->relatedFields ?? [] as $relation => $fieldName)
         {
             $this->modelInstance->{$fieldName} = [];
@@ -109,25 +104,15 @@ trait CRUDEditUpdateTrait
 	 *
 	 * @return string url
 	 */
-	public function getUpdatedRedirectUrl()
+	public function getAfterUpdatedRedirectUrl()
 	{
 		if(in_array('index', $this->allowedMethods))
 			return $this->getIndexUrl();
 
 		if(in_array('show', $this->allowedMethods))
-			return $this->modelInstance->getShowUrl();
+			return $this->getRouteUrlByType('show');
 
 		return url()->previous();
-	}
-
-	public function getIndexUrl()
-	{
-		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
-			'index'
-		]);
-
-		return route($actionString);		
 	}
 
 	/**
@@ -191,7 +176,7 @@ trait CRUDEditUpdateTrait
 		$this->sendUpdateSuccessMessage();
 
 		return redirect()->to(
-			$this->getUpdatedRedirectUrl()
+			$this->getAfterUpdatedRedirectUrl()
 		);
 	}
 }

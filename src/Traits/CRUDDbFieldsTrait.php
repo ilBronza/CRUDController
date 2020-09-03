@@ -118,26 +118,26 @@ trait CRUDDbFieldsTrait
 	{
 		$guardedFieldsParameterName = 'guarded' . ucfirst($type) . 'DBFields';
 		
-		if(empty($this->$guardedFieldsParameterName))
+		if(! isset($this->$guardedFieldsParameterName))
 			throw new \Exception(class_basename($this) . ': declare $formFields parameters or $' . $guardedFieldsParameterName . ' if you want to get automatic fields retrieving from db');
 
 		return $this->$guardedFieldsParameterName;
 	}
 
-	private function getDbFields()
+	private function getDbFields($model = null)
 	{
-		$tableName = (new $this->modelClass)->getTable();
+		$tableName = (new $model ?? $this->modelClass)->getTable();
 
 		return DB::select('describe ' . $tableName);
 	}
 
-	public function getDBFieldsByType(string $type)
+	public function getDBFieldsByType(string $type, $model = null)
 	{
 		$guardedFields = $this->getGuardedDBFieldsByType($type);
 
 		$result = [];
 
-		foreach($this->getDbFields() as $field)
+		foreach($this->getDbFields($model) as $field)
 		{
 			if(in_array($field->Field, $guardedFields))
 				continue;

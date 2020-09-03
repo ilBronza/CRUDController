@@ -15,7 +15,7 @@ trait CRUDDestroyTrait
 	public function getDestroyedRedirectUrl()
 	{
 		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
+			$this->getLcfirstPluralModelClassname($this->modelInstance),
 			'index'
 		]);
 

@@ -4,12 +4,17 @@ namespace ilBronza\CRUD;
 
 use Illuminate\Support\Str;
 use \App\http\Controllers\Controller;
+use ilBronza\CRUD\Traits\CRUDRoutingTrait;
 
 class CRUD extends Controller
 {
+	use CRUDRoutingTrait;
+
 	//general parameters
 	public $modelClass;
 	public $allowedMethods;
+	public $neededTraits = ['ilBronza\CRUD\Traits\Model\CRUDModelTrait'];
+	public $extraViews = [];
 
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
 
@@ -23,8 +28,9 @@ class CRUD extends Controller
 
 	private function checkIfModelUsesTrait()
 	{
-		if(! in_array('ilBronza\CRUD\Traits\Model\CRUDModelTrait', class_uses(new $this->modelClass())))
-			throw new \Exception('add CRUDModelTrait to model ' . $this->modelClass);
+		foreach($this->neededTraits as $neededTrait)
+			if(! in_array($neededTrait, class_uses(new $this->modelClass())))
+				throw new \Exception('add ' . $neededTrait . ' to model ' . $this->modelClass);
 	}
 
 	private function getAllowedMethods()
@@ -56,8 +62,26 @@ class CRUD extends Controller
 		return $this->modelClass;
 	}
 
-	public function getPluralModelClassname($modelInstance)
+	public function getLcfirstPluralModelClassname($modelInstance)
 	{
 		return lcfirst(Str::plural(class_basename($modelInstance)));
+	}
+
+	public function getCreateButton()
+	{
+		return $this->modelClass::getCreateButton();
+	}
+
+	public function addView(string $position, string $view, array $parameters = [])
+	{
+		if(empty($this->extraViews[$position]))
+			$this->extraViews[$position] = [];
+
+		$this->extraViews[$position][$view] = $parameters;		
+	}
+
+	public function shareExtraViews()
+	{
+		view()->share('extraViews', $this->extraViews);
 	}
 }

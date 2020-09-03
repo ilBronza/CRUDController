@@ -41,7 +41,7 @@ trait CRUDRelationshipModelTrait
 
     public function getNameForDisplayRelation()
     {
-        return $this->name;
+        return $this->getName();
     }
 
     /**

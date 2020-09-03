@@ -15,7 +15,7 @@ trait CRUDDeleteTrait
 	public function getDeletedRedirectUrl()
 	{
 		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
+			$this->getLcfirstPluralModelClassname($this->modelInstance),
 			'index'
 		]);
 

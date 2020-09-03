@@ -37,12 +37,7 @@ trait CRUDCreateStoreTrait
 	 **/
 	public function getStoreModelAction()
 	{
-		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
-			'store'
-		]);
-
-		return route($actionString, [$this->modelInstance]);
+		return $this->getRouteUrlByType('store');
 	}
 
 	/**
@@ -55,6 +50,12 @@ trait CRUDCreateStoreTrait
 		return $this->shareDefaultFormParameters('create');
 	}
 
+	public function manageParentModelAssociation()
+	{
+		if(isset($this->parentModel))
+			$this->associateParentModel();
+	}
+
 	/**
 	 * get modelInstance create view
 	 *
@@ -63,10 +64,16 @@ trait CRUDCreateStoreTrait
 	public function create()
 	{
 		$this->modelInstance = new $this->modelClass;
+
+		$this->manageParentModelAssociation();
+
 		$view = $this->getCreateView();
 
 		if($view == $this->standardCreateView)
 			$this->shareDefaultCreateFormParameters();
+
+		if(method_exists($this, 'createCustomMethod'))
+			$this->createCustomMethod();
 
 		return view($view);
 	}
@@ -76,14 +83,9 @@ trait CRUDCreateStoreTrait
 	 *
 	 * @return string url
 	 */
-	public function getStoredRedirectUrl()
+	public function getAfterStoredRedirectUrl()
 	{
-		$actionString = implode(".", [
-			$this->getPluralModelClassname($this->modelInstance),
-			'index'
-		]);
-
-		return route($actionString);
+		return $this->getRouteUrlByType('index');
 	}
 
 	/**
@@ -143,7 +145,7 @@ trait CRUDCreateStoreTrait
 		$this->sendStoreSuccessMessage();
 
 		return redirect()->to(
-			$this->getStoredRedirectUrl()
+			$this->getAfterStoredRedirectUrl()
 		);
 	}
 }

@@ -10,14 +10,14 @@ trait CRUDIndexTrait
 	public $indexFieldsGroups = ['index'];
 	public $indexCacheKey;
 
-	public function index()
+	public function _index()
 	{
 		$table = new newdatatable(request(), $this->getModelClassBasename(), $this->getIndexFieldsGroups(), $this->getIndexCacheKey(), function()
 		{
 			return $this->getIndexElements();
 		});
 
-		$table->addButton($this->modelClass::getCreateButton());
+		$table->addButton($this->getCreateButton());
 
 		return $table->renderTable();
 	}

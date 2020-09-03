@@ -5,6 +5,7 @@ namespace ilBronza\CRUD;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use ilBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
+use ilBronza\CRUD\Commands\CrudBelongsToController;
 use ilBronza\CRUD\Commands\CrudController;
 use ilBronza\CRUD\Middleware\CRUDAllowedMethods;
 use ilBronza\CRUD\Middleware\CRUDUserAllowedMethod;
@@ -42,6 +43,7 @@ class CRUDServiceProvider extends ServiceProvider
 
         $this->commands([
             ControllerCrudParametersTraitCommand::class,
+            CrudBelongsToController::class,
             CrudController::class
         ]);
 
