@@ -107,7 +107,7 @@ trait CRUDEditUpdateTrait
 	public function getAfterUpdatedRedirectUrl()
 	{
 		if(in_array('index', $this->allowedMethods))
-			return $this->getIndexUrl();
+			return $this->getRouteUrlByType('index');
 
 		if(in_array('show', $this->allowedMethods))
 			return $this->getRouteUrlByType('show');

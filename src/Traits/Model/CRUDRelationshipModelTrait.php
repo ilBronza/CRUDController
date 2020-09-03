@@ -16,11 +16,29 @@ trait CRUDRelationshipModelTrait
      * @param string $relationship
      * @return callable
      **/
+    public function _getRelationshipPossibleValuesArray(string $relationship)
+    {
+        $relationModelClassBaseName = "App\\" . ucfirst(Str::singular($relationship));
+
+        $elements = $relationModelClassBaseName::all();
+
+        return $this->buildElementsArryForSelect($elements);
+    }
+
+    /**
+     * resolve and call getter function for possible related models
+     *
+     * @param string $relationship
+     * @return callable
+     **/
     public function getRelationshipPossibleValuesArray(string $relationship)
     {
         $getterMethodName = 'getPossible' . ucfirst(Str::plural($relationship)) . 'ValuesArray';
 
-        return $this->$getterMethodName();
+        if(method_exists($this, $getterMethodName))
+            return $this->$getterMethodName();
+
+        return $this->_getRelationshipPossibleValuesArray($relationship);
     }
 
     /**

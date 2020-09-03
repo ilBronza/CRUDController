@@ -125,12 +125,12 @@ class CrudController extends GeneratorCommand
      * @param  string  $model
      * @return string
      *
-     * @throws \InvalidArgumentException
+     * @throws \Exception
      */
     protected function parseModel($model)
     {
         if (preg_match('([^A-Za-z0-9_/\\\\])', $model)) {
-            throw new InvalidArgumentException('Model name contains invalid characters.');
+            throw new \Exception('Model name contains invalid characters: ' . $model);
         }
 
         $model = trim(str_replace('/', '\\', $model), '\\');

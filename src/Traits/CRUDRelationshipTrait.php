@@ -47,6 +47,11 @@ trait CRUDRelationshipTrait
 		$this->modelInstance->save();
 	}
 
+	private function relateMorphToManyElements(string $relationship, $related)
+	{
+		$this->modelInstance->{$relationship}()->sync($related);
+	}
+
 	private function tryCustomMethod(string $relationship, $values)
 	{
 		$customAssociationMethod = 'relate' . ucfirst($relationship);

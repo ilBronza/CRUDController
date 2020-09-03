@@ -14,12 +14,7 @@ trait CRUDDeleteTrait
 	 */
 	public function getDeletedRedirectUrl()
 	{
-		$actionString = implode(".", [
-			$this->getLcfirstPluralModelClassname($this->modelInstance),
-			'index'
-		]);
-
-		return route($actionString);
+		return $this->getRouteUrlByType('idnex');
 	}
 
 	public function _delete($modelInstance)

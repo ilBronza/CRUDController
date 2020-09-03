@@ -106,6 +106,11 @@ trait CRUDCreateStoreTrait
 		return $this->validateRequestByType($request, 'store');
 	}
 
+	public function setBeforeStoreFields(array $parameters)
+	{
+
+	}
+
 	/**
 	 * store model instance with given array parameters
 	 *
@@ -115,6 +120,8 @@ trait CRUDCreateStoreTrait
 	public function storeModelInstance(array $parameters)
 	{
 		$this->modelInstance->fill($parameters);
+
+		$this->setBeforeStoreFields($parameters);
 		return $this->modelInstance->save();		
 	}
 

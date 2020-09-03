@@ -43,13 +43,8 @@ trait CRUDModelTrait
 
     public function getName()
     {
-        return $this->{static::$nameField ?? 'name'} ?? (class_basename($this) . '->getName()');
+        return $this->{static::$nameField ?? 'name'};
     }
-
-
-
-
-
 
     public function userCanUpdate(User $user = null)
     {
