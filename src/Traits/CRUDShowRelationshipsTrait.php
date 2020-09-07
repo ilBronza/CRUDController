@@ -58,6 +58,9 @@ trait CRUDShowRelationshipsTrait
 		{
 			$related = $this->modelInstance->{$name};
 
+			if(! $related)
+				continue;
+
 			if($this->relationNeedsTable($related))
 				$this->addRelationshipTable($related, $name);
 			else

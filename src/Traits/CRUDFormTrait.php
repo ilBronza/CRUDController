@@ -137,6 +137,21 @@ trait CRUDFormTrait
 			return $this->form->addCardClasses(['uk-card-primary']);
 	}
 
+	public function setEditFormParameters()
+	{
+	}
+
+	public function setCreateFormParameters()
+	{
+	}
+
+	public function setFormParametersByType(string $type)
+	{
+		$methodName = "set" . ucfirst($type) . "FormParameters";
+
+		return $this->$methodName();
+	}
+
 	private function setFormTitleByType(string $type)
 	{
 		$translationFileName = $this->getModelTranslationFileName();

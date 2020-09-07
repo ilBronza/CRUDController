@@ -78,6 +78,11 @@ trait CRUDEditUpdateTrait
         }
     }
 
+    public function loadEditExtraViews()
+    {
+    	
+    }
+
 	/**
 	 * get modelInstance edit form
 	 *
@@ -94,7 +99,10 @@ trait CRUDEditUpdateTrait
 		if($view == $this->standardEditView)
 			$this->shareDefaultEditFormParameters();
 
+		$this->setFormParametersByType('edit');
+
 		$this->loadEditRelationshipsValues();
+		$this->loadEditExtraViews();
 
 		return view($view);
 	}
