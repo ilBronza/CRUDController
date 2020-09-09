@@ -12,6 +12,10 @@
 
 	<script type="text/javascript">
 
+		@if(isset($refresh))
+		window.opener.location.reload();
+		@endif
+
 		@if(isset($callerTableName))
 		window.opener.table{{ $callerTableName }}.ajax.reload();
 		@endif

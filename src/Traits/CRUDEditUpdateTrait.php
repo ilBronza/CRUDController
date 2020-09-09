@@ -57,6 +57,9 @@ trait CRUDEditUpdateTrait
 		if(! $user = Auth::user())
 			return redirect()->to('login');
 
+		if($user->hasRole('superadmin'))
+			return true;
+
 		if(! $this->modelInstance->userCanUpdate($user))
 			abort(403);
 	}

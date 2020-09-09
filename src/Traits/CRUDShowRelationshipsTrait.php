@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use \minitable;
+use ilBronza\CRUD\Exceptions\MissingRelationshipDeclarationController;
 
 trait CRUDShowRelationshipsTrait
 {
@@ -20,7 +21,13 @@ trait CRUDShowRelationshipsTrait
 
 	private function getRelationControllerName(string $value)
 	{
-		return '\App\Http\Controllers\\' . ucfirst(Str::singular($value)) . 'Controller';
+		if(class_exists($className = '\App\Http\Controllers\\' . ucfirst(Str::singular($value)) . 'Controller'))
+			return $className;
+
+		if(! isset($this->relationshipsControllers[$value]))
+			throw new MissingRelationshipDeclarationController($value);
+
+		return $this->relationshipsControllers[$value];
 	}
 
 	private function addRelationshipTable(Collection $related, string $name)
