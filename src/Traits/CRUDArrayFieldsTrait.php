@@ -38,7 +38,7 @@ trait CRUDArrayFieldsTrait
 	{
 		return [
 				'name' => $name,
-				'label' => _('formfields.field_' . $name),
+				'label' => __('formfields.field_' . $name),
 			];
 	}
 

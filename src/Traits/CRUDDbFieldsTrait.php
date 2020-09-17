@@ -8,8 +8,6 @@ use ilBronza\Form\Facades\Form;
 
 trait CRUDDbFieldsTrait
 {
-	use CRUDDbFieldsTrait;
-
 	private function getValidationArrayByTypeFromDBByType(string $type)
 	{
 		$guardedFields = $this->getGuardedDBFieldsByType($type);
