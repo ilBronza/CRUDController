@@ -72,8 +72,8 @@ trait CRUDCreateStoreTrait
 		if($view == $this->standardCreateView)
 			$this->shareDefaultCreateFormParameters();
 
-		if(method_exists($this, 'createCustomMethod'))
-			$this->createCustomMethod();
+		if(method_exists($this, 'beforeRenderCreate'))
+			$this->beforeRenderCreate();
 
 		return view($view);
 	}
@@ -119,10 +119,11 @@ trait CRUDCreateStoreTrait
 	 **/
 	public function storeModelInstance(array $parameters)
 	{
+		$parameters = array_diff_key($parameters, $this->getRelationshipsFieldsByType('store'));
+
 		$this->modelInstance->fill($parameters);
 
 		$this->setBeforeStoreFields($parameters);
-		return $this->modelInstance->save();		
 	}
 
 	/**
@@ -141,13 +142,29 @@ trait CRUDCreateStoreTrait
 	 **/
 	public function store(Request $request)
 	{
+		return $this->_store($request);
+	}
+
+	/**
+	 * validate request and store model
+	 *
+	 * @param Request $request, Model $modelInstance
+	 * @return Response redirect
+	 **/
+	public function _store(Request $request)
+	{
 		$parameters = $this->validateStoreRequest($request);
 
 		$this->modelInstance = new $this->modelClass;
 
+		$this->manageParentModelAssociation();
+
 		$this->storeModelInstance($parameters);
 
+		$this->modelInstance->save();
 		$this->associateRelationshipsByType($parameters, 'store');
+
+		$this->modelInstance->save();
 
 		$this->sendStoreSuccessMessage();
 

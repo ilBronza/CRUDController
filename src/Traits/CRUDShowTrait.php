@@ -45,8 +45,17 @@ trait CRUDShowTrait
 		view()->share('allowedFields', $allowedFields);
 	}
 
+	public function shareShowModels()
+	{
+		view()->share('modelInstance', $this->modelInstance);
+
+		if(isset($this->parentModel))
+			view()->share('parentModelInstance', $this->parentModel);
+	}
+
 	private function shareShowParameters()
 	{
+		$this->shareShowModels();
 		$this->shareRelationships();
 		$this->shareAllowedFields();
 
@@ -77,6 +86,6 @@ trait CRUDShowTrait
 		$this->shareShowParameters();
 		$this->shareShowButtons();
 
-		return view($view, ['modelInstance' => $this->modelInstance]);
+		return view($view);
 	}
 }

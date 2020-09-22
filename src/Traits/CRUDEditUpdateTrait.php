@@ -107,6 +107,9 @@ trait CRUDEditUpdateTrait
 		$this->loadEditRelationshipsValues();
 		$this->loadEditExtraViews();
 
+		if(method_exists($this, 'beforeRenderEdit'))
+			$this->beforeRenderEdit();
+
 		return view($view);
 	}
 

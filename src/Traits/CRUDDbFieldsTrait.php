@@ -41,6 +41,9 @@ trait CRUDDbFieldsTrait
 		if($type == 'boolean')
 			return null;
 
+		if($type == 'datetime')
+			return null;
+
 		$pieces = explode("(", $field->Type);
 
 		if($type == 'text')
@@ -55,7 +58,34 @@ trait CRUDDbFieldsTrait
 
 				return pow(10, $digits) - 1;
 			}
+		}
 
+		if($type == 'timestamp')
+		{
+			return '2038-01-19 03:14:07';
+		}
+		
+		if($field->Type == 'bigint unsigned')
+		{
+			return 18446744073709551615;
+		}
+
+		if($type == 'integer')
+		{
+			if(strpos($field->Type, 'double') !== false)
+			{
+				$pieces = explode(",", $pieces[1]);
+				$digits = (int) $pieces[0] - (int) $pieces[1];
+
+				return pow(10, $digits) - 1;
+			}
+			elseif(strpos($field->Type, 'int') !== false)
+			{
+				$digits = (int) $pieces[1];
+
+				if($digits == 11)
+					return 2147483648;
+			}
 		}
 
 		throw new \Exception('gestire il max per il campo ' . $type . ' in getFieldMaxFromDBField: ' . json_encode($field));
@@ -64,7 +94,7 @@ trait CRUDDbFieldsTrait
 	private function getFieldKeyFromDBField(\stdClass $field)
 	{
 		if($field->Key)
-			throw new \Exception('gestire le key in getFieldKeyFromDBField');
+			throw new \Exception('gestire le key in getFieldKeyFromDBField: ' . json_encode($field));
 	}
 
 	private function getFieldRequiredFromDBField(\stdClass $field)
@@ -94,6 +124,12 @@ trait CRUDDbFieldsTrait
 
 		if($field->Type == 'tinyint(1)')
 			return 'boolean';
+
+		if(($field->Type == 'int(11)')||($field->Type == 'bigint unsigned'))
+			return 'integer';
+
+		if($field->Type == 'timestamp')
+			return 'datetime';
 
 		throw new \Exception(class_basename($this) . ': misisng ' . $field->Type . ' type declaration in getFieldTypeFromDBField for ' . $field->Field);
 	}

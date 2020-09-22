@@ -25,7 +25,7 @@ trait CRUDFormTrait
 	{
         if(($result = $this::$formFields[$type . 'Only']?? null) === null)
             $result = array_merge_recursive(
-            	$this::$formFields['common'],
+            	$this::$formFields['common'] ?? [],
             	$this::$formFields[$type] ?? [],
             );
 
@@ -115,10 +115,21 @@ trait CRUDFormTrait
 				if(isset($parameters['relation']))
 					$this->relatedFields[$parameters['relation']] = $parameters['name'];
 
+				$formField = FormField::createFromArray($parameters);
+
 				$this->form->addFormFieldToFieldset(
-					FormField::createFromArray($parameters),
+					$formField,
 					$name
 				);
+
+				if($parameters['type'] == 'json')
+					foreach($parameters['fields'] as $fieldName => $field)
+						$formField->addFormField(
+							FormField::createFromArray(
+								$this->getFieldParameters($fieldName, $field)
+							)
+						);
+
 			}
 		}
 
@@ -215,6 +226,7 @@ trait CRUDFormTrait
 	private function validateRequestByType(Request $request, string $type)
 	{
 		$validationArrayGetter = 'get' . ucfirst(($type)) . 'ValidationArray';
+
 		$validationArray = $this->$validationArrayGetter();
 
 		return $request->validate($validationArray);

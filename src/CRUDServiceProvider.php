@@ -35,7 +35,12 @@ class CRUDServiceProvider extends ServiceProvider
                 elseif(Route::has(Str::plural(($expression)) . '.index')) 
                     echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crud.relations_' . ($expression)) . '</a>';
                 elseif(is_object(($expression)))
-                    echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crud.relations_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                {
+                    if(method_exists(($expression), 'getIndexUrl'))
+                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crud.relations_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                    else
+                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crud.relations_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                }
                 else
                     echo __('crud.relations_' . ($expression));
                 ?>";

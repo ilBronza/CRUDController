@@ -32,14 +32,20 @@
                     <a href="{{ $modelInstance->getEditURL() }}">Modifica</a>
                 </div>
             @endif
-            
+
         </div>
     </div>
     <div class="uk-card-body">
         <dl>
         @foreach($allowedFields as $field)
-            <dt>{{ $field }}</dt>
-            <dd>{{ $modelInstance->{$field} }}</dd>
+            <dt>{{ __('fields.' . $field) }}</dt>
+            <dd>
+                @if((is_object($modelInstance->{$field}))||(is_array($modelInstance->{$field})))
+                    {{ json_encode($modelInstance->{$field}) }}
+                @else
+                    {{ $modelInstance->{$field} }}
+                @endif
+            </dd>
         @endforeach
         </dl>
     </div>

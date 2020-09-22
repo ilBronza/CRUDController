@@ -64,6 +64,46 @@ trait CRUDValidateTrait
 		return $this->getFormFieldsets($formType);
 	}
 
+	private function addValidationArraySingleRow(array $validationArray, array $fieldContent, string $fieldName) :array
+	{
+		$validationArray[$fieldName] = array_pop($fieldContent);
+
+		return $validationArray;
+	}
+
+	public function addJsonFieldValidationArrayField(array $validationArray, array $fieldContent, string $fieldName) :array
+	{
+		$validationArray[$fieldName] = $fieldContent['rules'];
+
+		foreach($fieldContent['fields'] as $subFieldName => $subFieldContent)
+		{
+			$_validationKey = $fieldName . '.' . $subFieldName;
+
+			$validationArray[$_validationKey] = 'array';
+			$validationArray = $this->addValidationArrayField($validationArray, $subFieldContent, $_validationKey . '.*');
+		}
+
+		return $validationArray;
+	}
+
+	private function addValidationArrayMultipleRow(array $validationArray, array $fieldContent, string $fieldName) :array
+	{
+		if($fieldContent['type'] == 'json')
+			return $this->addJsonFieldValidationArrayField($validationArray, $fieldContent, $fieldName);
+
+		$validationArray[$fieldName] = $fieldContent['rules'];
+
+		return $validationArray;
+	}
+
+	private function addValidationArrayField(array $validationArray, array $fieldContent, string $fieldName)
+	{
+		if(count($fieldContent) == 1)
+			return $this->addValidationArraySingleRow($validationArray, $fieldContent, $fieldName);
+
+		return $this->addValidationArrayMultipleRow($validationArray, $fieldContent, $fieldName);
+	}
+
 	public function getValidationArrayByType(string $type)
 	{
 		$fieldsets = $this->getFormFieldsetsByType($type);
@@ -71,11 +111,8 @@ trait CRUDValidateTrait
 		$validationArray = [];
 
 		foreach($fieldsets as $fields)
-			foreach($fields as $fieldName => $validation)
-				if(count($validation) == 1)
-					$validationArray[$fieldName] = array_pop($validation);
-				else
-					$validationArray[$fieldName] = $validation['rules'];
+			foreach($fields as $fieldName => $fieldContent)
+				$validationArray = $this->addValidationArrayField($validationArray, $fieldContent, $fieldName);
 
 		return $validationArray;
 	}

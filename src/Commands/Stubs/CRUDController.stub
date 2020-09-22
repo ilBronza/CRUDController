@@ -70,4 +70,10 @@ class {{ class }} extends CRUD
     {
         return $this->_delete(${{ modelVariable }});
     }
+
+
+    /**
+     * called before create view rendering
+     **/
+    //  public function beforeRenderCreate() {}
 }
