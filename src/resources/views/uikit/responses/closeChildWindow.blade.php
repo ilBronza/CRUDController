@@ -31,5 +31,18 @@
 </head>
 
 <body>
+	@if(isset($refresh))
+	window.opener.location.reload();
+	@endif
+
+	@if(isset($callerTableName))
+	window.opener.table{{ $callerTableName }}.ajax.reload();
+	@endif
+
+	@if(isset($message))
+	window.opener.addSuccessNotification('{{ $message }}');
+	@endif
+
+	window.close();
 </body>
 </html>
