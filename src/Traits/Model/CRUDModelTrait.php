@@ -7,6 +7,13 @@ use Illuminate\Support\Str;
 
 trait CRUDModelTrait
 {
+    public function getDeleteUrl()
+    {
+        return route(
+            static::getPluralCamelcaseClassBasename() . '.delete', [$this]
+        );
+    }
+
     public static function getPluralCamelcaseClassBasename()
     {
         return Str::plural(lcfirst(class_basename(static::class)));
