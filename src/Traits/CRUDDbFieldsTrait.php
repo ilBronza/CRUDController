@@ -58,6 +58,14 @@ trait CRUDDbFieldsTrait
 
 				return pow(10, $digits) - 1;
 			}
+
+			if(strpos($field->Type, 'int') !== false)
+			{
+				$digits = (int) $pieces[1];
+
+				if($digits == 11)
+					return 2147483648;
+			}
 		}
 
 		if($type == 'timestamp')
@@ -126,7 +134,7 @@ trait CRUDDbFieldsTrait
 			return 'boolean';
 
 		if(($field->Type == 'int(11)')||($field->Type == 'bigint unsigned'))
-			return 'integer';
+			return 'number';
 
 		if($field->Type == 'timestamp')
 			return 'datetime';
@@ -160,7 +168,8 @@ trait CRUDDbFieldsTrait
 
 	private function getDbFields($model = null)
 	{
-		$tableName = (new $model ?? $this->modelClass)->getTable();
+
+		$tableName = (($model)? new $model : new $this->modelClass)->getTable();
 
 		return DB::select('describe ' . $tableName);
 	}
@@ -187,7 +196,7 @@ trait CRUDDbFieldsTrait
 				$fieldParameters['max'] = $max;
 
 			//questa è di controllo per vedere cosa succede con i campi chiave, una volta capito è da rimuovere
-			$this->getFieldKeyFromDBField($field);
+			// $this->getFieldKeyFromDBField($field);
 
 			$result[] = $fieldParameters;
 		}

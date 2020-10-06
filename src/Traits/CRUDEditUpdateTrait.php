@@ -147,6 +147,11 @@ trait CRUDEditUpdateTrait
 		return $this->validateRequestByType($request, 'update');
 	}
 
+	public function manageModelInstanceAfterUpdate(array $parameters)
+	{
+
+	}
+
 	/**
 	 * update model instance with given array parameters
 	 *
@@ -158,6 +163,9 @@ trait CRUDEditUpdateTrait
 		$parameters = $this->cleanParametersFromRelationshipsByType($parameters, 'update');
 
 		$this->modelInstance->fill($parameters);
+
+		$this->manageModelInstanceAfterUpdate($parameters);
+
 		return $this->modelInstance->save();		
 	}
 
@@ -185,7 +193,8 @@ trait CRUDEditUpdateTrait
 
 		$this->updateModelInstance($parameters);
 
-		$this->associateRelationshipsByType($parameters, 'update');
+		if(method_exists($this, 'associateRelationshipsByType'))
+			$this->associateRelationshipsByType($parameters, 'update');
 
 		$this->sendUpdateSuccessMessage();
 

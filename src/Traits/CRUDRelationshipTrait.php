@@ -73,8 +73,12 @@ trait CRUDRelationshipTrait
 	{
 		$parameters = $this->getParametersForRelationshipsByType($parameters, $type);
 
-		foreach($parameters as $relationship => $values)
+		$relationshipsFields = $this->getRelationshipsFieldsByType($type);
+
+		foreach($relationshipsFields as $relationship => $fieldParameters)
 		{
+			$values = request()->input($relationship, []);
+
 			if($this->tryCustomMethod($relationship, $values) !== null)
 				continue;
 
