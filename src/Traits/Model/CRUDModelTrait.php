@@ -10,7 +10,14 @@ trait CRUDModelTrait
     public function getDeleteUrl()
     {
         return route(
-            static::getPluralCamelcaseClassBasename() . '.delete', [$this]
+            static::getPluralCamelcaseClassBasename() . '.destroy', [$this]
+        );
+    }
+
+    public function getDestroyUrl()
+    {
+        return route(
+            static::getPluralCamelcaseClassBasename() . '.forceDelete', [$this]
         );
     }
 

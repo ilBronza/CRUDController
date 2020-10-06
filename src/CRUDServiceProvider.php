@@ -3,11 +3,13 @@
 namespace ilBronza\CRUD;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 use ilBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
 use ilBronza\CRUD\Commands\CrudBelongsToController;
 use ilBronza\CRUD\Commands\CrudController;
 use ilBronza\CRUD\Middleware\CRUDAllowedMethods;
+use ilBronza\CRUD\Middleware\CRUDCanDelete;
 use ilBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 
 class CRUDServiceProvider extends ServiceProvider
@@ -52,6 +54,16 @@ class CRUDServiceProvider extends ServiceProvider
             CrudController::class
         ]);
 
+        Response::macro('success', function (string $message = null) {
+            $response = [
+                'success' => true
+            ];
+
+            if($message)
+                $response['message'] = $message;
+
+            return Response::make($response);
+        });
 
         // Publishing is only necessary when using the CLI.
         if ($this->app->runningInConsole()) {
@@ -68,6 +80,7 @@ class CRUDServiceProvider extends ServiceProvider
     {
         $router = $this->app['router'];
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
+        $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 

@@ -23,6 +23,8 @@ class CRUD extends Controller
 		parent::__construct();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
+		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['delete', 'destroy', 'forceDelete']);
+
 		$this->checkIfModelUsesTrait();
 	}
 
