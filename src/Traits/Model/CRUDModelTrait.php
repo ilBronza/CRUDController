@@ -3,21 +3,39 @@
 namespace ilBronza\CRUD\Traits\Model;
 
 use App\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 trait CRUDModelTrait
 {
-    public function getDeleteUrl()
+    public function getOwningMethod(Model $model)
     {
-        return route(
-            static::getPluralCamelcaseClassBasename() . '.destroy', [$this]
-        );
+        return  'owns' . class_basename($model);
+    }
+
+    public function owns(Model $model)
+    {
+        $owningMethod = $this->getOwningMethod($model);
+        if(method_exists($this, $owningMethod))
+            return $this->$owningMethod($model);
+
+        if($model->{$this->getForeignKey()} == $this->getKey())
+            return true;
+
+        return false;
     }
 
     public function getDestroyUrl()
     {
         return route(
             static::getPluralCamelcaseClassBasename() . '.forceDelete', [$this]
+        );        
+    }
+
+    public function getDeleteUrl()
+    {
+        return route(
+            static::getPluralCamelcaseClassBasename() . '.destroy', [$this]
         );
     }
 
