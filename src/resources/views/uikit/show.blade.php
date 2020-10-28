@@ -18,7 +18,9 @@
 
                                 @if(isset($showButtons))
                                     @foreach($showButtons as $showButton)
-                                        <li>{!! $showButton->renderLink() !!}</li>
+                                        @if($showButton)
+                                            <li>{!! $showButton->renderLink() !!}</li>
+                                        @endif
                                     @endforeach
                                 @endif
                             </ul>

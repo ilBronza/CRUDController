@@ -2,6 +2,7 @@
 
 namespace ilBronza\CRUD\Traits\Model;
 
+use Auth;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,6 +16,9 @@ trait CRUDModelTrait
 
     public function owns(Model $model)
     {
+        if(Auth::user()->isSuperadmin())
+            return true;
+
         $owningMethod = $this->getOwningMethod($model);
         if(method_exists($this, $owningMethod))
             return $this->$owningMethod($model);
@@ -87,6 +91,17 @@ trait CRUDModelTrait
             return true;
 
         return $this->user_id == $user->getKey();
+    }
+
+    static function userCanCreate(User $user = null)
+    {
+        if(! $user)
+            return false;
+
+        if($user->hasRole('administrator'))
+            return true;
+
+        return false;
     }
 
     public function userCanSee(User $user = null)

@@ -3,12 +3,14 @@
 namespace ilBronza\CRUD;
 
 use Illuminate\Support\Str;
-use \App\http\Controllers\Controller;
+use \App\Http\Controllers\Controller;
+use ilBronza\CRUD\Traits\CRUDMethodsTrait;
 use ilBronza\CRUD\Traits\CRUDRoutingTrait;
 
 class CRUD extends Controller
 {
 	use CRUDRoutingTrait;
+	use CRUDMethodsTrait;
 
 	//general parameters
 	public $modelClass;
@@ -33,14 +35,6 @@ class CRUD extends Controller
 		foreach($this->neededTraits as $neededTrait)
 			if(! in_array($neededTrait, class_uses(new $this->modelClass())))
 				throw new \Exception('add ' . $neededTrait . ' to model ' . $this->modelClass);
-	}
-
-	private function getAllowedMethods()
-	{
-		if(! $this->allowedMethods)
-			throw new \Exception('public $allowedMethods non dichiarato nella classe estesa ' . get_class($this));
-
-		return $this->allowedMethods;
 	}
 
 	/**
