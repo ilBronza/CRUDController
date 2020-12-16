@@ -37,7 +37,7 @@ trait CRUDShowRelationshipsTrait
 
 		$controllerName = $this->getRelationControllerName($name);
 
-		$minitable = new minitable($name, class_basename($related->first()), ['index'], null, $related, $controllerName);
+		$minitable = new minitable($name, class_basename($related->first()), ['related'], null, $related, $controllerName);
 
 		$this->relationshipsTableNames[$name] = $minitable;
 	}
