@@ -65,6 +65,7 @@ trait CRUDShowTrait
 
 	public function setShowButtons()
 	{
+		$this->buildEditableRelationshipsButtons();
 	}
 
 	public function shareShowButtons()

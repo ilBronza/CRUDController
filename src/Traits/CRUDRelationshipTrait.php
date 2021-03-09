@@ -2,6 +2,8 @@
 
 namespace ilBronza\CRUD\Traits;
 
+use Illuminate\Support\Str;
+
 trait CRUDRelationshipTrait
 {
 	private function getRelationTypeFieldsByFormType(string $formType)
@@ -44,7 +46,6 @@ trait CRUDRelationshipTrait
 	private function relateBelongsToElements(string $relationship, $related)
 	{
 		$this->modelInstance->{$relationship}()->associate($related);
-		$this->modelInstance->save();
 	}
 
 	private function relateMorphToManyElements(string $relationship, $related)
@@ -84,5 +85,57 @@ trait CRUDRelationshipTrait
 
 			$this->callStandardMethod($relationship, $values);
 		}
-	}	
+	}
+
+	public function getEditableRelationships()
+	{
+		return $this->editableMethodRelationships ?? $this->showMethodRelationships ?? [];
+	}
+
+	public function getRelationshipButtonUrl(string $relationship)
+	{
+		$relationshipType = $this->getRelationshipType($relationship);
+
+		if($relationshipType == 'HasMany')
+			return $this->getHasManyRelationshipButton($relationship);
+
+		if($relationshipType == 'BelongsTo')
+			return $this->getBelongsToRelationshipButton($relationship);
+
+		if($relationshipType == 'BelongsToMany')
+			return $this->getBelongsToManyRelationshipButton($relationship);
+
+		mori('relationship button type: ' . $relationshipType);
+	}
+
+	public function getCreateRelationshipsButtonIcon(string $relationship)
+	{
+		return 'plus';
+	}
+
+	public function getCreateRelationshipsButtonLabel(string $relationship)
+	{
+		return __('crud::crud.create', [
+			'what' => __('crud::relationships.' . Str::camel($relationship))]
+		);		
+	}
+
+	public function getRelationshipButton(string $relationship)
+	{
+		if(! $url = $this->getRelationshipButtonUrl($relationship))
+			return ;
+
+		$text = $this->getCreateRelationshipsButtonLabel($relationship);
+		$icon = $this->getCreateRelationshipsButtonIcon($relationship);
+
+		return new \dgButton($url, $text, $icon);
+	}
+
+	public function buildEditableRelationshipsButtons()
+	{
+		foreach($this->getEditableRelationships() as $relationship)
+
+			if($button = $this->getRelationshipButton($relationship))
+				$this->showButtons[] = $button;
+	}
 }

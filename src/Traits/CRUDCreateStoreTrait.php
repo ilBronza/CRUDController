@@ -159,6 +159,7 @@ trait CRUDCreateStoreTrait
 	public function _store(Request $request)
 	{
 		$parameters = $this->validateStoreRequest($request);
+		$parameters = $this->transformParametersByFieldsAndType($parameters, 'store');
 
 		$this->modelInstance = new $this->modelClass;
 
@@ -168,7 +169,7 @@ trait CRUDCreateStoreTrait
 
 		$this->beforeStore($request);
 
-		$this->modelInstance->save();
+		// $this->modelInstance->save();
 		$this->associateRelationshipsByType($parameters, 'store');
 
 		$this->modelInstance->save();

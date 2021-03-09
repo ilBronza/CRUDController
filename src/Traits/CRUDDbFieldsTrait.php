@@ -61,7 +61,7 @@ trait CRUDDbFieldsTrait
 
 			if(strpos($field->Type, 'int') !== false)
 			{
-				$digits = (int) $pieces[1];
+				$digits = (int) ($pieces[1] ?? 11);
 
 				if($digits == 11)
 					return 2147483648;
@@ -94,6 +94,11 @@ trait CRUDDbFieldsTrait
 				if($digits == 11)
 					return 2147483648;
 			}
+		}
+
+		if($field->Type == 'json')
+		{
+			return ;
 		}
 
 		throw new \Exception('gestire il max per il campo ' . $type . ' in getFieldMaxFromDBField: ' . json_encode($field));
@@ -133,11 +138,18 @@ trait CRUDDbFieldsTrait
 		if($field->Type == 'tinyint(1)')
 			return 'boolean';
 
-		if(($field->Type == 'int(11)')||($field->Type == 'bigint unsigned'))
+		if(
+			($field->Type == 'int(11)')
+			||($field->Type == 'bigint unsigned')
+			||($field->Type == 'int')
+		)
 			return 'number';
 
 		if($field->Type == 'timestamp')
 			return 'datetime';
+
+		if($field->Type == 'json')
+			return 'json';
 
 		throw new \Exception(class_basename($this) . ': misisng ' . $field->Type . ' type declaration in getFieldTypeFromDBField for ' . $field->Field);
 	}

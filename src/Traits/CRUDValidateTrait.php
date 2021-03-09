@@ -16,9 +16,13 @@ trait CRUDValidateTrait
 		$relationshipsFields = [];
 
 		foreach($fieldsets as $fieldset)
-			foreach($fieldset as $fieldName => $validation)
+		{
+			$fields = $this->getFieldsetFields($fieldset);
+
+			foreach($fields as $fieldName => $validation)
 				if(isset($validation['relation']))
 					$relationshipsFields[$fieldName] = $validation;
+		}
 
 		return $relationshipsFields;
 	}

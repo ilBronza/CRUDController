@@ -15,6 +15,11 @@ trait CRUDEditUpdateTrait
 	public $editView;
 	public $standardEditView = 'form::uikit.form';
 
+	public function getAfterUpdateRoute()
+	{
+		return false;
+	}
+
 	/**
 	 * get edit view name
 	 *
@@ -81,11 +86,15 @@ trait CRUDEditUpdateTrait
         }
     }
 
+    public function addEditExtraViews()
+    {
+    	
+    }
+
     public function loadEditExtraViews()
     {
     	$this->addEditExtraViews();
-
-    	view()->share('extraViews', $this->extraViews);
+        $this->shareExtraViews();
     }
 
 	/**
@@ -122,6 +131,9 @@ trait CRUDEditUpdateTrait
 	 */
 	public function getAfterUpdatedRedirectUrl()
 	{
+		if($url = $this->getAfterUpdateRoute())
+			return $url;
+
 		if(in_array('index', $this->allowedMethods))
 			return $this->getRouteUrlByType('index');
 
@@ -164,6 +176,8 @@ trait CRUDEditUpdateTrait
 	{
 		$parameters = $this->cleanParametersFromRelationshipsByType($parameters, 'update');
 
+		//this way I don't need to set fillable parameters
+		// $this->modelInstance->fill($parameters);
 		foreach($parameters as $property => $value)
 			$this->modelInstance->{$property} = $value;
 
@@ -199,6 +213,8 @@ trait CRUDEditUpdateTrait
 
 		if(method_exists($this, 'associateRelationshipsByType'))
 			$this->associateRelationshipsByType($parameters, 'update');
+
+		$this->modelInstance->save();
 
 		$this->sendUpdateSuccessMessage();
 

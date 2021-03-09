@@ -47,6 +47,13 @@ trait CRUDShowRelationshipsTrait
 		return is_countable($related);
 	}
 
+	public function getRelationshipType(string $relationship)
+	{
+		$relation = $this->modelInstance->{$relationship}();
+
+		return class_basename($relation);
+	}
+
 	private function addRelationshipElement(Model $related, string $name)
 	{
 		$this->relationshipsElements[$name] = $related;
@@ -96,5 +103,32 @@ trait CRUDShowRelationshipsTrait
                 $elements->first()->getKeyName()
             )->toArray();
         }
+	}
+
+	public function getCamelCaseSingularModelClass()
+	{
+		return lcfirst(class_basename($this->modelInstance));
+	}
+
+	public function getCamelCasePluralModelClass()
+	{
+		return Str::plural(lcfirst(class_basename($this->modelInstance)));
+	}
+
+	public function getHasManyRelationshipButton(string $relationship)
+	{
+		$modelClasses = $this->getCamelCasePluralModelClass();
+
+		return route($modelClasses . '.' . $relationship .  '.create', [$this->modelInstance]);
+	}
+
+	public function getBelongsToRelationshipButton(string $relationship)
+	{
+		return false;
+	}
+
+	public function getBelongsToManyRelationshipButton(string $relationship)
+	{
+		return false;
 	}
 }

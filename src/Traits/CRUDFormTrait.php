@@ -6,7 +6,37 @@ use Illuminate\Http\Request;
 use ilBronza\CRUD\Traits\CRUDArrayFieldsTrait;
 use ilBronza\CRUD\Traits\CRUDDbFieldsTrait;
 use ilBronza\FormField\Facades\FormField;
+use ilBronza\FormField\Fields\JsonFormField;
 use ilBronza\Form\Facades\Form;
+
+
+/**
+ * come compilare il fieldset con opzioni e senza opzioni
+
+    static $formFields = [
+        'edit' => [
+            'externalSizes' => [
+                'external_length' => ['number' => 'integer|required'],
+                'external_width' => ['number' => 'integer|required'],
+                'external_height' => ['number' => 'integer|required'],
+            ],
+            'internalSizes' => [
+                'fields' => [
+                    'internal_length' => ['number' => 'integer|required'],
+                    'internal_width' => ['number' => 'integer|required'],
+                    'internal_height' => ['number' => 'integer|required'],
+                ],
+                'width' => 3,
+                'fieldsWidth' => 3
+            ],
+            'workingSizes' => [
+                'working_length' => ['number' => 'integer|required'],
+                'working_width' => ['number' => 'integer|required'],
+                'working_height' => ['number' => 'integer|required'],
+            ],
+
+ *
+**/
 
 trait CRUDFormTrait
 {
@@ -266,5 +296,41 @@ trait CRUDFormTrait
 		$validationArray = $this->$validationArrayGetter();
 
 		return $request->validate($validationArray);
+	}
+
+	private function getFormFieldType($fieldContent)
+	{
+		if(count($fieldContent) == 1)
+			return array_key_first($fieldContent);
+
+		mori('fieldcontent multiplo, risolvere: ' . json_encode($fieldContent));
+
+		// return $this->addValidationArrayMultipleRow($validationArray, $fieldContent, $fieldName);
+	}
+
+	public function transformParametersByFieldsAndType(array $parameters, string $type)
+	{
+		$fieldsets = $this->getFormFieldsetsByType($type);
+
+		foreach($fieldsets as $fieldset)
+		{
+			$fields = $this->getFieldsetFields($fieldset);
+
+			foreach($fields as $fieldName => $fieldContent)
+			{
+				$_parameters = $this->getFieldParameters($fieldName, $fieldContent);
+				$formField = FormField::createFromArray($_parameters);
+
+				if(isset($parameters[$fieldName]))
+					$parameters[$fieldName] = $formField->transformValueBeforeStore($parameters[$fieldName]);
+
+				//RESET NULL JSON FORM FIELDS
+				if($formField instanceof JsonFormField)
+					if(! isset($parameters[$fieldName]))
+						$parameters[$fieldName] = [];
+			}
+		}
+
+		return $parameters;
 	}
 }
