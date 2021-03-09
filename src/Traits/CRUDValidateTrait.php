@@ -110,9 +110,13 @@ trait CRUDValidateTrait
 
 		$validationArray = [];
 
-		foreach($fieldsets as $fields)
+		foreach($fieldsets as $fieldset)
+		{
+			$fields = $this->getFieldsetFields($fieldset);
+
 			foreach($fields as $fieldName => $fieldContent)
 				$validationArray = $this->addValidationArrayField($validationArray, $fieldContent, $fieldName);
+		}
 
 		return $validationArray;
 	}

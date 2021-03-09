@@ -2,8 +2,9 @@
 
 namespace ilBronza\CRUD\Traits\Model;
 
-use Auth;
+use App\Providers\Helpers\dgButton;
 use App\User;
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -36,10 +37,12 @@ trait CRUDModelTrait
         );        
     }
 
-    public function getDeleteUrl()
+    public function getDeleteUrl(array $data = [])
     {
         return route(
-            static::getPluralCamelcaseClassBasename() . '.destroy', [$this]
+            static::getPluralCamelcaseClassBasename() . '.destroy',
+            [$this],
+            $data
         );
     }
 
@@ -57,7 +60,7 @@ trait CRUDModelTrait
 
         $text = trans('generals.create' . class_basename(static::class));
 
-        return new \dgButton($href, $text, 'plus');
+        return new dgButton($href, $text, 'plus');
     }
 
 	private function getKeyedRoute(string $action, array $data)

@@ -4,7 +4,9 @@ namespace ilBronza\CRUD\Traits;
 
 use Auth;
 use IlBronza\Datatables\Datatables;
-use \newdatatable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+// use \newdatatable;
 
 trait CRUDIndexTrait
 {
@@ -69,10 +71,15 @@ trait CRUDIndexTrait
     	$this->manageCreateButton();
     }
 
-	public function _index()
+    private function getTableName()
+    {
+    	return Str::slug($this->getModelClassBasename());
+    }
+
+	public function _index(Request $request)
 	{
 		$this->table = Datatables::create(
-			'appointmentsTable',
+			$this->getTableName(),
 			$this->getTableFieldsGroups($this->getIndexFieldsGroups()),
 			function()
 			{

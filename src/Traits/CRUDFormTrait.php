@@ -91,6 +91,39 @@ trait CRUDFormTrait
 	}
 
 	/**
+	 * return fields array from fieldset parameters
+	 *
+	 * @param array $fieldsetParameters
+	 * @return array
+	 **/
+	public function getFieldsetFields(array $fieldsetParameters)
+	{
+		if(isset($fieldsetParameters['fields']))
+			return $fieldsetParameters['fields'];
+
+		return $fieldsetParameters;
+	}
+
+	/**
+	 * return fieldset parameters excluding fields
+	 *
+	 * if fields array doesn't exist, parameters don't exist so return null
+	 * else return parameters cleaned from fields
+	 *
+	 * @param array $fieldsetParameters
+	 * @return array
+	 **/
+	public function getFieldsetParameters(array $fieldsetParameters)
+	{
+		if(! isset($fieldsetParameters['fields']))
+			return [];
+		
+		unset($fieldsetParameters['fields']);
+
+		return $fieldsetParameters;
+	}
+
+	/**
 	 * add fieldsets to form
 	 *
 	 * get fieldsets by edit or create type and add them to current form 
@@ -104,9 +137,12 @@ trait CRUDFormTrait
 
 		$fieldsets = $this->getFormFieldsets($type);
 
-		foreach($fieldsets as $name => $fields)
+		foreach($fieldsets as $name => $fieldsetParameters)
 		{
-			$this->form->addFormFieldset($name);
+			$fields = $this->getFieldsetFields($fieldsetParameters);
+			$parameters = $this->getFieldsetParameters($fieldsetParameters);
+
+			$this->form->addFormFieldset($name, $parameters);
 
 			foreach($fields as $fieldName => $field)
 			{

@@ -187,7 +187,7 @@ trait CRUDDbFieldsTrait
 
 			$fieldParameters = [
 				'name' => $field->Field,
-				'label' => _('formfields.field_' . $field->Field),
+				'label' => _('fields.' . $field->Field),
 				'type' => ($type = $this->getFieldTypeFromDBField($field)),
 				'required' => $this->getFieldRequiredFromDBField($field),
 			];

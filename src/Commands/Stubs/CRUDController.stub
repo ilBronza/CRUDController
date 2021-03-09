@@ -13,6 +13,7 @@ use ilBronza\CRUD\Traits\CRUDRelationshipTrait;
 
 use ilBronza\CRUD\Traits\CRUDCreateStoreTrait;
 use ilBronza\CRUD\Traits\CRUDEditUpdateTrait;
+use ilBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use ilBronza\CRUD\Traits\CRUDIndexTrait;
 use ilBronza\CRUD\Traits\CRUDPlainIndexTrait;
 use ilBronza\CRUD\Traits\CRUDShowTrait;
@@ -28,6 +29,7 @@ class {{ class }} extends CRUD
     use CRUDPlainIndexTrait;
     use CRUDIndexTrait;
     use CRUDEditUpdateTrait;
+    use CRUDUpdateEditorTrait;
     use CRUDCreateStoreTrait;
 
     use CRUDDeleteTrait;
@@ -38,7 +40,16 @@ class {{ class }} extends CRUD
 
     public $modelClass = '\App\{{ model }}';
 
-    public $allowedMethods = ['index', 'show', 'edit', 'update', 'create', 'store', 'delete'];
+    public $allowedMethods = [
+        'index',
+        'show',
+        'edit',
+        'update',
+        'updateEditor',
+        'create',
+        'store',
+        'delete'
+    ];
 
     // public $guardedEditDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
     // public $guardedCreateDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
@@ -64,6 +75,11 @@ class {{ class }} extends CRUD
     public function update(Request $request, {{ model }} ${{ modelVariable }})
     {
         return $this->_update($request, ${{ modelVariable }});
+    }
+
+    public function updateEditor(Request $request, {{ model }} ${{ modelVariable }})
+    {
+        return $this->_updateEditor($request, ${{ modelVariable }});
     }
 
     public function delete({{ model }} ${{ modelVariable }})

@@ -83,7 +83,9 @@ trait CRUDEditUpdateTrait
 
     public function loadEditExtraViews()
     {
-    	
+    	$this->addEditExtraViews();
+
+    	view()->share('extraViews', $this->extraViews);
     }
 
 	/**
@@ -162,7 +164,8 @@ trait CRUDEditUpdateTrait
 	{
 		$parameters = $this->cleanParametersFromRelationshipsByType($parameters, 'update');
 
-		$this->modelInstance->fill($parameters);
+		foreach($parameters as $property => $value)
+			$this->modelInstance->{$property} = $value;
 
 		$this->manageModelInstanceAfterUpdate($parameters);
 
@@ -190,6 +193,7 @@ trait CRUDEditUpdateTrait
 		$this->checkIfUserCanUpdate();
 
 		$parameters = $this->validateUpdateRequest($request);
+		$parameters = $this->transformParametersByFieldsAndType($parameters, 'update');
 
 		$this->updateModelInstance($parameters);
 
