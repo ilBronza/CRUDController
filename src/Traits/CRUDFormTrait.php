@@ -7,7 +7,7 @@ use ilBronza\CRUD\Traits\CRUDArrayFieldsTrait;
 use ilBronza\CRUD\Traits\CRUDDbFieldsTrait;
 use ilBronza\FormField\Facades\FormField;
 use ilBronza\FormField\Fields\JsonFormField;
-use ilBronza\Form\Facades\Form;
+use ilBronza\Form\Form;
 
 
 /**
@@ -187,15 +187,6 @@ trait CRUDFormTrait
 					$formField,
 					$name
 				);
-
-				if($parameters['type'] == 'json')
-					foreach($parameters['fields'] as $fieldName => $field)
-						$formField->addFormField(
-							FormField::createFromArray(
-								$this->getFieldParameters($fieldName, $field)
-							)
-						);
-
 			}
 		}
 
