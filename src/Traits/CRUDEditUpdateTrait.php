@@ -4,7 +4,6 @@ namespace ilBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use ilBronza\Form\Facades\Form;
 
 trait CRUDEditUpdateTrait
 {
@@ -183,7 +182,7 @@ trait CRUDEditUpdateTrait
 
 		$this->manageModelInstanceAfterUpdate($parameters);
 
-		return $this->modelInstance->save();		
+		return $this->modelInstance->save();
 	}
 
 	/**

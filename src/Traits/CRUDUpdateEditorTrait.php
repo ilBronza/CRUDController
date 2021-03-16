@@ -10,26 +10,47 @@ trait CRUDUpdateEditorTrait
 {
 	use CRUDValidateTrait;
 
-	/**
-	 * validate request and return requested values for update
-	 **/
-	private function validateUpdateEditorRequest(Request $request)
+	private function getToggleValue(array $parameters, string $fieldName)
+	{
+		if(isset($parameters['value']))
+			return $parameters['value'];
+
+		return  ! $this->modelInstance->$fieldName;
+	}
+
+	private function validateToggleRequest(Request $request)
 	{
 		$validationArray = $this->getUpdateValidationArray();
 
-		mori($request->all());
+		$parameters = $request->validate([
+			'field' => 'string|required|in:' . implode(",", array_keys($validationArray)),
+			'value' => 'boolean|nullable'
+		]);
 
-		// $validationArray = array_intersect(array1, array2)
+		$fieldName = $parameters['field'];
+		$toggleValue = $this->getToggleValue($parameters, $fieldName);
 
-		mori($validationArray);
-
-
-
-		return $request->validate($validationArray);
-
-		return $this->validateRequestByType($request, 'update');
+		return [
+			$fieldName => $toggleValue
+		];
 	}
 
+	private function isToggle(Request $request)
+	{
+		return $request->input('toggle', false);
+	}
+
+	private function manageToggle(Request $request)
+	{
+		$updateParameters = $this->validateToggleRequest($request);
+
+		$this->updateModelInstance($updateParameters);
+
+		$updateParameters['success'] = true;
+		$updateParameters['toggle'] = true;
+
+		return $updateParameters;
+	}
 
 	/**
 	 * validate request and update model
@@ -43,7 +64,13 @@ trait CRUDUpdateEditorTrait
 
 		$this->checkIfUserCanUpdate();
 
+		if($this->isToggle($request))
+			return $this->manageToggle($request);
+
+
 		$parameters = $this->validateUpdateEditorRequest($request);
+
+		mori("NOTOGGLE SIGNO'");
 
 		mori($parameters);
 

@@ -2,6 +2,8 @@
 
 namespace ilBronza\CRUD\Traits;
 
+use App\Providers\Helpers\dgButton;
+
 trait CRUDBelongsToButtonsTrait
 {
 	public function getCreateButtonUrl()
@@ -28,6 +30,6 @@ trait CRUDBelongsToButtonsTrait
 		$href = $this->getCreateButtonUrl();
 		$text = $this->getCreateButtonText();
 
-        return new \dgButton($href, $text, 'plus');
+        return new dgButton($href, $text, 'plus');
 	}
 }
