@@ -4,6 +4,27 @@ namespace ilBronza\CRUD\Traits\Model;
 
 trait CRUDDeleterTrait
 {
+    public function deleterDelete()
+    {
+        foreach($this->deletingRelationships as $relationship)
+        {
+            $thing = $this->$relationship()->make();
+
+            $elements = $this->$relationship();
+
+            if(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($thing)))
+                $elements->withTrashed();
+
+            foreach($elements->get() as $element)
+                if(in_array('ilBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                    $element->deleterDelete();
+                else
+                    $element->delete();
+        }
+
+        return $this->delete();
+    }
+
     public function deleterForceDelete()
     {
         foreach($this->deletingRelationships as $relationship)
@@ -16,12 +37,13 @@ trait CRUDDeleterTrait
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
-                if(in_array('ilBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait', class_uses($element)))
-                    $elements->deleterForceDelete();
+                if(in_array('ilBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                    $element->deleterForceDelete();
+
                 elseif(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($element)))
-                    $elements->forceDelete();
+                    $element->forceDelete();
                 else
-                    $elements->delete();
+                    $element->delete();
         }
 
         return $this->forceDelete();

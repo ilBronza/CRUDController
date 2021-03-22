@@ -20,17 +20,20 @@ trait CRUDMiddlewareOwninglTrait
         $permission = Permission::where('name', $specificPermissionName)->first();
 
         if(($permission)&&(! $this->user->can($permission)))
-            abort(403, 'user doesnt have the rights to {$permission} elements like {$modelVariableName}');
+            abort(403, "user doesnt have the rights to {$permission} elements like {$modelVariableName}");
     }
 
-    public function hasSpecificOwningMethod($element, string $modelClass, string $modelVariableName, string $permission)
+    public function checkSpecificOwningMethod($element, string $modelClass, string $modelVariableName, string $permission)
     {
+        if(! $element->hasOwnership())
+            return true;
+
         $methodName = 'owns'. ucfirst($modelVariableName);
 
         if(method_exists($this->user, $methodName))
         {
             if(! $this->user->$methodName($element))
-                abort(403, 'user cant {$permission} this element');
+                abort(403, "You cant {$permissionName} this element");
 
             return true;
         }
@@ -44,7 +47,7 @@ trait CRUDMiddlewareOwninglTrait
             return $next($request);
 
         if(! $this->user->can($permissionName))
-            abort(403, 'You cant {$permissionName}');
+            abort(403, "You don't have permssions to {$permissionName} this element");
 
         foreach($args as $modelClass)
         {
@@ -52,13 +55,14 @@ trait CRUDMiddlewareOwninglTrait
 
             $this->checkSpecificPermission($modelVariableName, $permissionName);
 
-            $element = $modelClass::withTrashed()->findOrFail($request->$modelVariableName);
+            // $element = $modelClass::withTrashed()->findOrFail($request->$modelVariableName);
+            $element = $request->$modelVariableName;
 
-            if($this->hasSpecificOwningMethod($element, $modelClass, $modelVariableName, $permissionName))
+            if($this->checkSpecificOwningMethod($element, $modelClass, $modelVariableName, $permissionName))
                 continue;
 
             if($element->user_id != $this->user->id)
-                abort(403, 'You cant {$permissionName} this element');
+                abort(403, "You don't own this element");
         }
 
         return $next($request);

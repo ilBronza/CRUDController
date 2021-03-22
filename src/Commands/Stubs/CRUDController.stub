@@ -48,7 +48,7 @@ class {{ class }} extends CRUD
         'updateEditor',
         'create',
         'store',
-        'delete'
+        'destroy'
     ];
 
     // public $guardedEditDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
@@ -82,9 +82,9 @@ class {{ class }} extends CRUD
         return $this->_updateEditor($request, ${{ modelVariable }});
     }
 
-    public function delete({{ model }} ${{ modelVariable }})
+    public function destroy({{ model }} ${{ modelVariable }})
     {
-        return $this->_delete(${{ modelVariable }});
+        return $this->_destroy(${{ modelVariable }});
     }
 
 

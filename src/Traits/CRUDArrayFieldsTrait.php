@@ -111,7 +111,10 @@ trait CRUDArrayFieldsTrait
 			$this->buildNameAndLabelArray($name)
 		);
 
-		$rules = explode("|", $parametersString['rules']);
+		$rules = $parametersString['rules'];
+
+		if(is_string($rules))
+			$rules = explode("|", $parametersString['rules']);
 
 		return $this->buildParametersRules($parameters, $rules);
 	}

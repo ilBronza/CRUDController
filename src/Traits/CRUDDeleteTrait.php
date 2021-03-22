@@ -24,7 +24,16 @@ trait CRUDDeleteTrait
 		$message = __('messages.elementSuccesfullyDeleted', ['element' => $name]);
 
 		if(request()->ajax())
-			return response()->success($message);
+		{
+			return response()->json([
+				'success' => true,
+				'message' => $message,
+				'action' => 'remove',
+				'ids' => [
+					$element->getKey()
+				]
+			]);
+		}
 
 		return redirect()->to(
 				$this->getDeletedRedirectUrl()
@@ -39,7 +48,7 @@ trait CRUDDeleteTrait
 		return $this->returnDeletionResponse($element);
 	}
 
-	public function _delete($modelInstance)
+	public function _destroy($modelInstance)
 	{
 		$modelInstance->deleterDelete();
 

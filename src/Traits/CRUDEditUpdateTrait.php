@@ -4,11 +4,14 @@ namespace ilBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use ilBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 
 trait CRUDEditUpdateTrait
 {
 	use CRUDFormTrait;
 	use CRUDValidateTrait;
+
+	use CRUDUpdateEditorTrait;
 
 	//edit parameters
 	public $editView;
@@ -201,6 +204,9 @@ trait CRUDEditUpdateTrait
 	 **/
 	public function _update(Request $request, $modelInstance)
 	{
+		if($this->hasEditorUpdateRequest($request))
+			return $this->_updateEditor($request, $modelInstance);
+
 		$this->modelInstance = $modelInstance;
 
 		$this->checkIfUserCanUpdate();

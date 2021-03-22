@@ -7,9 +7,17 @@ use App\User;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use ilBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 
 trait CRUDModelTrait
 {
+    use CRUDDeleterTrait;
+
+    public function hasOwnership()
+    {
+        return $this->hasOwnership;
+    }
+
     public function getOwningMethod(Model $model)
     {
         return  'owns' . class_basename($model);
@@ -41,8 +49,7 @@ trait CRUDModelTrait
     {
         return route(
             static::getPluralCamelcaseClassBasename() . '.destroy',
-            [$this],
-            $data
+            [$this]
         );
     }
 
