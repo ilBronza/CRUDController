@@ -10,12 +10,20 @@ trait CRUD{{ model }}ParametersTrait
             'fields' => 
             [
             /**
-                'mySelfEdit' => 'edit',
-                'mySelfSee' => 'see',
+                'mySelfPrimary' => 'primary',
+                'mySelfEdit' => 'links.edit',
+                'mySelfSee' => [
+                    'type' => 'links.see',
+                    'order' => [
+                        'priority' => 10,
+                        'type' => 'desc'
+                    ],
+                ],
                 'rag_soc' => 'flat',
                 'destination' => 'flat',
                 'supplier' => 'flat',
                 'zone' => 'flat',
+                'mySelfDelete' => 'links.delete'
             **/
             ]
         ]

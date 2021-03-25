@@ -121,7 +121,8 @@ trait CRUDCreateStoreTrait
 	{
 		$parameters = array_diff_key($parameters, $this->getRelationshipsFieldsByType('store'));
 
-		$this->modelInstance->fill($parameters);
+		foreach($parameters as $name => $value)
+			$this->modelInstance->$name = $value;
 
 		$this->setBeforeStoreFields($parameters);
 	}

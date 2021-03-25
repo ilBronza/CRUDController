@@ -18,6 +18,11 @@ class CRUD extends Controller
 	public $neededTraits = ['ilBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 
+	// index parameters
+	public $indexFieldsGroups = ['index'];
+	public $indexCacheKey;
+
+
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
 
 	public function __construct()

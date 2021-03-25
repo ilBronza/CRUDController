@@ -10,10 +10,6 @@ use Illuminate\Support\Str;
 
 trait CRUDIndexTrait
 {
-	// index parameters
-	public $indexFieldsGroups = ['index'];
-	public $indexCacheKey;
-
 	/**
 	 * takes all the necessary fieldsGroups by key
 	 *
