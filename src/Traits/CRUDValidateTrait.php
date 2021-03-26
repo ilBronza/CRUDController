@@ -114,6 +114,8 @@ trait CRUDValidateTrait
 
 		$validationArray = [];
 
+		mori($fieldsets);
+
 		foreach($fieldsets as $fieldset)
 		{
 			$fields = $this->getFieldsetFields($fieldset);

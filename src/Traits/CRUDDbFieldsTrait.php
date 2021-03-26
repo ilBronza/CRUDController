@@ -8,9 +8,42 @@ use ilBronza\Form\Facades\Form;
 
 trait CRUDDbFieldsTrait
 {
-	private function getValidationArrayByTypeFromDBByType(string $type)
+	private function getFieldValidationPieces($field)
 	{
-		$guardedFields = $this->getGuardedDBFieldsByType($type);
+		$validationPieces = [
+			$this->getFieldValidationTypeFromDBField($field),
+			($this->getFieldRequiredFromDBField($field))? 'required' : 'nullable',
+		];
+
+		if($max = $this->getFieldMaxFromDBField($field, $this->getFieldTypeFromDBField($field)))
+			$validationPieces[] = 'max:' . $max;
+
+		//questa è di controllo per vedere cosa succede con i campi chiave, una volta capito è da rimuovere
+		$this->getFieldKeyFromDBField($field);
+
+		return $validationPieces;
+	}
+
+	private function getValidationArrayByTypeFromDBByTypeByAllowed($type)
+	{
+		if(! $allowedFields = $this->getAllowedDBFieldsByType($type))
+			return false;
+
+		foreach($this->getDbFields() as $field)
+		{
+			if(! in_array($field->Field, $allowedFields))
+				continue;
+
+			$result[$field->Field] = $this->getFieldValidationPieces($field);
+		}
+
+		return $result;
+	}
+
+	private function getValidationArrayByTypeFromDBByTypeByGuarded($type)
+	{
+		if(! $guardedFields = $this->getGuardedDBFieldsByType($type))
+			return false;
 
 		$result = [];
 
@@ -19,21 +52,21 @@ trait CRUDDbFieldsTrait
 			if(in_array($field->Field, $guardedFields))
 				continue;
 
-			$validationPieces = [
-				$this->getFieldValidationTypeFromDBField($field),
-				($this->getFieldRequiredFromDBField($field))? 'required' : 'nullable',
-			];
-
-			if($max = $this->getFieldMaxFromDBField($field, $this->getFieldTypeFromDBField($field)))
-				$validationPieces[] = 'max:' . $max;
-
-			//questa è di controllo per vedere cosa succede con i campi chiave, una volta capito è da rimuovere
-			$this->getFieldKeyFromDBField($field);
-
-			$result[$field->Field] = $validationPieces;
+			$result[$field->Field] = $this->getFieldValidationPieces($field);
 		}
 
 		return $result;
+	}
+
+	private function getValidationArrayByTypeFromDBByType(string $type) : array
+	{
+		if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByGuarded($type))
+			if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByAllowed($type))
+				mori("non c'è signò");
+
+		mori($validationArray);
+		return $validationArray;
+
 	}
 
 	private function getFieldMaxFromDBField(\stdClass $field, string $type)
@@ -101,7 +134,10 @@ trait CRUDDbFieldsTrait
 			return ;
 		}
 
-		throw new \Exception('gestire il max per il campo ' . $type . ' in getFieldMaxFromDBField: ' . json_encode($field));
+		if(strpos($field->Type, 'varchar') !== null)
+			return (int) filter_var($field->Type, FILTER_SANITIZE_NUMBER_INT) ?? null;
+
+		throw new \Exception('gestire il max per il campo ' . $field->Type . ' in getFieldMaxFromDBField: ' . json_encode($field));
 	}
 
 	private function getFieldKeyFromDBField(\stdClass $field)
@@ -151,6 +187,9 @@ trait CRUDDbFieldsTrait
 		if($field->Type == 'json')
 			return 'json';
 
+		if(strpos($field->Type, 'enum') == 0)
+			return 'select';
+
 		throw new \Exception(class_basename($this) . ': misisng ' . $field->Type . ' type declaration in getFieldTypeFromDBField for ' . $field->Field);
 	}
 
@@ -165,17 +204,24 @@ trait CRUDDbFieldsTrait
 		if($field->Type == 'double(8,2)')
 			return 'numeric';
 
+		if(strpos($field->Type, 'enum') == 0)
+			return 'string';
+
 		throw new \Exception(class_basename($this) . ': misisng ' . $field->Type . ' type declaration in getFieldValidationTypeFromDBField for ' . $field->Field);
 	}
 
 	private function getGuardedDBFieldsByType(string $type)
 	{
 		$guardedFieldsParameterName = 'guarded' . ucfirst($type) . 'DBFields';
-		
-		if(! isset($this->$guardedFieldsParameterName))
-			throw new \Exception(class_basename($this) . ': declare $formFields parameters or $' . $guardedFieldsParameterName . ' if you want to get automatic fields retrieving from db');
 
-		return $this->$guardedFieldsParameterName;
+		return $this->{$guardedFieldsParameterName} ?? false;
+	}
+
+	private function getAllowedDBFieldsByType(string $type)
+	{
+		$allowedFieldsParameterName = 'allowed' . ucfirst($type) . 'DBFields';
+
+		return $this->{$allowedFieldsParameterName} ?? false;
 	}
 
 	private function getDbFields($model = null)
