@@ -3,7 +3,7 @@
 namespace ilBronza\CRUD\Traits\Model;
 
 use App\Providers\Helpers\dgButton;
-use App\User;
+use App\Models\User;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

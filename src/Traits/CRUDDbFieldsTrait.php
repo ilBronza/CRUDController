@@ -15,13 +15,17 @@ trait CRUDDbFieldsTrait
 			($this->getFieldRequiredFromDBField($field))? 'required' : 'nullable',
 		];
 
-		if($max = $this->getFieldMaxFromDBField($field, $this->getFieldTypeFromDBField($field)))
+		$fieldType = $this->getFieldTypeFromDBField($field);
+
+		if($max = $this->getFieldMaxFromDBField($field, $fieldType))
 			$validationPieces[] = 'max:' . $max;
 
 		//questa è di controllo per vedere cosa succede con i campi chiave, una volta capito è da rimuovere
 		$this->getFieldKeyFromDBField($field);
 
-		return $validationPieces;
+		return [
+			$fieldType => $validationPieces
+		];
 	}
 
 	private function getValidationArrayByTypeFromDBByTypeByAllowed($type)
@@ -64,8 +68,9 @@ trait CRUDDbFieldsTrait
 			if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByAllowed($type))
 				mori("non c'è signò");
 
-		mori($validationArray);
-		return $validationArray;
+		return [
+			'default' => $validationArray
+		];
 
 	}
 
