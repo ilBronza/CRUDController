@@ -38,14 +38,19 @@ class {{ class }} extends CRUD
     use CRUDRelationshipTrait;
     use CRUDBelongsToManyTrait;
 
+    /**
+     * subject model class full path
+     **/
     public $modelClass = '\App\{{ model }}';
 
+    /**
+     * http methods allowed. remove non existing methods to get a 403 when called by routes
+     **/
     public $allowedMethods = [
         'index',
         'show',
         'edit',
         'update',
-        'updateEditor',
         'create',
         'store',
         'destroy'
@@ -53,17 +58,34 @@ class {{ class }} extends CRUD
 
     // public $guardedEditDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
     // public $guardedCreateDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
-    public $guardedShowDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
+    // public $guardedShowDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
 
-    public $showMethodRelationships = ['posts', 'users', 'operations'];
+    /**
+     * relations called to be automatically shown on 'show' method
+     **/
+    //public $showMethodRelationships = ['posts', 'users', 'operations'];
 
+    /**
+     * getter method for 'index' method.
+     *
+     * is declared here to force the developer to rationally choose which elements to be shown
+     *
+     * @return Collection
+     **/
     public function getIndexElements()
     {
         return {{ model }}::all();
     }
 
+    /**
+     * START base methods declared in extended controller to correctly perform dependency injection
+     *
+     * these methods are compulsorily needed to execute CRUD base functions
+     **/
     public function show({{ model }} ${{ modelVariable }})
     {
+        //$this->addExtraView('top', 'folder.subFolder.viewName', ['some' => $thing]);
+
         return $this->_show(${{ modelVariable }});
     }
 
@@ -77,19 +99,13 @@ class {{ class }} extends CRUD
         return $this->_update($request, ${{ modelVariable }});
     }
 
-    public function updateEditor(Request $request, {{ model }} ${{ modelVariable }})
-    {
-        return $this->_updateEditor($request, ${{ modelVariable }});
-    }
-
     public function destroy({{ model }} ${{ modelVariable }})
     {
         return $this->_destroy(${{ modelVariable }});
     }
 
-
     /**
-     * called before create view rendering
+     * END base methods
      **/
-    //  public function beforeRenderCreate() {}
+
 }

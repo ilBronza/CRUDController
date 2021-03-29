@@ -231,7 +231,7 @@ trait CRUDFormTrait
 
 		if($type == 'create')
 			$this->form->setTitle(
-				__($translationFileName . '.' . 'cardTitleCreate :element', ['element' => __('relations.' . class_basename(lcfirst($this->modelInstance)))])
+				__($translationFileName . '.' . 'cardTitleCreate :element', ['element' => __('relations.' . lcfirst(class_basename($this->modelInstance)))])
 			);
 	}
 

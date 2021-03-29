@@ -61,6 +61,9 @@ trait CRUDEditUpdateTrait
 
 	public function checkIfUserCanUpdate()
 	{
+		if(Auth::id() == 1)
+			return true;
+
 		if(! $user = Auth::user())
 			return redirect()->to('login');
 

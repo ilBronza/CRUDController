@@ -30,16 +30,20 @@ trait CRUDShowRelationshipsTrait
 		return $this->relationshipsControllers[$value];
 	}
 
-	private function addRelationshipTable(Collection $related, string $name)
+	private function addRelationshipTable(Collection $elements, string $name)
 	{
-		if(count($related) == 0)
+		if(count($elements) == 0)
 			return null;
 
 		$controllerName = $this->getRelationControllerName($name);
 
-		$minitable = new minitable($name, class_basename($related->first()), ['related'], null, $related, $controllerName);
+		// $minitable = new minitable($name, class_basename($elements->first()), ['elements'], null, $related, $controllerName);
 
-		$this->relationshipsTableNames[$name] = $minitable;
+		// $this->relationshipsTableNames[$name] = $minitable;
+
+		$fieldsGroup = Str::camel(class_basename($this->modelClass));
+
+		$this->relationshipsTableNames[$name] = app($controllerName)->getIndependentTable($elements, $fieldsGroup);
 	}
 
 	private function relationNeedsTable($related)

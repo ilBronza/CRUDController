@@ -2,6 +2,7 @@
 
 namespace ilBronza\CRUD;
 
+use App\Providers\Helpers\dgButton;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
 use ilBronza\CRUD\Traits\CRUDMethodsTrait;
@@ -37,9 +38,10 @@ class CRUD extends Controller
 
 	private function checkIfModelUsesTrait()
 	{
-		foreach($this->neededTraits as $neededTrait)
-			if(! in_array($neededTrait, class_uses(new $this->modelClass())))
-				throw new \Exception('add ' . $neededTrait . ' to model ' . $this->modelClass);
+		//TODO RISOLVERE STA ROBA
+		// foreach($this->neededTraits as $neededTrait)
+		// 	if(! in_array($neededTrait, class_uses(new $this->modelClass())))
+		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->modelClass);
 	}
 
 	/**
@@ -47,32 +49,62 @@ class CRUD extends Controller
 	 *
 	 * @return string
 	 **/
-	protected function getModelTranslationFileName()
+	protected function getModelTranslationFileName() : string
 	{
 		$classNamePieces = explode('\\', $this->modelClass);
 		$className = array_pop($classNamePieces);
 
-		return Str::plural(lcfirst($className));
+		return Str::plural(Str::camel($className));
 	}
 
-	public function getModelClassBasename()
+	/**
+	 * get subject model class's basename
+	 *
+	 * @return string
+	 **/
+	public function getModelClassBasename() : string
 	{
 		if(! $this->modelClass)
 			throw new \Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 
-		return $this->modelClass;
+		return class_basename($this->modelClass);
 	}
 
-	public function getLcfirstPluralModelClassname($modelInstance)
+	/**
+	 * return camel plural class's basename used for routing
+	 *
+	 * example App\Models\Commercials\CommercialDocument becomes commercialDocuments
+	 *
+	 * @param $modelInstance
+	 *
+	 * @return string
+	 **/
+	public function getLcfirstPluralModelClassname($modelInstance) : string
 	{
-		return lcfirst(Str::plural(class_basename($modelInstance)));
+		return (Str::plural(
+			Str::camel(
+				$this->getModelClassBasename()
+			)
+		));
 	}
 
-	public function getCreateButton()
+	/**
+	 * return a button to create new given model instance
+	 *
+	 * @return dgButton
+	 */
+	public function getCreateButton() : dgButton
 	{
 		return $this->modelClass::getCreateButton();
 	}
 
+	/**
+	 * add extra view to default page. can be used in index, show, create, edit
+	 *
+	 * @param string $position
+	 * @param string $view //view name
+	 * @param array $parameters //view parameters
+	 **/
 	public function addView(string $position, string $view, array $parameters = [])
 	{
 		if(empty($this->extraViews[$position]))
@@ -81,6 +113,9 @@ class CRUD extends Controller
 		$this->extraViews[$position][$view] = $parameters;		
 	}
 
+	/**
+	 * share extraViews parameter to view
+	 **/
 	public function shareExtraViews()
 	{
 		view()->share('extraViews', $this->extraViews);

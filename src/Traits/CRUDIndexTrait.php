@@ -5,6 +5,7 @@ namespace ilBronza\CRUD\Traits;
 use Auth;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 // use \newdatatable;
 
@@ -86,6 +87,11 @@ trait CRUDIndexTrait
 		$this->addIndexButtonsToTable();
 
 		return $this->table->renderPage();
+	}
+
+	public function getIndependentTable(Collection $elements, string $fieldsGroup)
+	{
+		mori($this);
 	}
 
 	public function getIndexFieldsGroups()

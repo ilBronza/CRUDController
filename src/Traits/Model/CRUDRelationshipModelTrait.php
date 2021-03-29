@@ -32,7 +32,7 @@ trait CRUDRelationshipModelTrait
      **/
     public function _getRelationshipPossibleValuesArray(string $relationship)
     {
-        $relationModelClassBaseName = "App\\" . ucfirst(Str::singular($relationship));
+        $relationModelClassBaseName = get_class($this->{$relationship}()->getRelated());
 
         $elements = $relationModelClassBaseName::all();
 

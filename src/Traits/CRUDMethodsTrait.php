@@ -4,7 +4,13 @@ namespace ilBronza\CRUD\Traits;
 
 trait CRUDMethodsTrait
 {
-	public function getAllowedMethods()
+	/**
+	 * get allowedMethods array from extended model
+	 *
+	 * @return array
+	 *
+	 **/
+	public function getAllowedMethods() : array
 	{
 		if(! $this->allowedMethods)
 			throw new \Exception('public $allowedMethods non dichiarato nella classe estesa ' . get_class($this));
@@ -12,7 +18,14 @@ trait CRUDMethodsTrait
 		return $this->allowedMethods;
 	}
 
-	public function methodIsAllowed(string $method)
+	/**
+	 * check if given method is allowed in extended model
+	 *
+	 * @param string $method
+	 *
+	 * @return boolean
+	 **/
+	public function methodIsAllowed(string $method) : bool
 	{
 		return in_array($method, $this->getAllowedMethods());
 	}	
