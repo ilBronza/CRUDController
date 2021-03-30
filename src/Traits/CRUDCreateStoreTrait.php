@@ -125,6 +125,8 @@ trait CRUDCreateStoreTrait
 			$this->modelInstance->$name = $value;
 
 		$this->setBeforeStoreFields($parameters);
+
+		$this->save();
 	}
 
 	/**
@@ -146,11 +148,6 @@ trait CRUDCreateStoreTrait
 		return $this->_store($request);
 	}
 
-	public function beforeStore(Request $request)
-	{
-		
-	}
-
 	/**
 	 * validate request and store model
 	 *
@@ -167,8 +164,6 @@ trait CRUDCreateStoreTrait
 		$this->manageParentModelAssociation();
 
 		$this->storeModelInstance($parameters);
-
-		$this->beforeStore($request);
 
 		// $this->modelInstance->save();
 		$this->associateRelationshipsByType($parameters, 'store');

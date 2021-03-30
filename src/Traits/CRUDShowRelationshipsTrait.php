@@ -21,13 +21,13 @@ trait CRUDShowRelationshipsTrait
 
 	private function getRelationControllerName(string $value)
 	{
+		if(isset($this->relationshipsControllers[$value]))
+			return $this->relationshipsControllers[$value];
+
 		if(class_exists($className = '\App\Http\Controllers\\' . ucfirst(Str::singular($value)) . 'Controller'))
 			return $className;
 
-		if(! isset($this->relationshipsControllers[$value]))
-			throw new MissingRelationshipDeclarationController($value);
-
-		return $this->relationshipsControllers[$value];
+		throw new MissingRelationshipDeclarationController($value);
 	}
 
 	private function addRelationshipTable(Collection $elements, string $name)
