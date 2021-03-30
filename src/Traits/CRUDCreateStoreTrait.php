@@ -126,7 +126,7 @@ trait CRUDCreateStoreTrait
 
 		$this->setBeforeStoreFields($parameters);
 
-		$this->save();
+		$this->modelInstance->save();
 	}
 
 	/**
