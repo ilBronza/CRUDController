@@ -13,7 +13,7 @@ trait CRUDShowRelationshipsTrait
 {
 	public function getShowRelationships()
 	{
-		if(! empty($this->showMethodRelationships))
+		if(isset($this->showMethodRelationships))
 			return $this->showMethodRelationships;
 
 		return array_keys($this->getRelationTypeFieldsByFormTypes(['create', 'edit']));

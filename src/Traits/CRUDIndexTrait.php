@@ -63,6 +63,11 @@ trait CRUDIndexTrait
 		$this->table->addButton($createButton);
     }
 
+    public function getIndexButtons()
+    {
+    	return $this->indexButtons ?? [];
+    }
+
     private function addIndexButtonsToTable()
     {
     	$this->manageCreateButton();
@@ -89,9 +94,30 @@ trait CRUDIndexTrait
 		return $this->table->renderPage();
 	}
 
-	public function getIndependentTable(Collection $elements, string $fieldsGroup)
+	private function getOrRelatedFieldsGroup($fieldsGroup)
 	{
-		mori($this);
+		return 'related';
+	}
+
+	public function getIndependentTable(Collection $elements, string $fieldsGroupName)
+	{
+		$tableName = $this->getModelClassBasename();
+		$fieldsGroupName = $this->getOrRelatedFieldsGroup($fieldsGroupName);
+		$fieldsGroup = $this->getTableFieldsGroups([$fieldsGroupName]);
+
+		$this->table = Datatables::create(
+			$tableName,
+			$fieldsGroup,
+			function() use($elements)
+			{
+				return $elements;
+			}
+		);
+
+		$this->table->setArrayTable();
+		$this->table->setPageLength(10);
+
+		return $this->table->renderPortion();
 	}
 
 	public function getIndexFieldsGroups()
