@@ -25,7 +25,7 @@ trait CRUDBelongsToButtonsTrait
 		return trans(implode(".", [$fileName, $key]), compact('element'));
 	}
 
-	public function getCreateButton()
+	public function getCreateButton() : dgButton
 	{
 		$href = $this->getCreateButtonUrl();
 		$text = $this->getCreateButtonText();

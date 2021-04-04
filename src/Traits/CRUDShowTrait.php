@@ -11,7 +11,6 @@ trait CRUDShowTrait
 	//edit parameters
 	public $showView;
 	public $standardShowView = 'crud::uikit.show';
-
 	public $showButtons = [];
 
 	/**
@@ -68,9 +67,16 @@ trait CRUDShowTrait
 		$this->buildEditableRelationshipsButtons();
 	}
 
+	public function getExtendedShowButtons()
+	{
+		
+	}
+
 	public function shareShowButtons()
 	{
 		$this->setShowButtons();
+
+		$this->getExtendedShowButtons();
 
 		if(count($this->showButtons))
 			view()->share('showButtons', $this->showButtons);

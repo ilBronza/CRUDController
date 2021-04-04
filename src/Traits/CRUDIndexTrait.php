@@ -79,7 +79,7 @@ trait CRUDIndexTrait
     }
 
 	public function _index(Request $request)
-	{
+	{	
 		$this->table = Datatables::create(
 			$this->getTableName(),
 			$this->getTableFieldsGroups($this->getIndexFieldsGroups()),

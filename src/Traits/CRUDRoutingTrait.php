@@ -30,8 +30,11 @@ trait CRUDRoutingTrait
 	public function getRouteUrlByType(string $type)
 	{
 		$actionString = $this->getRouteNameByType($type);
+
 		$parameters = $this->getRouteParametersByType($type);
 
+		//return ('contacts.create', []);
+		//return ('contacts.edit', [$contact]);
 		return route($actionString, $parameters);
 	}
 

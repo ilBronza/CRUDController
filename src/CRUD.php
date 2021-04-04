@@ -83,7 +83,7 @@ class CRUD extends Controller
 	{
 		return (Str::plural(
 			Str::camel(
-				$this->getModelClassBasename()
+				class_basename($modelInstance)
 			)
 		));
 	}

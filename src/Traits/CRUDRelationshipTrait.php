@@ -2,6 +2,7 @@
 
 namespace ilBronza\CRUD\Traits;
 
+use IlBronza\Button\Button;
 use Illuminate\Support\Str;
 
 trait CRUDRelationshipTrait
@@ -128,7 +129,7 @@ trait CRUDRelationshipTrait
 		$text = $this->getCreateRelationshipsButtonLabel($relationship);
 		$icon = $this->getCreateRelationshipsButtonIcon($relationship);
 
-		return new \dgButton($url, $text, $icon);
+		return new Button($url, $text, $icon);
 	}
 
 	public function buildEditableRelationshipsButtons()

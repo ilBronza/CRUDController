@@ -12,6 +12,17 @@ class BelongsToCRUDController extends CRUD
 	use CRUDBelongsToButtonsTrait;
 	use CRUDBelongsToRoutingTrait;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->parentModel = $this->parentModelClass::findOrFail(
+            Route::current()->parameter(
+            	Str::camel(class_basename($this->parentModelClass))
+            )
+        );
+    }
+
 	public function getParentModelFullClassName()
 	{
 		return '\App\\' . $this->parentModelClass;

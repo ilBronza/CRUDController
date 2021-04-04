@@ -47,6 +47,14 @@ trait CRUDRelationshipModelTrait
      **/
     public function getRelationshipPossibleValuesArray(string $relationship)
     {
+        if($relationship == 'parent')
+        {
+            if(! isset($this->parentingTrait))
+                throw new \Exception('Aggiungere ParentingTrait al model ' . class_basename($this));
+
+            return $this->getParentPossibleValuesArray();
+        }
+
         $getterMethodName = 'getPossible' . ucfirst(Str::plural($relationship)) . 'ValuesArray';
 
         if(method_exists($this, $getterMethodName))

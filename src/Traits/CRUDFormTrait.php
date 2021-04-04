@@ -77,6 +77,7 @@ trait CRUDFormTrait
 
 		$getterMethod = 'get' . $actions[$type] . 'ModelAction';
 
+		//return $this->getStoreModelAction()
 		return $this->$getterMethod();
 	}
 
@@ -310,6 +311,7 @@ trait CRUDFormTrait
 			foreach($fields as $fieldName => $fieldContent)
 			{
 				$_parameters = $this->getFieldParameters($fieldName, $fieldContent);
+
 				$formField = FormField::createFromArray($_parameters);
 
 				if(isset($parameters[$fieldName]))

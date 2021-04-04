@@ -65,24 +65,27 @@ trait CRUDShowRelationshipsTrait
 
 	private function shareRelationships()
 	{
+		// ['account', 'roles', 'permissions', 'images']
 		$relationships = $this->getShowRelationships();
 
+		// $user->load(['account', 'roles', 'permissions', 'images'])
 		$this->modelInstance->load($relationships);
 
 		$this->relationshipsTableNames = [];
 		$this->relationshipsElements = [];
 
+		//['account', 'roles', 'permissions', 'images']
 		foreach($relationships as $name)
 		{
-			$related = $this->modelInstance->{$name};
+			$relatedElements = $this->modelInstance->{$name};
 
-			if(! $related)
+			if(! $relatedElements)
 				continue;
 
-			if($this->relationNeedsTable($related))
-				$this->addRelationshipTable($related, $name);
+			if($this->relationNeedsTable($relatedElements))
+				$this->addRelationshipTable($relatedElements, $name);
 			else
-				$this->addRelationshipElement($related, $name);
+				$this->addRelationshipElement($relatedElements, $name);
 		}
 
 		view()->share('relationshipsElements', $this->relationshipsElements);
