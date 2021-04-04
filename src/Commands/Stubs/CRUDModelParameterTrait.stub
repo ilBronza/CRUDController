@@ -79,7 +79,7 @@ trait CRUD{{ model }}ParametersTrait
         'onlyCreate' => [
             'default' => [
             ]
-        ],
         **/
+        ],
     ];    
 }

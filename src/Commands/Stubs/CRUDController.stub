@@ -4,7 +4,7 @@ namespace {{ namespace }};
 
 use App\Http\Controllers\CRUDTraits\CRUD{{ model }}ParametersTrait;
 
-use App\{{ model }};
+use App\Models\{{ model }};
 use Illuminate\Http\Request;
 use ilBronza\CRUD\CRUD;
 
@@ -41,7 +41,7 @@ class {{ class }} extends CRUD
     /**
      * subject model class full path
      **/
-    public $modelClass = '\App\{{ model }}';
+    public $modelClass = '\App\Models\{{ model }}';
 
     /**
      * http methods allowed. remove non existing methods to get a 403 when called by routes
@@ -56,6 +56,11 @@ class {{ class }} extends CRUD
         'destroy'
     ];
 
+    /**
+     * to override show view use full view name
+     **/
+    //public $showView = 'products.showPartial';
+
     // public $guardedEditDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
     // public $guardedCreateDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
     // public $guardedShowDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
@@ -64,6 +69,13 @@ class {{ class }} extends CRUD
      * relations called to be automatically shown on 'show' method
      **/
     //public $showMethodRelationships = ['posts', 'users', 'operations'];
+
+    /**
+        protected $relationshipsControllers = [
+        'permissions' => '\IlBronza\AccountManager\Http\Controllers\PermissionController'
+    ];
+    **/
+
 
     /**
      * getter method for 'index' method.
@@ -108,4 +120,21 @@ class {{ class }} extends CRUD
      * END base methods
      **/
 
+
+
+
+     /**
+      * START CREATE PARAMETERS AND METHODS
+      **/
+
+    // public function beforeRenderCreate()
+    // {
+    //     $this->modelInstance->agent_id = session('agent')->getKey();
+    // }
+
+     /**
+      * STOP CREATE PARAMETERS AND METHODS
+      **/
+
 }
+

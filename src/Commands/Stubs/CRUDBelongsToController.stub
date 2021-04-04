@@ -4,8 +4,8 @@ namespace {{ namespace }};
 
 use App\Http\Controllers\CRUDTraits\CRUD{{ model }}ParametersTrait;
 
-use App\{{ model }};
-use App\{{ parentmodel }};
+use App\Models\{{ model }};
+use App\Models\{{ parentmodel }};
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -37,11 +37,15 @@ class {{ class }} extends BelongsToCRUDController
     use CRUDRelationshipTrait;
     use CRUDBelongsToManyTrait;
 
-    public $parentModel;
-    public $parentModelClass = '{{ parentmodel }}';
-    public $modelClass = '\App\{{ model }}';
+    public $parentModelClass = '\App\Models\{{ parentmodel }}';
+    public $modelClass = '\App\Models\{{ model }}';
 
     public $allowedMethods = ['index', 'show', 'edit', 'update', 'create', 'store', 'delete'];
+
+
+    //this is needed to override routename ex contacts.buildings.store => buildings.store
+    // public $routeBaseNamePieces = ['buildings'];
+
 
     // public $guardedEditDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
     // public $guardedCreateDBFields = ['id', 'created_at', 'updated_at', 'deleted_at'];
