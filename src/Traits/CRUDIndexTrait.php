@@ -58,6 +58,9 @@ trait CRUDIndexTrait
 		if(! $this->userCanCreate())
 			return ;
 
+		if($this->avoidCreateButton ?? false)
+			return ;
+
 		$createButton = $this->getCreateButton();
 
 		$this->table->addButton($createButton);
