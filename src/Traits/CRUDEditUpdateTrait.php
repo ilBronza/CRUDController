@@ -148,6 +148,24 @@ trait CRUDEditUpdateTrait
 		return url()->previous();
 	}
 
+	public function parseUniqueRules(array $rules) : array
+	{
+		foreach($rules as $field => $rule)
+		{
+			if(is_string($rule))
+				$rule = explode("|", $rule);
+
+			foreach($rule as $index => $_rule)
+				if(strpos($_rule, "unique:") !== false)
+				{
+					$rule[$index] = implode(",", [$rule[$index], $this->modelInstance->getKeyName(), $this->modelInstance->getKey()]);
+					$rules[$field] = $rule;
+				}
+		}
+
+		return $rules;
+	}
+
 	/**
 	 * get update validation array
 	 *
@@ -155,7 +173,9 @@ trait CRUDEditUpdateTrait
 	 **/
 	public function getUpdateValidationArray()
 	{
-		return $this->getValidationArrayByType('update');
+		$result = $this->getValidationArrayByType('update');
+
+		return $this->parseUniqueRules($result);
 	}
 
 	/**
