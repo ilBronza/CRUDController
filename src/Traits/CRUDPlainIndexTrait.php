@@ -3,7 +3,6 @@
 namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
-use \newdatatable;
 
 trait CRUDPlainIndexTrait
 {

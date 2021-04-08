@@ -12,6 +12,7 @@ trait CRUD{{ model }}ParametersTrait
             /**
                 'mySelfPrimary' => 'primary',
                 'mySelfEdit' => 'links.edit',
+                'mySelfSee' => 'links.see',
                 'mySelfSee' => [
                     'type' => 'links.see',
                     'textParameter' => false
@@ -21,7 +22,6 @@ trait CRUD{{ model }}ParametersTrait
                     ],
                 ],
                 'rag_soc' => 'flat',
-                'destination' => 'flat',
                 'somet_text' => 'editor.text',
                 'second_color' => 'editor.color',
                 'supplier' => 'relations.belongsTo',

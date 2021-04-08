@@ -24,7 +24,7 @@ trait CRUDDbFieldsTrait
 		$this->getFieldKeyFromDBField($field);
 
 		return [
-			$fieldType => $validationPieces
+			$fieldType => implode("|", $validationPieces)
 		];
 	}
 
