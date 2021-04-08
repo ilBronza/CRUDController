@@ -25,8 +25,8 @@ trait CRUDMiddlewareOwninglTrait
 
     public function checkSpecificOwningMethod($element, string $modelClass, string $modelVariableName, string $permission)
     {
-        if(! $element->hasOwnership())
-            return true;
+        // if(! $element->hasOwnership())
+        //     return true;
 
         $methodName = 'owns'. ucfirst($modelVariableName);
 
@@ -44,6 +44,9 @@ trait CRUDMiddlewareOwninglTrait
         $this->user = Auth::user();
 
         if($this->user->hasRole('superadmin'))
+            return $next($request);
+
+        if($this->user->hasRole('administrator'))
             return $next($request);
 
         if(! $this->user->can($permissionName))

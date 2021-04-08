@@ -16,11 +16,18 @@ class BelongsToCRUDController extends CRUD
     {
         parent::__construct();
 
-        $this->parentModel = $this->parentModelClass::findOrFail(
-            Route::current()->parameter(
-            	Str::camel(class_basename($this->parentModelClass))
-            )
-        );
+        $this->middleware(function ($request, $next)
+        {
+        	if(! $parentKey = Route::current()->parameter('parent'))
+        		$parentKey = Route::current()->parameter(
+        			Str::camel(class_basename($this->parentModelClass))
+        		);
+
+			$this->parentModel = $this->parentModelClass::findOrFail($parentKey);
+
+            return $next($request);
+        });
+
     }
 
 	public function getParentModelFullClassName()
@@ -42,6 +49,9 @@ class BelongsToCRUDController extends CRUD
 
 	public function getParentModelKey()
 	{
+		if(isset($this->parentModelKey))
+			return $this->parentModelKey;
+
 		$kebabRelation = Str::slug(Str::kebab(class_basename($this->parentModel)), '_');
 
 		return $kebabRelation . '_id';

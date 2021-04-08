@@ -13,10 +13,13 @@ trait CRUDModelTrait
 {
     use CRUDDeleterTrait;
 
-    public function hasOwnership()
-    {
-        return $this->hasOwnership;
-    }
+    // public function hasOwnership()
+    // {
+    //     if(isset($this->hasOwnership))
+    //         return $this->hasOwnership;
+
+    //     return true;
+    // }
 
     public function getOwningMethod(Model $model)
     {

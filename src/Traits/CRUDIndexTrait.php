@@ -55,8 +55,15 @@ trait CRUDIndexTrait
 
     private function manageCreateButton()
     {
-		if(! $this->userCanCreate())
-			return ;
+    	try
+    	{
+			if(! $this->userCanCreate())
+				return ;    		
+    	}
+    	catch(\Exception $e)
+    	{
+    		throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass);
+    	}
 
 		if($this->avoidCreateButton ?? false)
 			return ;
@@ -66,15 +73,14 @@ trait CRUDIndexTrait
 		$this->table->addButton($createButton);
     }
 
-    public function getIndexButtons()
-    {
-    	return $this->indexButtons ?? [];
-    }
-
     private function addIndexButtonsToTable()
     {
     	$this->manageCreateButton();
+
+    	$this->addIndexButtons();
     }
+
+    public function addIndexButtons() { }
 
     private function getTableName()
     {

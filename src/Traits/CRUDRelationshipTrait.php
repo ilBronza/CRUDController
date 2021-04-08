@@ -135,7 +135,6 @@ trait CRUDRelationshipTrait
 	public function buildEditableRelationshipsButtons()
 	{
 		foreach($this->getEditableRelationships() as $relationship)
-
 			if($button = $this->getRelationshipButton($relationship))
 				$this->showButtons[] = $button;
 	}
