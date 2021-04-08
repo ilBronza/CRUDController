@@ -1,10 +1,10 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use ilBronza\Form\Facades\Form;
+use IlBronza\Form\Facades\Form;
 
 trait CRUDUpdateEditorTrait
 {

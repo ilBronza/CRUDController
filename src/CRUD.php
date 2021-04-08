@@ -1,12 +1,12 @@
 <?php
 
-namespace ilBronza\CRUD;
+namespace IlBronza\CRUD;
 
 use App\Providers\Helpers\dgButton;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
-use ilBronza\CRUD\Traits\CRUDMethodsTrait;
-use ilBronza\CRUD\Traits\CRUDRoutingTrait;
+use IlBronza\CRUD\Traits\CRUDMethodsTrait;
+use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 
 class CRUD extends Controller
 {
@@ -16,7 +16,7 @@ class CRUD extends Controller
 	//general parameters
 	public $modelClass;
 	public $allowedMethods;
-	public $neededTraits = ['ilBronza\CRUD\Traits\Model\CRUDModelTrait'];
+	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 
 	// index parameters

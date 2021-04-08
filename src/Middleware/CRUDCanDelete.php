@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Middleware;
+namespace IlBronza\CRUD\Middleware;
 
 /**
  * if user cant delete anything abort
@@ -12,7 +12,7 @@ namespace ilBronza\CRUD\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use ilBronza\CRUD\Traits\Middleware\CRUDMiddlewareOwninglTrait;
+use IlBronza\CRUD\Traits\Middleware\CRUDMiddlewareOwninglTrait;
 
 class CRUDCanDelete
 {

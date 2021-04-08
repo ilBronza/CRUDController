@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use App\Providers\Helpers\dgButton;
 

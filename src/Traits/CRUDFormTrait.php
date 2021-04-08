@@ -1,13 +1,13 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
-use ilBronza\CRUD\Traits\CRUDArrayFieldsTrait;
-use ilBronza\CRUD\Traits\CRUDDbFieldsTrait;
-use ilBronza\FormField\Facades\FormField;
-use ilBronza\FormField\Fields\JsonFormField;
-use ilBronza\Form\Form;
+use IlBronza\CRUD\Traits\CRUDArrayFieldsTrait;
+use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
+use IlBronza\FormField\Facades\FormField;
+use IlBronza\FormField\Fields\JsonFormField;
+use IlBronza\Form\Form;
 
 
 /**

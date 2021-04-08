@@ -1,8 +1,8 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
-use ilBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
+use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
 
 trait CRUDShowTrait
 {

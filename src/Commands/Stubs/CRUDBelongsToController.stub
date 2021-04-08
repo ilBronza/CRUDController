@@ -9,18 +9,18 @@ use App\Models\{{ parentmodel }};
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use ilBronza\CRUD\BelongsToCRUDController;
+use IlBronza\CRUD\BelongsToCRUDController;
 
-use ilBronza\CRUD\Traits\CRUDBelongsToManyTrait;
-use ilBronza\CRUD\Traits\CRUDRelationshipTrait;
+use IlBronza\CRUD\Traits\CRUDBelongsToManyTrait;
+use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
 
-use ilBronza\CRUD\Traits\CRUDCreateStoreTrait;
-use ilBronza\CRUD\Traits\CRUDEditUpdateTrait;
-use ilBronza\CRUD\Traits\CRUDIndexTrait;
-use ilBronza\CRUD\Traits\CRUDShowTrait;
+use IlBronza\CRUD\Traits\CRUDCreateStoreTrait;
+use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
+use IlBronza\CRUD\Traits\CRUDIndexTrait;
+use IlBronza\CRUD\Traits\CRUDShowTrait;
 
-use ilBronza\CRUD\Traits\CRUDDeleteTrait;
-use ilBronza\CRUD\Traits\CRUDDestroyTrait;
+use IlBronza\CRUD\Traits\CRUDDeleteTrait;
+use IlBronza\CRUD\Traits\CRUDDestroyTrait;
 
 class {{ class }} extends BelongsToCRUDController
 {

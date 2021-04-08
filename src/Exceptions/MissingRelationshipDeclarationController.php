@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Exceptions;
+namespace IlBronza\CRUD\Exceptions;
 
 use Exception;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace ilBronza\CRUD;
+namespace IlBronza\CRUD;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use ilBronza\CRUD\Traits\CRUDBelongsToButtonsTrait;
-use ilBronza\CRUD\Traits\CRUDBelongsToRoutingTrait;
+use IlBronza\CRUD\Traits\CRUDBelongsToButtonsTrait;
+use IlBronza\CRUD\Traits\CRUDBelongsToRoutingTrait;
 
 class BelongsToCRUDController extends CRUD
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Commands;
+namespace IlBronza\CRUD\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;

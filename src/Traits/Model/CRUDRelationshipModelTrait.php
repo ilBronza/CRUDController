@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Traits\Model;
+namespace IlBronza\CRUD\Traits\Model;
 
 use Auth;
 use App\Models\User;

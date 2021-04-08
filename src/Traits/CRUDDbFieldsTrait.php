@@ -1,10 +1,10 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Support\Facades\DB;
-use ilBronza\FormField\Facades\FormField;
-use ilBronza\Form\Facades\Form;
+use IlBronza\FormField\Facades\FormField;
+use IlBronza\Form\Facades\Form;
 
 trait CRUDDbFieldsTrait
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace ilBronza\CRUD\Traits\Model;
+namespace IlBronza\CRUD\Traits\Model;
 
 use App\Providers\Helpers\dgButton;
 use App\Models\User;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use ilBronza\CRUD\Traits\Model\CRUDDeleterTrait;
+use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 
 trait CRUDModelTrait
 {

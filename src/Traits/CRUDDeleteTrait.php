@@ -1,10 +1,10 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
 use Auth;
-use ilBronza\Form\Facades\Form;
+use IlBronza\Form\Facades\Form;
 
 trait CRUDDeleteTrait
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use \minitable;
-use ilBronza\CRUD\Exceptions\MissingRelationshipDeclarationController;
+use IlBronza\CRUD\Exceptions\MissingRelationshipDeclarationController;
 
 trait CRUDShowRelationshipsTrait
 {

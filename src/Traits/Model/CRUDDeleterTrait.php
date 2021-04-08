@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Traits\Model;
+namespace IlBronza\CRUD\Traits\Model;
 
 trait CRUDDeleterTrait
 {
@@ -16,7 +16,7 @@ trait CRUDDeleterTrait
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
-                if(in_array('ilBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                if(in_array('IlBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
                     $element->deleterDelete();
                 else
                     $element->delete();
@@ -37,7 +37,7 @@ trait CRUDDeleterTrait
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
-                if(in_array('ilBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                if(in_array('IlBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
                     $element->deleterForceDelete();
 
                 elseif(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($element)))

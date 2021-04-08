@@ -1,9 +1,9 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
-use ilBronza\CRUD\Traits\CRUDDbFieldsTrait;
-use ilBronza\Form\Facades\Form;
+use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
+use IlBronza\Form\Facades\Form;
 
 trait CRUDValidateTrait
 {

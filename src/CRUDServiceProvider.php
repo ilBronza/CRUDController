@@ -1,16 +1,16 @@
 <?php
 
-namespace ilBronza\CRUD;
+namespace IlBronza\CRUD;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
-use ilBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
-use ilBronza\CRUD\Commands\CrudBelongsToController;
-use ilBronza\CRUD\Commands\CrudController;
-use ilBronza\CRUD\Middleware\CRUDAllowedMethods;
-use ilBronza\CRUD\Middleware\CRUDCanDelete;
-use ilBronza\CRUD\Middleware\CRUDUserAllowedMethod;
+use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
+use IlBronza\CRUD\Commands\CrudBelongsToController;
+use IlBronza\CRUD\Commands\CrudController;
+use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
+use IlBronza\CRUD\Middleware\CRUDCanDelete;
+use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 
 class CRUDServiceProvider extends ServiceProvider
 {

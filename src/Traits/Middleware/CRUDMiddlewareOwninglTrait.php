@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Traits\Middleware;
+namespace IlBronza\CRUD\Traits\Middleware;
 
 use App\Permission;
 use Closure;

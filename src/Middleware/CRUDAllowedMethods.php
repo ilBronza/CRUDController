@@ -1,6 +1,6 @@
 <?php
 
-namespace ilBronza\CRUD\Middleware;
+namespace IlBronza\CRUD\Middleware;
 
 use Illuminate\Support\Facades\Route;
 use Closure;

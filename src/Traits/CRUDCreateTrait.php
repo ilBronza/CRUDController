@@ -1,9 +1,9 @@
 <?php
 
-namespace ilBronza\CRUD\Traits;
+namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
-use ilBronza\Form\Facades\Form;
+use IlBronza\Form\Facades\Form;
 
 trait CRUDCreateTrait
 {

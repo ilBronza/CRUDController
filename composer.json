@@ -17,21 +17,21 @@
     },
     "autoload": {
         "psr-4": {
-            "ilBronza\\CRUD\\": "src/"
+            "IlBronza\\CRUD\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ilBronza\\CRUD\\Tests\\": "tests"
+            "IlBronza\\CRUD\\Tests\\": "tests"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "ilBronza\\CRUD\\CRUDServiceProvider"
+                "IlBronza\\CRUD\\CRUDServiceProvider"
             ],
             "aliases": {
-                "CRUD": "ilBronza\\CRUD\\Facades\\CRUD"
+                "CRUD": "IlBronza\\CRUD\\Facades\\CRUD"
             }
         }
     }

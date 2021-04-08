@@ -6,20 +6,20 @@ use App\Http\Controllers\CRUDTraits\CRUD{{ model }}ParametersTrait;
 
 use App\Models\{{ model }};
 use Illuminate\Http\Request;
-use ilBronza\CRUD\CRUD;
+use IlBronza\CRUD\CRUD;
 
-use ilBronza\CRUD\Traits\CRUDBelongsToManyTrait;
-use ilBronza\CRUD\Traits\CRUDRelationshipTrait;
+use IlBronza\CRUD\Traits\CRUDBelongsToManyTrait;
+use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
 
-use ilBronza\CRUD\Traits\CRUDCreateStoreTrait;
-use ilBronza\CRUD\Traits\CRUDEditUpdateTrait;
-use ilBronza\CRUD\Traits\CRUDUpdateEditorTrait;
-use ilBronza\CRUD\Traits\CRUDIndexTrait;
-use ilBronza\CRUD\Traits\CRUDPlainIndexTrait;
-use ilBronza\CRUD\Traits\CRUDShowTrait;
+use IlBronza\CRUD\Traits\CRUDCreateStoreTrait;
+use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
+use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
+use IlBronza\CRUD\Traits\CRUDIndexTrait;
+use IlBronza\CRUD\Traits\CRUDPlainIndexTrait;
+use IlBronza\CRUD\Traits\CRUDShowTrait;
 
-use ilBronza\CRUD\Traits\CRUDDeleteTrait;
-use ilBronza\CRUD\Traits\CRUDDestroyTrait;
+use IlBronza\CRUD\Traits\CRUDDeleteTrait;
+use IlBronza\CRUD\Traits\CRUDDestroyTrait;
 
 class {{ class }} extends CRUD
 {
