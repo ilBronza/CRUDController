@@ -2,10 +2,11 @@
 
 namespace IlBronza\CRUD;
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 use IlBronza\CRUD\Traits\CRUDBelongsToButtonsTrait;
 use IlBronza\CRUD\Traits\CRUDBelongsToRoutingTrait;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class BelongsToCRUDController extends CRUD
 {
@@ -18,14 +19,18 @@ class BelongsToCRUDController extends CRUD
 
         $this->middleware(function ($request, $next)
         {
-        	if(! $parentKey = Route::current()->parameter('parent'))
-        		$parentKey = Route::current()->parameter(
-        			Str::camel(class_basename($this->parentModelClass))
-        		);
+			if(! $parentKey = Route::current()->parameter('parent'))
+				$parentKey = Route::current()->parameter(
+					Str::camel(class_basename($this->parentModelClass))
+				);
 
-			$this->parentModel = $this->parentModelClass::findOrFail($parentKey);
+			if($parentKey instanceof $this->parentModelClass)
+				$this->parentModel = $parentKey;
 
-            return $next($request);
+			else
+				$this->parentModel = $this->parentModelClass::findOrFail($parentKey);
+
+			return $next($request);
         });
 
     }
