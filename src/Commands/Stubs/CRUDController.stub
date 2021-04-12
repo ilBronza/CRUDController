@@ -41,7 +41,7 @@ class {{ class }} extends CRUD
     /**
      * subject model class full path
      **/
-    public $modelClass = '\App\Models\{{ model }}';
+    public $modelClass = {{ model }}::class;
 
     /**
      * http methods allowed. remove non existing methods to get a 403 when called by routes

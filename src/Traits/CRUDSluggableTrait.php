@@ -12,14 +12,14 @@ trait CRUDSluggableTrait
 		parent::boot();
 
 		static::saving(function ($model) {
-			if($model->slug)
-				return ;
+			if(! $slug = $model->slug)
+				$slug = $model->getName();
 
-			$slug = Str::slug($model->getName());
+			$slug = Str::slug($slug);
 
 			$existingsSlugs = DB::table((new self())->getTable())
 					->select('slug')
-					->where($model->getKeyName, '!=', $model->getKey())
+					->where($model->getKeyName(), '!=', $model->getKey())
 					->where(function($query) use($slug)
 					{
 						$query->where('slug', $slug);

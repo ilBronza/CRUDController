@@ -4,7 +4,7 @@
 	</div>
 </div>
 
-@if ($element->children->count() > 0)
+@if ($element->children->count())
 <div class="group" uk-sortable="handle: .uk-sortable-handle; nestable: true; animation: 150; nestable-container-class: group">
 	@foreach($element->children as $_element)
         @include('crud::partials.element', ['element'=>$_element])

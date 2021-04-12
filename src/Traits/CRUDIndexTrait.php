@@ -87,16 +87,28 @@ trait CRUDIndexTrait
     	return Str::slug($this->getModelClassBasename());
     }
 
-	public function _index(Request $request)
+	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null)
 	{	
+		if(! $tableName)
+			$tableName = $this->getTableName();
+
+		if(! $fieldsGroupsNames)
+			$fieldsGroupsNames = $this->getIndexFieldsGroups();
+
 		$this->table = Datatables::create(
-			$this->getTableName(),
-			$this->getTableFieldsGroups($this->getIndexFieldsGroups()),
-			function()
+			$tableName,
+			$this->getTableFieldsGroups($fieldsGroupsNames),
+			function() use($elementsGetter)
 			{
+				if($elementsGetter)
+					return $elementsGetter();
+
 				return $this->getIndexElements();
 			}
 		);
+
+		if(isset($this->parentModel))
+			$this->table->addParentModel($this->parentModel);
 
 		$this->addIndexButtonsToTable();
 
