@@ -1,4 +1,4 @@
-<div class="uk-margin">
+<div class="uk-margin" id="element_{{ $element->id }}">
 	<div class="uk-card uk-card-default uk-card-body uk-card-small">
 	    <span class="uk-sortable-handle uk-margin-small-right" uk-icon="icon: table"></span> {{ $element->getName() }}
 	</div>

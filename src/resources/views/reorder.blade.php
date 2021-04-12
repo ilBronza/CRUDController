@@ -3,6 +3,7 @@
 <head>
 	<title></title>
 	<!-- UIkit CSS -->
+		<script src="/js/jquery.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.22/css/uikit.min.css" />
 
         <!-- UIkit JS -->
@@ -62,6 +63,21 @@
             });*/
 
         </script>
+        <script type="text/javascript">
+			var util = UIkit.util;
+            util.ready(function () {
+                util.on('#nestable', 'stop', function (e, sortable, el) {
+                	parent_id = $(el).parent().attr('id');
+                	if(parent_id != 'nestable'){
+						parent_id = $(el).parent().closest($("[id^='element_']")).attr('id');
+                	}
+                	console.log( parent_id );
+                	console.log( $(el).next('div')[0].innerHTML );
+                    // console.log(el);
+                    UIkit.notification(`"${el.id}" was moved.`, 'success');
+                });
+            });
+        </script>
 </head>
 <body>
 
@@ -77,7 +93,7 @@
         <h1>Nestable</h1>
 
         @if ($elements->count() > 0)
-		    <div class="PARENT" uk-sortable="handle: .uk-sortable-handle; nestable: true; animation: 150; nestable-container-class: group">
+		    <div id="nestable" class="PARENT" uk-sortable="handle: .uk-sortable-handle; nestable: true; animation: 150; nestable-container-class: group">
 		    @foreach ($elements as $element)
 		        @include('crud::partials.element', compact('element'))
 		    @endforeach
@@ -85,6 +101,8 @@
 		@else
 		    @include('crud::partials.elements-none')
 		@endif
+
+	</div>
 
 </body>
 </html>
