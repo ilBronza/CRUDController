@@ -136,6 +136,7 @@
 
             $('.dd').nestable({
                 /* config options */
+                maxDepth: 6,
 
                 callback: function(l,e){
                     // l is the main container
