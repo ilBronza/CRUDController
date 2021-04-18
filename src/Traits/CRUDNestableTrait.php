@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 trait CRUDNestableTrait
@@ -20,9 +21,18 @@ trait CRUDNestableTrait
     {
         $modelBasename = lcfirst((class_basename($this->modelClass)));
 
+        $routeModelBasename = Str::plural($modelBasename);
+
+        //categories.children.create, ['parent_id' => '%s']
+        $createChildUrl = route(
+            implode(".", [$routeModelBasename, 'children', 'create']),
+            ['parent' => '%s']
+        );
+
         $result = [
             'action' => $this->getRouteUrlByType('stroreReorder'),
             'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
+            'createChildUrl' => $createChildUrl,
             'rootUrl' => null,
             'parentUrl' => null
         ];
@@ -65,7 +75,7 @@ trait CRUDNestableTrait
 
         $maxDepth = $this->getMaxReorderDepth();
 
-        return view('crud::nestable.index', compact('modelInstance', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
+        return view('crud::nestable.index', compact('modelInstance', 'createChildUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
     }
 
     //https://stackoverflow.com/questions/2915748/convert-a-series-of-parent-child-relationships-into-a-hierarchical-tree
@@ -102,6 +112,7 @@ trait CRUDNestableTrait
                     $parentId = null;
 
                 $item = $this->modelClass::findOrFail($request->input('element_id'));
+
                 $item->parent_id = $parentId;
                 $item->save();
             }

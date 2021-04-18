@@ -103,8 +103,8 @@ trait CRUDRelationshipTrait
 		if($relationshipType == 'BelongsTo')
 			return $this->getBelongsToRelationshipButton($relationship);
 
-		if($relationshipType == 'BelongsToMany')
-			return $this->getBelongsToManyRelationshipButton($relationship);
+		if($relationshipType == 'MorphToMany')
+			return $this->getMorphToManyRelationshipButton($relationship);
 
 		mori('relationship button type: ' . $relationshipType);
 	}
@@ -116,8 +116,10 @@ trait CRUDRelationshipTrait
 
 	public function getCreateRelationshipsButtonLabel(string $relationship)
 	{
-		return __('crud::crud.create', [
-			'what' => __('crud::relationships.' . Str::camel($relationship))]
+		$baseModelClassname = Str::camel(class_basename($this->modelClass));
+
+		return __('crud::crud.add', [
+			'what' => __('crud::relationships.' . $baseModelClassname . Str::studly($relationship))]
 		);		
 	}
 

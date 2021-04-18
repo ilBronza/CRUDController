@@ -19,10 +19,12 @@ trait CRUDDeleterTrait
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
+            {
                 if(method_exists($element, 'deleterDelete'))
                     $element->deleterDelete();
                 else
                     $element->delete();
+            }
         }
 
         return $this->delete();

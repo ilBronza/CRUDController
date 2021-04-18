@@ -130,6 +130,11 @@ trait CRUDShowRelationshipsTrait
 		return false;
 	}
 
+	public function getMorphToManyRelationshipButton(string $relationship)
+	{
+		return false;		
+	}
+
 	public function getBelongsToManyRelationshipButton(string $relationship)
 	{
 		return false;

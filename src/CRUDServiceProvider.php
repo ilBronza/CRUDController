@@ -33,18 +33,18 @@ class CRUDServiceProvider extends ServiceProvider
             return "<?php
 
                 if(Route::has(($expression) . '.index')) 
-                    echo '<a href=\"' . route(($expression) . '.index') . '\">' . __('crud.relations_' . ($expression)) . '</a>';
+                    echo '<a href=\"' . route(($expression) . '.index') . '\">' . __('crud::crud.singleModel_' . ($expression)) . '</a>';
                 elseif(Route::has(Str::plural(($expression)) . '.index')) 
-                    echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crud.relations_' . ($expression)) . '</a>';
+                    echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crud::crud.singleModel_' . ($expression)) . '</a>';
                 elseif(is_object(($expression)))
                 {
                     if(method_exists(($expression), 'getIndexUrl'))
-                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crud.relations_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crud::crud.singleModel_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
                     else
-                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crud.relations_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crud::crud.singleModel_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
                 }
                 else
-                    echo __('crud.relations_' . ($expression));
+                    echo __('crud::crud.singleModel_' . ($expression));
                 ?>";
         });
 

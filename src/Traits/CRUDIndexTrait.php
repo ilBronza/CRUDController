@@ -139,6 +139,7 @@ trait CRUDIndexTrait
 
 		$this->table->setArrayTable();
 		$this->table->setPageLength(10);
+		$this->table->setMinimalDom();
 
 		return $this->table->renderPortion();
 	}

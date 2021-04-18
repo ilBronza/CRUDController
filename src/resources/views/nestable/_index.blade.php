@@ -16,7 +16,7 @@
     </div>
     <div class="uk-card-body">
         @if ($elements->count() > 0)
-            <div class="dd dd-item" data-id="0">
+            <div class="dd dd-item" data-id="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}">
                 <ol class="dd-list">
                 @foreach ($elements as $element)
                     @include('crud::nestable.element_nestable', compact('element'))
@@ -41,12 +41,15 @@
             let elementId = $(this).parent('.dd-item').data('id');
             let elementText = $(this).text();
 
-            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
+            $(this).append('<a class="createchild uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
+
+            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
         });
 
         $('body').on('mouseleave', '.dd-content', function()
         {
             $(this).find('a.sortby').remove();
+            $(this).find('a.createchild').remove();
         });
 
         $('#nestable-menu').on('click', function(e) {
@@ -87,7 +90,7 @@
                     });
                 }
 
-                $.post('{{ route('categories.stroreReorder') }}', {
+                $.post('{{ $action }}', {
                     element_id: id,
                     parent_id: parent_id,
                     siblings: JSON.stringify(siblings),

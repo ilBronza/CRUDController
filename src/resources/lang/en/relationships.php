@@ -2,6 +2,7 @@
 
 
 return [
-	'quantities' => 'quantities'
+	'quantities' => 'quantities',
+	'operatorChildren' => 'Operatori dipendenti',
 ];
 
