@@ -27,11 +27,14 @@ trait CRUDRoutingTrait
 		return $parameters;
 	}
 
-	public function getRouteUrlByType(string $type)
+	public function getRouteUrlByType(string $type, array $parameters = [])
 	{
 		$actionString = $this->getRouteNameByType($type);
 
-		$parameters = $this->getRouteParametersByType($type);
+		$parameters = array_merge(
+			$parameters,
+			$this->getRouteParametersByType($type)
+		);
 
 		//return ('contacts.create', []);
 		//return ('contacts.edit', [$contact]);
