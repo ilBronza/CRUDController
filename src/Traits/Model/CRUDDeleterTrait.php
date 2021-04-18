@@ -11,15 +11,15 @@ trait CRUDDeleterTrait
 
         foreach($this->deletingRelationships as $relationship)
         {
-            $thing = $this->$relationship()->make();
-
             $elements = $this->$relationship();
 
+            //check if needed withTrashed method
+            $thing = $this->$relationship()->make();
             if(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($thing)))
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
-                if(in_array('IlBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                if(method_exists($element, 'deleterDelete'))
                     $element->deleterDelete();
                 else
                     $element->delete();
