@@ -306,6 +306,8 @@ trait CRUDFormTrait
 	{
 		$fieldsets = $this->getFormFieldsetsByType($type);
 
+		$confirmations = [];
+
 		foreach($fieldsets as $fieldset)
 		{
 			$fields = $this->getFieldsetFields($fieldset);
@@ -313,6 +315,12 @@ trait CRUDFormTrait
 			foreach($fields as $fieldName => $fieldContent)
 			{
 				$_parameters = $this->getFieldParameters($fieldName, $fieldContent);
+
+				// if(isset($_parameters['rules']['']))
+				// if($_parameters['name'] == 'password_confirmation')
+
+				if(isset($_parameters['rules']['confirmed']))
+					$confirmations[$_parameters['name'] . '_confirmation'] = true;
 
 				$formField = FormField::createFromArray($_parameters);
 
@@ -326,6 +334,6 @@ trait CRUDFormTrait
 			}
 		}
 
-		return $parameters;
+		return array_diff_key($parameters, $confirmations);
 	}
 }

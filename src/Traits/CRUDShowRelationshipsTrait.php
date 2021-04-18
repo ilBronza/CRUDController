@@ -37,10 +37,6 @@ trait CRUDShowRelationshipsTrait
 
 		$controllerName = $this->getRelationControllerName($name);
 
-		// $minitable = new minitable($name, class_basename($elements->first()), ['elements'], null, $related, $controllerName);
-
-		// $this->relationshipsTableNames[$name] = $minitable;
-
 		$fieldsGroup = Str::camel(class_basename($this->modelClass));
 
 		$this->relationshipsTableNames[$name] = app($controllerName)->getIndependentTable($elements, $fieldsGroup);
