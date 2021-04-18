@@ -41,21 +41,6 @@ trait CRUDModelTrait
         return false;
     }
 
-    public function getDestroyUrl()
-    {
-        return route(
-            static::getPluralCamelcaseClassBasename() . '.forceDelete', [$this]
-        );        
-    }
-
-    public function getDeleteUrl(array $data = [])
-    {
-        return route(
-            static::getPluralCamelcaseClassBasename() . '.destroy',
-            [$this]
-        );
-    }
-
     public static function getPluralCamelcaseClassBasename()
     {
         return Str::plural(lcfirst(class_basename(static::class)));
@@ -77,6 +62,9 @@ trait CRUDModelTrait
 	{
         $className = lcfirst(class_basename($this));
 
+        if(class_basename($this) == 'Filecabinetrow')
+            mori($this);
+
         return route(Str::plural($className) . '.' . $action, [$className => $this->getKey()], $data);
 	}
 
@@ -88,6 +76,16 @@ trait CRUDModelTrait
     public function getEditUrl(array $data = [])
     {
     	return $this->getKeyedRoute('edit', $data);
+    }
+
+    public function getDestroyUrl()
+    {
+        return $this->getKeyedRoute('forceDelete', $data);
+    }
+
+    public function getDeleteUrl(array $data = [])
+    {
+        return $this->getKeyedRoute('destroy', $data);
     }
 
     public function getName()
