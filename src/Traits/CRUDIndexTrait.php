@@ -68,7 +68,7 @@ trait CRUDIndexTrait
 		if($this->avoidCreateButton ?? false)
 			return ;
 
-		$createButton = $this->getCreateButton();
+		$createButton = $this->getCreateNewModelButton();
 
 		$this->table->addButton($createButton);
     }
@@ -106,6 +106,8 @@ trait CRUDIndexTrait
 				return $this->getIndexElements();
 			}
 		);
+
+		$this->table->addBaseModelClass($this->modelClass);
 
 		if(isset($this->parentModel))
 			$this->table->addParentModel($this->parentModel);
