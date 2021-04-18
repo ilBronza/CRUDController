@@ -6,6 +6,9 @@ trait CRUDDeleterTrait
 {
     public function deleterDelete()
     {
+        if(! isset($this->deletingRelationships))
+            throw new \Exception('Dichiara i campi deletingRelationships nel model ' . class_basename($this));
+
         foreach($this->deletingRelationships as $relationship)
         {
             $thing = $this->$relationship()->make();
@@ -27,6 +30,9 @@ trait CRUDDeleterTrait
 
     public function deleterForceDelete()
     {
+        if(! isset($this->deletingRelationships))
+            throw new \Exception('Dichiara i campi deletingRelationships nel model ' . class_basename($this));
+
         foreach($this->deletingRelationships as $relationship)
         {
             $thing = $this->$relationship()->make();
