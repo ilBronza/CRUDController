@@ -95,6 +95,9 @@ class CRUD extends Controller
 	 */
 	public function getCreateNewModelButton() : dgButton
 	{
+		if(isset($this->parentModel))
+			return $this->modelClass::getCreateChildButton($this->parentModel);
+
 		return $this->modelClass::getCreateButton();
 	}
 

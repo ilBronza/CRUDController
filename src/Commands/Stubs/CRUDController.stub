@@ -84,10 +84,24 @@ class {{ class }} extends CRUD
      *
      * @return Collection
      **/
-    public function getIndexElements()
-    {
-        return {{ model }}::all();
-    }
+     /*
+        public function getIndexElements()
+        {
+            return {{ model }}::all();
+        }
+    */
+
+    /**
+     * parameter that decides which fields to use inside index table
+     **/
+    //  public $indexFieldsGroups = ['index'];
+
+    /**
+     * parameter that decides if create button is available
+     **/
+    //  public $avoidCreateButton = true;
+
+
 
     /**
      * START base methods declared in extended controller to correctly perform dependency injection

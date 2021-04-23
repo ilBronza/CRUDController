@@ -58,6 +58,25 @@ trait CRUDModelTrait
         return new dgButton($href, $text, 'plus');
     }
 
+    static function getCreateChildButton(Model $model)
+    {
+        $singularCamelModel = Str::camel(class_basename($model));
+        $pluralRouteModel = Str::plural($singularCamelModel);
+
+        $href = route(
+            implode(".", [
+                $pluralRouteModel,
+                static::getPluralCamelcaseClassBasename(),
+                'create'
+            ]),
+            [$singularCamelModel => $model->getKey()]
+        );
+
+        $text = trans('generals.create' . class_basename(static::class));
+
+        return new dgButton($href, $text, 'plus');
+    }
+
 	private function getKeyedRoute(string $action, array $data)
 	{
         $className = lcfirst(class_basename($this));
