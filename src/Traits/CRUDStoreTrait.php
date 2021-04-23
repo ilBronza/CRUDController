@@ -46,7 +46,7 @@ trait CRUDStoreTrait
 	 * @param array $parameters
 	 * @return boolean
 	 **/
-	public function storeModelInstance(array $parameters)
+	public function bindModelInstance(array $parameters)
 	{
 		$parameters = array_diff_key($parameters, $this->getRelationshipsFieldsByType('store'));
 
@@ -55,7 +55,8 @@ trait CRUDStoreTrait
 
 		$this->setBeforeStoreFields($parameters);
 
-		$this->modelInstance->save();
+		//removed becaus foreign keys not set jet, when not nullable a mysql error is returned
+		// $this->modelInstance->save();
 	}
 
 	/**
@@ -93,9 +94,8 @@ trait CRUDStoreTrait
 
 		$this->manageParentModelAssociation();
 
-		$this->storeModelInstance($parameters);
+		$this->bindModelInstance($parameters);
 
-		// $this->modelInstance->save();
 		$this->associateRelationshipsByType($parameters, 'store');
 
 		$this->modelInstance->save();
