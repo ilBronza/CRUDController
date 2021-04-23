@@ -87,6 +87,8 @@ trait CRUDIndexTrait
     	return Str::slug($this->getModelClassBasename());
     }
 
+    public function beforeRenderIndex() { }
+
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null)
 	{	
 		if(! $tableName)
@@ -113,6 +115,8 @@ trait CRUDIndexTrait
 			$this->table->addParentModel($this->parentModel);
 
 		$this->addIndexButtonsToTable();
+
+		$this->beforeRenderIndex();
 
 		return $this->table->renderPage();
 	}
