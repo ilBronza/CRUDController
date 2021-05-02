@@ -15,6 +15,7 @@ use IlBronza\CRUD\Traits\CRUDCreateStoreTrait;
 use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\CRUD\Traits\CRUDIndexTrait;
+use IlBronza\CRUD\Traits\CRUDNestableTrait;
 use IlBronza\CRUD\Traits\CRUDPlainIndexTrait;
 use IlBronza\CRUD\Traits\CRUDShowTrait;
 
@@ -38,13 +39,15 @@ class {{ class }} extends CRUD
     use CRUDRelationshipTrait;
     use CRUDBelongsToManyTrait;
 
+    use CRUDNestableTrait;
+
     /**
      * subject model class full path
      **/
     public $modelClass = {{ model }}::class;
 
     /**
-     * http methods allowed. remove non existing methods to get a 403 when called by routes
+     * http methods allowed. remove non existing methods to get a 403
      **/
     public $allowedMethods = [
         'index',
@@ -53,7 +56,11 @@ class {{ class }} extends CRUD
         'update',
         'create',
         'store',
-        'destroy'
+        'destroy',
+        'deleted',
+        'archived',
+        'reorder',
+        'stroreReorder'
     ];
 
     /**

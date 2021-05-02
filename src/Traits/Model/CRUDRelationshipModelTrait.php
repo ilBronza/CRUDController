@@ -102,4 +102,17 @@ trait CRUDRelationshipModelTrait
 
         return route(implode(".", $routePieces), [$this, $model]);
     }
+
+    /**
+     *
+     **/
+    public function getParentingAttributes()
+    {
+        $attributes = $this->getAttributes();
+
+        if(isset($this->teaserFields))
+            return array_intersect_key($attributes, array_flip($this->teaserFields));
+
+        return $attributes;
+    }
 }

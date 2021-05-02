@@ -119,7 +119,7 @@ trait CRUDRelationshipTrait
 		$baseModelClassname = Str::camel(class_basename($this->modelClass));
 
 		return __('crud::crud.add', [
-			'what' => __('crud::relationships.' . $baseModelClassname . Str::studly($relationship))]
+			'what' => __('crudModels.' . $baseModelClassname . Str::studly($relationship))]
 		);		
 	}
 

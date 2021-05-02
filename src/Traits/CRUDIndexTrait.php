@@ -118,6 +118,8 @@ trait CRUDIndexTrait
 
 		$this->beforeRenderIndex();
 
+		$this->shareExtraViews();
+
 		return $this->table->renderPage();
 	}
 

@@ -2,15 +2,21 @@
 
 namespace IlBronza\CRUD;
 
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\ServiceProvider;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
+use IlBronza\CRUD\ResourceRegistrar;
+use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+
 
 class CRUDServiceProvider extends ServiceProvider
 {
@@ -21,6 +27,69 @@ class CRUDServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        app()->bind(BaseResourceRegistrar::class, function () {
+            return new ResourceRegistrar(app()->make(Router::class));
+        });
+
+
+
+        /**
+         * child Resource for dependants models, 
+         * Route::childResource(array $models, string $controller, array $parameters);
+         *
+         * @param array $models => the model sequences to build the route and the names
+         * @param string $controller => the target controller to handle the requested urls,
+         * @param array $parameters => the parameters to be added to route methods can be: 
+         *              'childKey' as the model's key field to perform Dependency Injection and ownerships controls,
+         *              'middleware' as string or array to describes the middlewares to be called.
+         **/
+        Router::macro('childResource', function(array $models, string $controller, array $parameters = [])
+        {
+            $nameString = implode(".", $models);
+
+            $prefixPieces = [];
+
+            do
+            {
+                $model = array_shift($models);
+
+                $prefixPieces[] = Str::snake($model, '-');
+                $prefixPieces[] = '{' . Str::singular($model, '-') . '}';
+
+            } while(count($models) > 1);
+
+            $prefixString = implode("/", $prefixPieces);
+
+
+            $model = array_shift($models);
+
+            $childUrl = Str::snake($model, '-');
+            $singularChild = Str::singular($model);
+
+
+            $childKey = $parameters['childKey'] ?? 'id';
+            $middleware = $parameters['middleware'] ?? null;
+
+            Route::prefix($prefixString)
+                ->group(function () use($childUrl, $singularChild, $controller, $childKey, $nameString, $middleware)
+            {
+                Route::get($childUrl,                                                       $controller . '@index')     ->name($nameString . '.index')->middleware($middleware);
+                Route::get($childUrl . '/deleted',                                          $controller . '@deleted')   ->name($nameString . '.deleted')->middleware($middleware);
+                Route::get($childUrl . '/archived',                                         $controller . '@archived')  ->name($nameString . '.archived')->middleware($middleware);
+
+                Route::get($childUrl . '/create',                                           $controller . '@create')    ->name($nameString . '.create')->middleware($middleware);
+                Route::post($childUrl,                                                      $controller . '@store')     ->name($nameString . '.store')->middleware($middleware);
+
+                Route::get($childUrl . '/{' . $singularChild . ':' . $childKey . '}',       $controller . '@show')      ->name($nameString . '.show')->middleware($middleware);
+                Route::get($childUrl . '/{' . $singularChild . ':' . $childKey . '}/edit',  $controller . '@edit')      ->name($nameString . '.edit')->middleware($middleware);
+                Route::put($childUrl . '/{' . $singularChild . ':' . $childKey . '}',       $controller . '@update')    ->name($nameString . '.update')->middleware($middleware);
+
+                Route::delete($childUrl . '/{' . $singularChild . ':' . $childKey . '}',    $controller . '@destroy')   ->name($nameString . '.destroy')->middleware($middleware);
+            });
+
+        });
+
+
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'crud');
         $this->loadTranslationsFrom(__DIR__ . '/resources/lang', 'crud');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
@@ -33,18 +102,18 @@ class CRUDServiceProvider extends ServiceProvider
             return "<?php
 
                 if(Route::has(($expression) . '.index')) 
-                    echo '<a href=\"' . route(($expression) . '.index') . '\">' . __('crud::crud.singleModel_' . ($expression)) . '</a>';
+                    echo '<a href=\"' . route(($expression) . '.index') . '\">' . __('crudModels.' . ($expression)) . '</a>';
                 elseif(Route::has(Str::plural(($expression)) . '.index')) 
-                    echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crud::crud.singleModel_' . ($expression)) . '</a>';
+                    echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crudModels.' . ($expression)) . '</a>';
                 elseif(is_object(($expression)))
                 {
                     if(method_exists(($expression), 'getIndexUrl'))
-                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crud::crud.singleModel_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crudModels.' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
                     else
-                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crud::crud.singleModel_' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
+                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crudModels.' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
                 }
                 else
-                    echo __('crud::crud.singleModel_' . ($expression));
+                    echo __('crudModels.' . ($expression));
                 ?>";
         });
 

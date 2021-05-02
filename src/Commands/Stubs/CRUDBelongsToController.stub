@@ -17,6 +17,7 @@ use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
 use IlBronza\CRUD\Traits\CRUDCreateStoreTrait;
 use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
 use IlBronza\CRUD\Traits\CRUDIndexTrait;
+use IlBronza\CRUD\Traits\CRUDNestableTrait;
 use IlBronza\CRUD\Traits\CRUDShowTrait;
 
 use IlBronza\CRUD\Traits\CRUDDeleteTrait;
@@ -28,6 +29,7 @@ class {{ class }} extends BelongsToCRUDController
 
     use CRUDShowTrait;
     use CRUDIndexTrait;
+    use CRUDNestableTrait;
     use CRUDEditUpdateTrait;
     use CRUDCreateStoreTrait;
 
@@ -40,8 +42,35 @@ class {{ class }} extends BelongsToCRUDController
     public $parentModelClass = '\App\Models\{{ parentmodel }}';
     public $modelClass = '\App\Models\{{ model }}';
 
-    public $allowedMethods = ['index', 'show', 'edit', 'update', 'create', 'store', 'delete'];
+    public $allowedMethods = [
+        'index',
+        'show',
+        'edit',
+        'update',
+        'create',
+        'store',
+        'destroy',
+        'deleted',
+        'archived',
+        'reorder',
+        'stroreReorder'
+    ];
 
+    /**
+     * return this controller's specific parent model's attributes to be shown on teaser view
+     *
+     * @return array
+     **/
+     /*
+    public function getControllerSpecificParentModelTeaserAttributes() : array
+    {
+        return [
+            'name' => $this->parentModel->getName(),
+            'stuff' => 'extra stuff',
+            'image' => 'image-jpg'
+        ];
+    }
+    */
 
     //this is needed to override routename ex contacts.buildings.store => buildings.store
     // public $routeBaseNamePieces = ['buildings'];

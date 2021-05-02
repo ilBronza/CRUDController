@@ -93,6 +93,8 @@ trait CRUDShowTrait
 		$this->shareShowParameters();
 		$this->shareShowButtons();
 
+		$this->shareExtraViews();
+
 		return view($view);
 	}
 }
