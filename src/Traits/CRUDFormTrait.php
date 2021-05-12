@@ -8,6 +8,7 @@ use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
 use IlBronza\FormField\Facades\FormField;
 use IlBronza\FormField\Fields\JsonFormField;
 use IlBronza\Form\Form;
+use Auth;
 
 
 /**
@@ -121,18 +122,65 @@ trait CRUDFormTrait
 			);
 	}
 
+	public function getAllFieldsetFields(array $fieldsetParameters) : array
+	{
+		if(isset($fieldsetParameters['fields']))
+			return $fieldsetParameters['fields'];
+
+		return $fieldsetParameters;		
+	}
+
 	/**
 	 * return fields array from fieldset parameters
 	 *
 	 * @param array $fieldsetParameters
 	 * @return array
 	 **/
-	public function getFieldsetFields(array $fieldsetParameters)
+	public function getFieldsetFields(array $fieldsetParameters) : array
 	{
-		if(isset($fieldsetParameters['fields']))
-			return $fieldsetParameters['fields'];
+		$fieldsetParameters = $this->getAllFieldsetFields($fieldsetParameters);
 
-		return $fieldsetParameters;
+		return $this->filterByRolesAndPermissions($fieldsetParameters);
+	}
+
+	public function filterByRolesAndPermissions(array $fields) : array
+	{
+		$fields = $this->filterByRoles($fields);
+
+		return $fields;
+
+		dd($fields);
+	}
+
+	public function filterByRoles(array $fields) : array
+	{
+		// $roles = session()
+
+		// $roles = Auth::user()->getRoleNames()->toArray();
+
+
+		return $fields;
+
+		dd(Auth::user());
+
+		if(in_array('superadmin', $roles))
+			return $fields;
+
+		dd(Auth::superadmin());
+
+		foreach($fields as $key => $field)
+		{
+			if(! isset($field['roles']))
+				continue;
+
+			if(count(array_intersect($roles, $field['roles'])))
+				dd($field);
+
+			dd($field);
+		}
+
+		dd($roles);
+		dd($fields);
 	}
 
 	/**

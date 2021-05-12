@@ -16,8 +16,8 @@
 		window.opener.location.reload();
 		@endif
 
-		@if(isset($callerTableName))
-		window.opener.table{{ $callerTableName }}.ajax.reload();
+		@if(isset($callertablename))
+		window.opener.table{{ $callertablename }}.ajax.reload();
 		@endif
 
 		@if(isset($message))
@@ -35,8 +35,8 @@
 	window.opener.location.reload();
 	@endif
 
-	@if(isset($callerTableName))
-	window.opener.table{{ $callerTableName }}.ajax.reload();
+	@if(isset($callertablename))
+	window.opener.table{{ $callertablename }}.ajax.reload();
 	@endif
 
 	@if(isset($message))

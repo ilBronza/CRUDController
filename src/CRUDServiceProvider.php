@@ -90,8 +90,8 @@ class CRUDServiceProvider extends ServiceProvider
         });
 
 
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'crud');
-        $this->loadTranslationsFrom(__DIR__ . '/resources/lang', 'crud');
+        $this->loadViewsFrom(__DIR__ . '../resources/views', 'crud');
+        $this->loadTranslationsFrom(__DIR__ . '../resources/lang', 'crud');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
@@ -187,9 +187,9 @@ class CRUDServiceProvider extends ServiceProvider
         ], 'crud.views');*/
 
         // Publishing assets.
-        /*$this->publishes([
-            __DIR__.'/../resources/assets' => public_path('vendor/ilbronza'),
-        ], 'crud.views');*/
+        $this->publishes([
+            __DIR__.'/../resources/assets' => base_path('resources'),
+        ], 'crud.assets');
 
         // Publishing the translation files.
         /*$this->publishes([

@@ -71,6 +71,7 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;
 		$updateParameters['toggle'] = true;
+		$updateParameters['model-id'] = $this->modelInstance->getKey();
 
 		return $updateParameters;
 	}

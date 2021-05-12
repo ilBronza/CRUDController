@@ -4,12 +4,12 @@ namespace IlBronza\CRUD\Traits;
 
 trait CRUDCallerTableNameTrait
 {
-	private function manageCallerTableName()
+	private function managecallertablename()
 	{
-		if(! $callerTableName = request()->input('callerTableName', null))
+		if(! $callertablename = request()->input('callertablename', null))
 			return ;
 
-		$this->callerTablename = $callerTableName;
-		view()->share('callerTableName', $callerTableName);
+		$this->callertablename = $callertablename;
+		view()->share('callertablename', $callertablename);
 	}
 }

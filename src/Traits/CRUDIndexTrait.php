@@ -89,7 +89,7 @@ trait CRUDIndexTrait
 
     public function beforeRenderIndex() { }
 
-	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null)
+	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
 	{	
 		if(! $tableName)
 			$tableName = $this->getTableName();
@@ -106,7 +106,10 @@ trait CRUDIndexTrait
 					return $elementsGetter();
 
 				return $this->getIndexElements();
-			}
+			},
+			$selectRow,
+			$tableVariables,
+			$baseModel ?? $this->modelClass
 		);
 
 		$this->table->addBaseModelClass($this->modelClass);

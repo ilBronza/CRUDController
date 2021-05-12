@@ -13,7 +13,7 @@
                         <div class="uk-navbar-left">
                             <ul class="uk-navbar-nav">
                                 @isset($backToListUrl)
-                                <li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
+                                <li><a href="{{ $backToListUrl }}">@lang('crud.backToList')</a></li>
                                 @endisset
 
                                 @if(isset($showButtons))
@@ -31,7 +31,7 @@
 
             @if($modelInstance->userCanUpdate(Auth::user()))
                 <div class="uk-width-auto">
-                    <a href="{{ $modelInstance->getEditURL() }}">@lang('crud::crud.editElement', ['element' => $modelInstance->getName()])</a>
+                    <a href="{{ $modelInstance->getEditURL() }}">@lang('crud.editElement', ['element' => $modelInstance->getName()])</a>
                 </div>
             @endif
 
