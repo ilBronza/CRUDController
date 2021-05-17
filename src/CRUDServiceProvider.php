@@ -90,8 +90,8 @@ class CRUDServiceProvider extends ServiceProvider
         });
 
 
-        $this->loadViewsFrom(__DIR__ . '../resources/views', 'crud');
-        $this->loadTranslationsFrom(__DIR__ . '../resources/lang', 'crud');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'crud');
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'crud');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
