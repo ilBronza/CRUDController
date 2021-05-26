@@ -86,7 +86,6 @@ class CRUDServiceProvider extends ServiceProvider
 
                 Route::delete($childUrl . '/{' . $singularChild . ':' . $childKey . '}',    $controller . '@destroy')   ->name($nameString . '.destroy')->middleware($middleware);
             });
-
         });
 
 

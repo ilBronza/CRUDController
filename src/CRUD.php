@@ -23,6 +23,9 @@ class CRUD extends Controller
 	public $indexFieldsGroups = ['index'];
 	public $indexCacheKey;
 
+	public $editFormDivider = false;
+	public $createFormDivider = false;
+
 
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
 

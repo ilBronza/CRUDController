@@ -178,6 +178,13 @@ trait CRUDEditUpdateTrait
 		return $this->parseUniqueRules($result);
 	}
 
+	public function getUpdateEditorValidationArray()
+	{
+		$result = $this->getValidationArrayByType('updateEditor');
+
+		return $this->parseUniqueRules($result);
+	}
+
 	/**
 	 * validate request and return requested values for update
 	 **/

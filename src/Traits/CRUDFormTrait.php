@@ -60,6 +60,12 @@ trait CRUDFormTrait
             	$this::$formFields[$type] ?? [],
             );
 
+		if($type == 'editor')
+			$result = array_merge_recursive(
+				$this::$formFields['edit'] ?? [],
+				$result
+			);
+
         return $result;		
 	}
 
@@ -286,6 +292,13 @@ trait CRUDFormTrait
 			);
 	}
 
+	public function hasFormDivider(string $formType)
+	{
+		$parameterName = $formType . 'FormDivider';
+
+		return $this->$parameterName;
+	}
+
 	/**
 	 * share form parameters for defualt view
 	 *
@@ -306,6 +319,10 @@ trait CRUDFormTrait
 			'action' => $action,
 			'method' => $method
 		]);
+
+		$this->form->setDivider(
+			$this->hasFormDivider($type)
+		);
 
 		$this->form->assignModel($this->modelInstance);
 

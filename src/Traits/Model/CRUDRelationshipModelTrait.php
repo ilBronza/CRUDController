@@ -69,7 +69,7 @@ trait CRUDRelationshipModelTrait
      * @param Collection $elements
      * @return array
      **/
-    public function buildElementsArryForSelect(Collection $elements)
+    static public function buildElementsArryForSelect(Collection $elements)
     {
         $result = [];
 
@@ -114,5 +114,12 @@ trait CRUDRelationshipModelTrait
             return array_intersect_key($attributes, array_flip($this->teaserFields));
 
         return $attributes;
+    }
+
+    static function getSelfPossibleList()
+    {
+        $elements = static::orderBy('alias')->get();
+
+        return static::buildElementsArryForSelect($elements);
     }
 }

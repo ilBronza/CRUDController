@@ -21,6 +21,11 @@ trait CRUDModelTrait
     //     return true;
     // }
 
+    public function getBrowserTitle()
+    {
+        return $this->getName();
+    }
+
     public function getOwningMethod(Model $model)
     {
         return  'owns' . class_basename($model);

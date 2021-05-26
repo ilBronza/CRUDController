@@ -50,6 +50,7 @@ trait CRUDValidateTrait
 	public function convertFormToRequestType(string $type)
 	{
 		$types = [
+			'updateEditor' => 'editor',
 			'update' => 'edit',
 			'store' => 'create'
 		];
@@ -59,7 +60,7 @@ trait CRUDValidateTrait
 
 	private function getFormFieldsetsByType(string $type)
 	{
-		//edit or create
+		//edit or create or editUpdate
 		$formType = $this->convertFormToRequestType($type);
 
 		if(! property_exists($this, 'formFields'))
