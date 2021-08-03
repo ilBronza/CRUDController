@@ -2,15 +2,17 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use App\Providers\Helpers\dgButton;
 use App\Models\User;
+use App\Providers\Helpers\dgButton;
 use Auth;
+use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 trait CRUDModelTrait
 {
+    use LogsActivity;
     use CRUDDeleterTrait;
 
     // public function hasOwnership()
@@ -82,14 +84,33 @@ trait CRUDModelTrait
         return new dgButton($href, $text, 'plus');
     }
 
+    private function getRouteClassname()
+    {
+        if($this->routeClassname ?? false)
+            return $this->routeClassname;
+
+        return lcfirst(class_basename($this));
+    }
+
+    public function getRouteBasename()
+    {
+        if($this->routeBasename ?? false)
+            return $this->routeBasename;
+
+        $className = $this->getRouteClassname();
+
+        return Str::plural($className);
+    }
+
 	private function getKeyedRoute(string $action, array $data)
 	{
-        $className = lcfirst(class_basename($this));
+        $routeBasename = $this->getRouteBasename();
+        $routeClassname = $this->getRouteClassname();
 
         if(class_basename($this) == 'Filecabinetrow')
             mori($this);
 
-        return route(Str::plural($className) . '.' . $action, [$className => $this->getKey()], $data);
+        return route($routeBasename . '.' . $action, [$routeClassname => $this->getKey()], $data);
 	}
 
     public function getShowUrl(array $data = [])

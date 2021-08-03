@@ -55,18 +55,18 @@ trait CRUDIndexTrait
 
     private function manageCreateButton()
     {
+		if($this->avoidCreateButton ?? false)
+			return ;
+
     	try
     	{
 			if(! $this->userCanCreate())
-				return ;    		
+				return ;
     	}
     	catch(\Exception $e)
     	{
     		throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass);
     	}
-
-		if($this->avoidCreateButton ?? false)
-			return ;
 
 		$createButton = $this->getCreateNewModelButton();
 
@@ -143,7 +143,10 @@ trait CRUDIndexTrait
 			function() use($elements)
 			{
 				return $elements;
-			}
+			},
+			false,
+			[],
+			$this->modelClass
 		);
 
 		$this->table->setArrayTable();

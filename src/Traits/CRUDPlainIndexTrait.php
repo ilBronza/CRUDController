@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Notification;
 
 trait CRUDPlainIndexTrait
 {

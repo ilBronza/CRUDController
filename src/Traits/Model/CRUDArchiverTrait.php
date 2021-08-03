@@ -9,14 +9,28 @@ trait CRUDArchiverTrait
 {
     public function setArchivedAtAttribute($value)
     {
-        if(! is_bool($value))
+        if($value instanceof Carbon)
             return $this->attributes['archived_at'] = $value;
 
-        if($value)
+        if($value == 0)
+            return $this->attributes['archived_at'] = null;
+
+        if($value == 1)
             return $this->attributes['archived_at'] = Carbon::now();
 
-        $this->attributes['archived_at'] = null;
+        $this->attributes['archived_at'] = $value;
     }
+
+    // public function setArchivedAtAttribute($value)
+    // {
+    //     if(! is_bool($value))
+    //         return $this->attributes['archived_at'] = $value;
+
+    //     if($value)
+    //         return $this->attributes['archived_at'] = Carbon::now();
+
+    //     $this->attributes['archived_at'] = null;
+    // }
 
     public static function bootCRUDArchiverTrait()
     {

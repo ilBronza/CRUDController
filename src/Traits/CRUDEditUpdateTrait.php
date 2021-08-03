@@ -8,7 +8,6 @@ use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 
 trait CRUDEditUpdateTrait
 {
-	use CRUDFormTrait;
 	use CRUDValidateTrait;
 
 	use CRUDUpdateEditorTrait;
@@ -78,9 +77,9 @@ trait CRUDEditUpdateTrait
 	{
         foreach($this->relatedFields ?? [] as $relation => $fieldName)
         {
-            $this->modelInstance->{$fieldName} = [];
-
             $elements = $this->modelInstance->{$relation}()->get();
+
+            $this->modelInstance->{$fieldName} = [];
 
             if(count($elements) == 0)
                 continue;
@@ -109,11 +108,13 @@ trait CRUDEditUpdateTrait
 	 **/
 	public function _edit($modelInstance)
 	{
+		$this->manageReturnBack();
 		$this->modelInstance = $modelInstance;
 
 		$this->checkIfUserCanUpdate();
 
 		$view = $this->getEditView();
+
 
 		if($view == $this->standardEditView)
 			$this->shareDefaultEditFormParameters();
@@ -136,6 +137,9 @@ trait CRUDEditUpdateTrait
 	 */
 	public function getAfterUpdatedRedirectUrl()
 	{
+		if($url = $this->getReturnUrl())
+			return $url;
+
 		if($url = $this->getAfterUpdateRoute())
 			return $url;
 
@@ -158,7 +162,12 @@ trait CRUDEditUpdateTrait
 			foreach($rule as $index => $_rule)
 				if(strpos($_rule, "unique:") !== false)
 				{
-					$rule[$index] = implode(",", [$rule[$index], $this->modelInstance->getKeyName(), $this->modelInstance->getKey()]);
+					$rule[$index] = implode(",", [
+						$rule[$index],
+						// $this->modelInstance->getKeyName(),
+						$this->modelInstance->getKey()
+					]);
+
 					$rules[$field] = $rule;
 				}
 		}
@@ -243,6 +252,7 @@ trait CRUDEditUpdateTrait
 
 		$parameters = $this->validateUpdateRequest($request);
 		$parameters = $this->transformParametersByFieldsAndType($parameters, 'update');
+
 
 		$this->updateModelInstance($parameters);
 

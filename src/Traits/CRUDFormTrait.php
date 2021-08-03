@@ -348,7 +348,7 @@ trait CRUDFormTrait
 	 * @param Request $request, string $type
 	 * @return array
 	 **/
-	private function validateRequestByType(Request $request, string $type)
+	public function validateRequestByType(Request $request, string $type)
 	{
 		$validationArrayGetter = 'get' . ucfirst(($type)) . 'ValidationArray';
 

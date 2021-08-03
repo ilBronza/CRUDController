@@ -7,7 +7,6 @@ use IlBronza\Form\Facades\Form;
 
 trait CRUDStoreTrait
 {
-	use CRUDFormTrait;
 	use CRUDValidateTrait;
 
 	/**

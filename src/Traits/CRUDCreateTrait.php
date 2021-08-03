@@ -7,7 +7,6 @@ use IlBronza\Form\Facades\Form;
 
 trait CRUDCreateTrait
 {
-	use CRUDFormTrait;
 	use CRUDValidateTrait;
 
 	public $createView;
@@ -62,6 +61,8 @@ trait CRUDCreateTrait
 	 **/
 	public function create()
 	{
+		$this->manageReturnBack();
+
 		$this->modelInstance = new $this->modelClass;
 
 		$this->manageParentModelAssociation();

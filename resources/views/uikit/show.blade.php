@@ -2,6 +2,8 @@
 
 @section('content')
 
+@include('uikittemplate::utilities.__extraViews', ['position' => 'top'])
+
 <div class="uk-card uk-card-default">
     <div class="uk-card-header">
         <div uk-grid>
@@ -55,5 +57,7 @@
     @include('crud::uikit._relationships')
 
 </div>
+
+@include('uikittemplate::utilities.__extraViews', ['position' => 'bottom'])
 
 @endsection

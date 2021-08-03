@@ -58,7 +58,7 @@ trait CRUDValidateTrait
 		return $types[$type];
 	}
 
-	private function getFormFieldsetsByType(string $type)
+	public function getFormFieldsetsByType(string $type)
 	{
 		//edit or create or editUpdate
 		$formType = $this->convertFormToRequestType($type);

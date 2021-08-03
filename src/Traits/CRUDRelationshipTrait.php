@@ -84,7 +84,7 @@ trait CRUDRelationshipTrait
 			if($this->tryCustomMethod($relationship, $values) !== null)
 				continue;
 
-			$this->callStandardMethod($relationship, $values);
+			$this->callStandardMethod($fieldParameters['relation'], $values);
 		}
 	}
 
@@ -105,6 +105,9 @@ trait CRUDRelationshipTrait
 
 		if($relationshipType == 'MorphToMany')
 			return $this->getMorphToManyRelationshipButton($relationship);
+
+		if($relationshipType == 'BelongsToMany')
+			return $this->getBelongsToManyRelationshipButton($relationship);
 
 		mori('relationship button type: ' . $relationshipType);
 	}

@@ -97,6 +97,7 @@ trait CRUDUpdateEditorTrait
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;
+		$updateParameters['model-id'] = $this->modelInstance->getKey();
 		$updateParameters['value'] = $updateParameters[$request->field];
 
 		return $updateParameters;
@@ -126,20 +127,5 @@ trait CRUDUpdateEditorTrait
 			return $this->manageAction($request);
 
 		return $this->manageUpdateGeneric($request);
-
-		mori("NOTOGGLE SIGNO'");
-
-		mori($parameters);
-
-		$this->updateModelInstance($parameters);
-
-		if(method_exists($this, 'associateRelationshipsByType'))
-			$this->associateRelationshipsByType($parameters, 'update');
-
-		$this->sendUpdateSuccessMessage();
-
-		return redirect()->to(
-			$this->getAfterUpdatedRedirectUrl()
-		);
 	}
 }

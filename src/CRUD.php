@@ -3,13 +3,15 @@
 namespace IlBronza\CRUD;
 
 use App\Providers\Helpers\dgButton;
-use Illuminate\Support\Str;
-use \App\Http\Controllers\Controller;
+use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
+use Illuminate\Support\Str;
+use \App\Http\Controllers\Controller;
 
 class CRUD extends Controller
 {
+	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
 
@@ -19,8 +21,11 @@ class CRUD extends Controller
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 
+    public $returnBack = false;
+
 	// index parameters
 	public $indexFieldsGroups = ['index'];
+	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
 
 	public $editFormDivider = false;
@@ -37,6 +42,43 @@ class CRUD extends Controller
 		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['destroy', 'forceDelete']);
 
 		$this->checkIfModelUsesTrait();
+	}
+
+	public function mustReturnBack()
+	{
+		return !! $this->returnBack;
+	}
+
+	public function manageReturnBack() : ? string
+	{
+		if(! $this->mustReturnBack())
+			return null;
+
+		return $this->setReturnUrl(url()->previous());
+	}
+
+	static function getClassKey() : string
+	{
+		return Str::slug(static::class);
+	}
+
+	public function setReturnUrl(string $url) : string
+	{
+		$classKey = static::getClassKey();
+
+		session([$classKey => $url]);
+
+		return $classKey;
+	}
+
+	public function getReturnUrl() : ? string
+	{
+		$classKey = static::getClassKey();
+
+		$url = session($classKey, null);
+		session()->forget($classKey);
+
+		return $url;
 	}
 
 	private function checkIfModelUsesTrait()
