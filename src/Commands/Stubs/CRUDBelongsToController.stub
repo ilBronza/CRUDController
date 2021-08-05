@@ -7,6 +7,7 @@ use App\Http\Controllers\CRUDTraits\CRUD{{ model }}ParametersTrait;
 use App\Models\{{ model }};
 use App\Models\{{ parentmodel }};
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use IlBronza\CRUD\BelongsToCRUDController;
@@ -39,8 +40,8 @@ class {{ class }} extends BelongsToCRUDController
     use CRUDRelationshipTrait;
     use CRUDBelongsToManyTrait;
 
-    public $parentModelClass = '\App\Models\{{ parentmodel }}';
-    public $modelClass = '\App\Models\{{ model }}';
+    public $parentModelClass = {{ parentmodel }}::class;
+    public $modelClass = {{ model }}::class;
 
     public $allowedMethods = [
         'index',
@@ -82,14 +83,23 @@ class {{ class }} extends BelongsToCRUDController
 
     public $showMethodRelationships = ['posts', 'users', 'operations'];
 
-    public function __construct()
+    public function getIndexElements()
     {
-        parent::__construct();
+        $relationString = Str::plural('{{ modelVariable }}');
 
-        $this->parentModel = {{ parentmodel }}::findOrFail(
-            Route::current()->parameter('{{ parentmodelVariable }}')
-        );
+        return $this->parentModel->{$relationString}()->get();
     }
+
+
+    //GIà presente nel controller padre no?
+    // public function __construct()
+    // {
+    //     parent::__construct();
+
+    //     $this->parentModel = {{ parentmodel }}::findOrFail(
+    //         Route::current()->parameter('{{ parentmodelVariable }}')
+    //     );
+    // }
 
     public function index({{ parentmodel }} ${{ parentmodelVariable }})
     {

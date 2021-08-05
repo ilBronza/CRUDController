@@ -54,8 +54,10 @@ trait CRUDStoreTrait
 
 		$this->setBeforeStoreFields($parameters);
 
+		//NON RIMUOVERE PERCHE' LE MANY TO MANY NON SI SALVANO, SERVE UN ID PER LAVORARE
+		//METTERE LE FOREIGN NULLABLE
 		//removed becaus foreign keys not set jet, when not nullable a mysql error is returned
-		// $this->modelInstance->save();
+		$this->modelInstance->save();
 	}
 
 	/**

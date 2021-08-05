@@ -36,7 +36,8 @@ class CRUD extends Controller
 
 	public function __construct()
 	{
-		parent::__construct();
+		if (method_exists(parent::class, '__construct'))
+			parent::__construct();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['destroy', 'forceDelete']);
