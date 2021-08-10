@@ -54,11 +54,11 @@ trait CRUDFormTrait
 	 */
 	public function getFormFieldsets(string $type)
 	{
-        if(($result = $this::$formFields[$type . 'Only']?? null) === null)
-            $result = array_merge_recursive(
-            	$this::$formFields['common'] ?? [],
-            	$this::$formFields[$type] ?? [],
-            );
+		if(($result = $this::$formFields[$type . 'Only']?? null) === null)
+			$result = array_merge_recursive(
+				$this::$formFields['common'] ?? [],
+				$this::$formFields[$type] ?? [],
+			);
 
 		if($type == 'editor')
 			$result = array_merge_recursive(
@@ -66,7 +66,7 @@ trait CRUDFormTrait
 				$result
 			);
 
-        return $result;		
+		return $result;
 	}
 
 	/**

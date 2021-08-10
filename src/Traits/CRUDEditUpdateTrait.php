@@ -235,7 +235,7 @@ trait CRUDEditUpdateTrait
 
 	}
 
-	public function manageAfterUpdate()
+	public function manageAfterUpdate(Request $request)
 	{
 		
 	}
@@ -267,7 +267,7 @@ trait CRUDEditUpdateTrait
 		$this->modelInstance->save();
 
 		$this->sendUpdateSuccessMessage();
-		$this->manageAfterUpdate();
+		$this->manageAfterUpdate($request);
 
 		return redirect()->to(
 			$this->getAfterUpdatedRedirectUrl()

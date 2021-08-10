@@ -34,11 +34,11 @@ trait CRUDArrayFieldsTrait
 	/**
 	 *
 	 **/
-	private function buildNameAndLabelArray(string $name)
+	private function buildNameAndLabelArray(string $name, array $parameters)
 	{
 		return [
 				'name' => $name,
-				'label' => __('fields.' . $name),
+				'label' => $parameters['label'] ?? __('fields.' . $name),
 			];
 	}
 
@@ -81,7 +81,7 @@ trait CRUDArrayFieldsTrait
 	{
 		$type = array_key_first($parametersString);
 
-		$parameters = $this->buildNameAndLabelArray($name);
+		$parameters = $this->buildNameAndLabelArray($name, $parametersString);
 		$parameters['type'] = $type;
 
 		$rules = explode("|", $parametersString[$type]);
@@ -108,7 +108,7 @@ trait CRUDArrayFieldsTrait
 
 		$parameters = array_merge(
 			$parametersString, 
-			$this->buildNameAndLabelArray($name)
+			$this->buildNameAndLabelArray($name, $parametersString)
 		);
 
 		$rules = $parametersString['rules'];
