@@ -62,6 +62,19 @@ trait CRUDUpdateEditorTrait
 		return $request->input('ibaction', false);		
 	}
 
+	private function returnUpdateParameters(Request $request, array $updateParameters)
+	{
+		$fieldExtraData = $request->input('fieldExtraData', []);
+
+		if($fieldExtraData['refreshrow'] ?? null)
+		{
+			$updateParameters['ibaction'] = true;
+			$updateParameters['action'] = 'refreshRow';
+		}
+
+		return $updateParameters;
+	}
+
 	private function manageToggle(Request $request)
 	{
 		$updateParameters = $this->validateToggleRequest($request);
@@ -73,7 +86,7 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['toggle'] = true;
 		$updateParameters['model-id'] = $this->modelInstance->getKey();
 
-		return $updateParameters;
+		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
 	public function manageAction(Request $request)
@@ -86,7 +99,7 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['update-editor'] = true;
 		$updateParameters['ibaction'] = true;
 
-		return $updateParameters;
+		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
 	private function manageUpdateGeneric(Request $request)
@@ -100,7 +113,7 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['model-id'] = $this->modelInstance->getKey();
 		$updateParameters['value'] = $updateParameters[$request->field];
 
-		return $updateParameters;
+		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
 	public function hasEditorUpdateRequest(Request $request) : bool

@@ -1,4 +1,4 @@
-<div class="uk-card uk-card-default uk-card-small">
+<div class="uk-card uk-card-default uk-card-small uk-margin">
     <div class="uk-card-header"><span class="uk-h3">@indexLink($parentModel): <a href="{{ $parentModel->getShowUrl() }}">{{ $parentModel->getName() }}</a></span></div>
 
     <div class="uk-card-body">

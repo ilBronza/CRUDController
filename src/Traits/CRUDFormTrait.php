@@ -331,9 +331,14 @@ trait CRUDFormTrait
 		$this->setFormCardByType($type);
 		$this->setFormTitleByType($type);
 
-		if(in_array('index', $this->allowedMethods))
+		if(in_array('index', $this->allowedMethods)&&(! $this->avoidBackToList()))
 			$this->form->setBackToListUrl(
 				$this->getIndexUrl()
+			);
+
+		if($this->showFormIntroByType($type))
+			$this->form->setIntro(
+				$this->getFormIntroByType($type)
 			);
 
 		view()->share('form', $this->form);
@@ -400,5 +405,25 @@ trait CRUDFormTrait
 		}
 
 		return array_diff_key($parameters, $confirmations);
+	}
+
+	public function showFormIntroByType(string $type)
+	{
+		if(isset($this->{'showFormIntro' . $type}))
+			return $this->{'showFormIntro' . $type};
+
+		return $this->showFormIntro;
+	}
+
+	public function getFormIntroByType(string $type)
+	{
+		$translationFileName = $this->getModelTranslationFileName();
+
+		if($type == 'edit')
+			return __($translationFileName . '.' . 'cardIntroEdit', ['element' => $this->modelInstance->getName()]);
+
+		if($type == 'create')
+			return
+				__($translationFileName . '.' . 'cardIntroCreate :element', ['element' => __('relations.' . lcfirst(class_basename($this->modelInstance)))]);
 	}
 }

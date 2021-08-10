@@ -84,7 +84,7 @@ trait CRUDModelTrait
         return new dgButton($href, $text, 'plus');
     }
 
-    private function getRouteClassname()
+    public function getRouteClassname()
     {
         if($this->routeClassname ?? false)
             return $this->routeClassname;

@@ -22,6 +22,8 @@ class CRUD extends Controller
 	public $extraViews = [];
 
     public $returnBack = false;
+    public $avoidBackToList = false;
+    public $showFormIntro = true;
 
 	// index parameters
 	public $indexFieldsGroups = ['index'];
@@ -168,5 +170,10 @@ class CRUD extends Controller
 	public function shareExtraViews()
 	{
 		view()->share('extraViews', $this->extraViews);
+	}
+
+	public function avoidBackToList()
+	{
+		return $this->avoidBackToList;
 	}
 }

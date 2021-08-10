@@ -90,10 +90,10 @@ trait CRUDEditUpdateTrait
         }
     }
 
-    public function addEditExtraViews()
-    {
-    	
-    }
+	public function addEditExtraViews()
+	{
+		
+	}
 
     public function loadEditExtraViews()
     {
@@ -235,6 +235,11 @@ trait CRUDEditUpdateTrait
 
 	}
 
+	public function manageAfterUpdate()
+	{
+		
+	}
+
 	/**
 	 * validate request and update model
 	 *
@@ -262,6 +267,7 @@ trait CRUDEditUpdateTrait
 		$this->modelInstance->save();
 
 		$this->sendUpdateSuccessMessage();
+		$this->manageAfterUpdate();
 
 		return redirect()->to(
 			$this->getAfterUpdatedRedirectUrl()

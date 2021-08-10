@@ -112,6 +112,9 @@ trait CRUDIndexTrait
 			$baseModel ?? $this->modelClass
 		);
 
+        if(request()->ajax())
+			return $this->table->renderPage();
+
 		$this->table->addBaseModelClass($this->modelClass);
 
 		if(isset($this->parentModel))
