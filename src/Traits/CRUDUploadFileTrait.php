@@ -43,8 +43,10 @@ trait CRUDUploadFileTrait
 
 		return [
 			'success' => true,
-			'file-url' => $file->getUrl(),
-			'thumb-url' => $thumbUrl
+			'filename' => $file->name,
+			'fileurl' => $file->getUrl(),
+			'deleteurl' => $file->getUrl(),
+			'thumburl' => $thumbUrl
 		];
 	}
 }
