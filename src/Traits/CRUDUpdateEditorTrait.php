@@ -127,12 +127,8 @@ trait CRUDUpdateEditorTrait
 	 * @param Request $request, Model $modelInstance
 	 * @return Response redirect
 	 **/
-	public function _updateEditor(Request $request, $modelInstance)
+	public function _updateEditor(Request $request)
 	{
-		$this->modelInstance = $modelInstance;
-
-		$this->checkIfUserCanUpdate();
-
 		if($this->isToggle($request))
 			return $this->manageToggle($request);
 

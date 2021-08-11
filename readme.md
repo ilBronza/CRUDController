@@ -15,6 +15,22 @@ Via Composer
 $ composer require ilbronza/crud
 ```
 
+on config/media-library.php
+
+``` bash
+    'media_model' => IlBronza\CRUD\Models\Media::class,
+    'path_generator' => IlBronza\CRUD\Helpers\MediaPathGenerator::class,
+```
+
+on app.js
+and then run npm
+
+``` bash
+	require('./ilBronza.crud.js');
+```
+
+
+
 ## Usage
 
 ## Change log

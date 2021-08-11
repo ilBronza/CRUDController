@@ -44,6 +44,9 @@ class CRUD extends Controller
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['destroy', 'forceDelete']);
 
+		//perchè si applica solo se non viene usato il metodo only()???
+		$this->middleware('CRUDPareseAjaxBooleansAndNull');
+
 		$this->checkIfModelUsesTrait();
 	}
 

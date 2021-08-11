@@ -7,6 +7,7 @@ use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
+use IlBronza\CRUD\Middleware\CRUDPareseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\ResourceRegistrar;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
@@ -27,6 +28,9 @@ class CRUDServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
+
         app()->bind(BaseResourceRegistrar::class, function () {
             return new ResourceRegistrar(app()->make(Router::class));
         });
@@ -91,7 +95,7 @@ class CRUDServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'crud');
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'crud');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         // $this->app['router']->aliasMiddleware('CRUDAllowedMethods', __DIR__.'/Middleware/CRUDAllowedMethods.php');
@@ -149,6 +153,7 @@ class CRUDServiceProvider extends ServiceProvider
         $router = $this->app['router'];
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);
+        $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 

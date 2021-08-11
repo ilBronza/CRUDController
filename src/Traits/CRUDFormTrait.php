@@ -2,13 +2,14 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use Illuminate\Http\Request;
+use Auth;
 use IlBronza\CRUD\Traits\CRUDArrayFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
+use IlBronza\CRUD\Traits\CRUDUploadFileTrait;
 use IlBronza\FormField\Facades\FormField;
 use IlBronza\FormField\Fields\JsonFormField;
 use IlBronza\Form\Form;
-use Auth;
+use Illuminate\Http\Request;
 
 
 /**
@@ -41,6 +42,7 @@ use Auth;
 
 trait CRUDFormTrait
 {
+	use CRUDUploadFileTrait;
 	use CRUDDbFieldsTrait;
 	use CRUDArrayFieldsTrait;
 

@@ -248,12 +248,14 @@ trait CRUDEditUpdateTrait
 	 **/
 	public function _update(Request $request, $modelInstance)
 	{
-		if($this->hasEditorUpdateRequest($request))
-			return $this->_updateEditor($request, $modelInstance);
-
 		$this->modelInstance = $modelInstance;
-
 		$this->checkIfUserCanUpdate();
+
+		if($this->hasEditorUpdateRequest($request))
+			return $this->_updateEditor($request);
+
+		if($this->hasFileUploadRequest($request))
+			return $this->_uploadFile($request, 'update');
 
 		$parameters = $this->validateUpdateRequest($request);
 		$parameters = $this->transformParametersByFieldsAndType($parameters, 'update');
