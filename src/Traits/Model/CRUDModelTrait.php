@@ -133,6 +133,17 @@ trait CRUDModelTrait
         return $this->getKeyedRoute('destroy', $data);
     }
 
+    public function getDeleteMediaUrl($fileId, array $data = []) : string
+    {
+        $routeBasename = $this->getRouteBasename();
+        $routeClassname = $this->getRouteClassname();
+
+        return route($routeBasename . '.deleteMedia', [
+            $routeClassname => $this->getKey(),
+            'media' => $fileId
+        ], $data);
+    }
+
     public function getName()
     {
         return $this->{static::$nameField ?? 'name'};

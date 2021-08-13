@@ -9,7 +9,6 @@ use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 trait CRUDEditUpdateTrait
 {
 	use CRUDValidateTrait;
-
 	use CRUDUpdateEditorTrait;
 
 	//edit parameters

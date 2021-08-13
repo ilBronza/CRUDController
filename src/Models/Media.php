@@ -8,4 +8,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 class Media extends BaseMedia 
 {
 	use SoftDeletes;
+
+	public function getDeleteUrl()
+	{
+		return $this->model->getDeleteMediaUrl($this);
+	}
 }
