@@ -258,10 +258,10 @@ trait CRUDFormTrait
 		$this->form->hasCard(true);
 
 		if($type == 'edit')
-			return $this->form->addCardClasses(['uk-card-secondary']);
+			return $this->form->addCardClasses([config('crud.editFormCardClass', '')]);
 
 		if($type == 'create')
-			return $this->form->addCardClasses(['uk-card-primary']);
+			return $this->form->addCardClasses([config('crud.createFormCardClass', '')]);
 	}
 
 	public function setEditFormParameters()

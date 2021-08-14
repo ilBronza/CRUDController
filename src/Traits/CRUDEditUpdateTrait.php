@@ -259,7 +259,6 @@ trait CRUDEditUpdateTrait
 		$parameters = $this->validateUpdateRequest($request);
 		$parameters = $this->transformParametersByFieldsAndType($parameters, 'update');
 
-
 		$this->updateModelInstance($parameters);
 
 		if(method_exists($this, 'associateRelationshipsByType'))
