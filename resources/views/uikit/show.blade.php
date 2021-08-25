@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="uk-card-body">
-        <dl>
+        <dl class="uk-column-1-4">
         @foreach($allowedFields as $field)
             <dt>{{ __('fields.' . $field) }}</dt>
             <dd>

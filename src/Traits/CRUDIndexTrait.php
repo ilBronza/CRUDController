@@ -11,6 +11,11 @@ use Illuminate\Support\Str;
 
 trait CRUDIndexTrait
 {
+	public function getSelectRow()
+	{
+		return $this->selectRow ?? false;
+	}
+
 	/**
 	 * takes all the necessary fieldsGroups by key
 	 *
@@ -51,6 +56,13 @@ trait CRUDIndexTrait
     		return false;
 
     	return $this->modelClass::userCanCreate(Auth::user());
+    }
+
+    public function addCreateButton()
+    {
+		$createButton = $this->getCreateNewModelButton();
+
+		$this->table->addButton($createButton);
     }
 
     private function manageCreateButton()
@@ -96,6 +108,9 @@ trait CRUDIndexTrait
 
 		if(! $fieldsGroupsNames)
 			$fieldsGroupsNames = $this->getIndexFieldsGroups();
+
+		if(! $selectRow)
+			$selectRow = $this->getSelectRow();
 
 		$this->table = Datatables::create(
 			$tableName,
@@ -156,7 +171,7 @@ trait CRUDIndexTrait
 		$this->table->setPageLength(10);
 		$this->table->setMinimalDom();
 
-		return $this->table->renderPortion();
+		return $this->table;
 	}
 
 	public function getIndexFieldsGroups()

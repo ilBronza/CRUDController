@@ -59,6 +59,9 @@ trait CRUDEditUpdateTrait
 
 	public function checkIfUserCanUpdate()
 	{
+		if(! $this->modelInstance->userCanUpdate(Auth::user()))
+			abort(403);
+
 		if(Auth::id() == 1)
 			return true;
 
@@ -222,7 +225,6 @@ trait CRUDEditUpdateTrait
 			$this->modelInstance->{$property} = $value;
 
 		$this->manageModelInstanceAfterUpdate($parameters);
-
 		return $this->modelInstance->save();
 	}
 

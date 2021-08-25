@@ -154,6 +154,9 @@ trait CRUDModelTrait
         if(! $user)
             return false;
 
+        if($user->hasRole('superadmin'))
+            return true;
+
         if($user->hasRole('administrator'))
             return true;
 

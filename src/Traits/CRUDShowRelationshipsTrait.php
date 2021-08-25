@@ -11,6 +11,14 @@ use IlBronza\CRUD\Exceptions\MissingRelationshipDeclarationController;
 
 trait CRUDShowRelationshipsTrait
 {
+	public function canCreateRelation(string $relation)
+	{
+		if((isset($this->relationsCreateButton))&&(isset($this->relationsCreateButton['extraQuotationStencils'])))
+			return true;
+
+		return false;
+	}
+
 	public function getShowRelationships()
 	{
 		if(isset($this->showMethodRelationships))
@@ -40,6 +48,32 @@ trait CRUDShowRelationshipsTrait
 		$fieldsGroup = Str::camel(class_basename($this->modelClass));
 
 		$this->relationshipsTableNames[$name] = app($controllerName)->getIndependentTable($elements, $fieldsGroup);
+
+		if($this->canCreateRelation($name))
+		{
+			$buttonMethod = 'get' . ucfirst($name) . 'Buttons';
+
+			if(method_exists($this, $buttonMethod))
+				$buttons = $this->{$buttonMethod}();
+
+			else
+			{
+				try
+				{
+					$buttons = [
+						app($controllerName)->getCreateNewModelButton()
+					];					
+				}
+				catch(\Exception $e)
+				{
+					die("dichiara " . get_class($this) . "->" . $buttonMethod . " oppure usa " . $controllerName . "->getCreateNewModelButton()");
+				}
+
+			}
+
+			foreach($buttons as $button)
+				$this->relationshipsTableNames[$name]->addButton($button);
+		}
 	}
 
 	private function relationNeedsTable($related)

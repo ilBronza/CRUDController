@@ -6,9 +6,7 @@
 
             <h3>Correlato: @indexLink($name)</h3>
 
-            {!! $relationshipsTableNames[$name] !!}
-
-            {{-- @include('datatables._table', ['table' => $$name]) --}}
+            {!! $relationshipsTableNames[$name]->renderPortion(); !!}
 
         @elseif(! is_null($_item = $relationshipsElements[$name] ?? null))
 
