@@ -103,8 +103,10 @@ trait CRUDArrayFieldsTrait
 		if(! isset($parametersString['rules']))
 			throw new \Exception('Missing "rules" array element in field ' . $name);
 
-		if(($parametersString['type'] == 'select')&&(! isset($parametersString['relation'])))
-			throw new \Exception('Missing "relation" array element in field ' . $name . ', necessary to retrieve select elements');
+		if($parametersString['type'] == 'select')
+			if(! isset($parametersString['list']))
+				if(! isset($parametersString['relation']))
+					throw new \Exception('Missing "relation" or "list" array element in field ' . $name . ', necessary to retrieve select elements');
 
 		$parameters = array_merge(
 			$parametersString, 
