@@ -135,7 +135,7 @@ trait CRUDFormTrait
 		if(isset($fieldsetParameters['fields']))
 			return $fieldsetParameters['fields'];
 
-		return $fieldsetParameters;		
+		return $fieldsetParameters;
 	}
 
 	/**
@@ -149,6 +149,14 @@ trait CRUDFormTrait
 		$fieldsetParameters = $this->getAllFieldsetFields($fieldsetParameters);
 
 		return $this->filterByRolesAndPermissions($fieldsetParameters);
+	}
+
+	public function getFieldsetFieldsets(array $fieldsetParameters) : array
+	{
+		if(isset($fieldsetParameters['fieldsets']))
+			return $fieldsetParameters['fieldsets'];
+
+		return [];
 	}
 
 	public function filterByRolesAndPermissions(array $fields) : array
@@ -210,6 +218,35 @@ trait CRUDFormTrait
 		return $fieldsetParameters;
 	}
 
+	public function addFieldset($target, string $name, array $fieldsetParameters)
+	{
+		$fields = $this->getFieldsetFields($fieldsetParameters);
+		$fieldsets = $this->getFieldsetFieldsets($fieldsetParameters);
+		$parameters = $this->getFieldsetParameters($fieldsetParameters);
+
+		$fieldset = $target->addFormFieldset($name, $parameters);
+
+		foreach($fields as $fieldName => $field)
+		{
+			$parameters = $this->getFieldParameters($fieldName, $field);
+
+			if(isset($parameters['relation']))
+				$this->relatedFields[$parameters['relation']] = $parameters['name'];
+
+			$formField = FormField::createFromArray($parameters);
+
+			$target->addFormFieldToFieldset(
+				$formField,
+				$name
+			);
+
+			$formField->executeBeforeRenderingOperations();
+		}
+
+		foreach($fieldsets as $name => $fieldsetParameters)
+			$this->addFieldset($fieldset, $name, $fieldsetParameters);
+	}
+
 	/**
 	 * add fieldsets to form
 	 *
@@ -225,29 +262,7 @@ trait CRUDFormTrait
 		$fieldsets = $this->getFormFieldsets($type);
 
 		foreach($fieldsets as $name => $fieldsetParameters)
-		{
-			$fields = $this->getFieldsetFields($fieldsetParameters);
-			$parameters = $this->getFieldsetParameters($fieldsetParameters);
-
-			$this->form->addFormFieldset($name, $parameters);
-
-			foreach($fields as $fieldName => $field)
-			{
-				$parameters = $this->getFieldParameters($fieldName, $field);
-
-				if(isset($parameters['relation']))
-					$this->relatedFields[$parameters['relation']] = $parameters['name'];
-
-				$formField = FormField::createFromArray($parameters);
-
-				$this->form->addFormFieldToFieldset(
-					$formField,
-					$name
-				);
-
-				$formField->executeBeforeRenderingOperations();
-			}
-		}
+			$this->addFieldset($this->form, $name, $fieldsetParameters);
 
 		if(count($fieldsets) == 1)
 			$this->form->flattenFieldsets();		

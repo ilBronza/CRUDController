@@ -109,6 +109,19 @@ trait CRUDValidateTrait
 		return $this->addValidationArrayMultipleRow($validationArray, $fieldContent, $fieldName);
 	}
 
+	private function getValidationArrayByFieldset(array $fieldset, array $validationArray)
+	{
+		$fields = $this->getFieldsetFields($fieldset);
+
+		foreach($fields as $fieldName => $fieldContent)
+			$validationArray = $this->addValidationArrayField($validationArray, $fieldContent, $fieldName);
+
+		foreach($fieldset['fieldsets'] ?? [] as $fieldset)
+			$validationArray = $this->getValidationArrayByFieldset($fieldset, $validationArray);
+
+		return $validationArray;
+	}
+
 	public function getValidationArrayByType(string $type)
 	{
 		$fieldsets = $this->getFormFieldsetsByType($type);
@@ -116,12 +129,7 @@ trait CRUDValidateTrait
 		$validationArray = [];
 
 		foreach($fieldsets as $fieldset)
-		{
-			$fields = $this->getFieldsetFields($fieldset);
-
-			foreach($fields as $fieldName => $fieldContent)
-				$validationArray = $this->addValidationArrayField($validationArray, $fieldContent, $fieldName);
-		}
+			$validationArray = $this->getValidationArrayByFieldset($fieldset, $validationArray);
 
 		return $validationArray;
 	}
