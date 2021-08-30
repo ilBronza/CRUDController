@@ -45,9 +45,19 @@ trait CRUDStoreTrait
 	 * @param array $parameters
 	 * @return boolean
 	 **/
-	public function bindModelInstance(array $parameters)
+	public function bindModelInstance(array $originalParameters)
 	{
-		$parameters = array_diff_key($parameters, $this->getRelationshipsFieldsByType('store'));
+		$parameters = array_diff_key($originalParameters, $this->getRelationshipsFieldsByType('store'));
+
+		$foreignKeyFields = array_intersect_key($originalParameters, $this->getForeignKeysFieldsByType('store'));
+
+		foreach($foreignKeyFields as $name => $value)
+			$this->modelInstance->$name = $value;
+
+		$foreignKeyRelationships = array_intersect_key($originalParameters, $this->getForeignRelationshipsFieldsByType('store'));
+
+		foreach($foreignKeyRelationships as $name => $value)
+			$this->modelInstance->{$name}()->associate($value);
 
 		foreach($parameters as $name => $value)
 			$this->modelInstance->$name = $value;
@@ -91,7 +101,7 @@ trait CRUDStoreTrait
 
 		$parameters = $this->transformParametersByFieldsAndType($parameters, 'store');
 
-		$this->modelInstance = new $this->modelClass;
+		$this->modelInstance = $this->modelClass::make();
 
 		$this->manageParentModelAssociation();
 

@@ -5,12 +5,12 @@ namespace IlBronza\CRUD\Traits;
 use Auth;
 use IlBronza\CRUD\Traits\CRUDArrayFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
+use IlBronza\CRUD\Traits\CRUDFormFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDUploadFileTrait;
 use IlBronza\FormField\Facades\FormField;
 use IlBronza\FormField\Fields\JsonFormField;
 use IlBronza\Form\Form;
 use Illuminate\Http\Request;
-
 
 /**
  * come compilare il fieldset con opzioni e senza opzioni
@@ -45,6 +45,7 @@ trait CRUDFormTrait
 	use CRUDUploadFileTrait;
 	use CRUDDbFieldsTrait;
 	use CRUDArrayFieldsTrait;
+	use CRUDFormFieldsTrait;
 
 	/**
 	 * return form fieldsets based on form type (edit or create)
@@ -162,41 +163,51 @@ trait CRUDFormTrait
 	public function filterByRolesAndPermissions(array $fields) : array
 	{
 		$fields = $this->filterByRoles($fields);
+		$fields = $this->filterByPermissions($fields);
 
 		return $fields;
-
-		dd($fields);
 	}
 
 	public function filterByRoles(array $fields) : array
 	{
-		// $roles = session()
+		$user = Auth::user();
 
-		// $roles = Auth::user()->getRoleNames()->toArray();
-
-
-		return $fields;
-
-		dd(Auth::user());
-
-		if(in_array('superadmin', $roles))
+		if($user->hasRole('superadmin'))
 			return $fields;
-
-		dd(Auth::superadmin());
 
 		foreach($fields as $key => $field)
 		{
 			if(! isset($field['roles']))
 				continue;
 
-			if(count(array_intersect($roles, $field['roles'])))
-				dd($field);
+			if($user->hasRole($field['roles']))
+				continue;
 
-			dd($field);
+			unset($fields[$key]);
 		}
 
-		dd($roles);
-		dd($fields);
+		return $fields;
+	}
+
+	public function filterByPermissions(array $fields) : array
+	{
+		$user = Auth::user();
+
+		if($user->hasRole('superadmin'))
+			return $fields;
+
+		foreach($fields as $key => $field)
+		{
+			if(! isset($field['permissions']))
+				continue;
+
+			if($user->hasAnyPermission($field['permissions']))
+				continue;
+
+			unset($fields[$key]);
+		}
+
+		return $fields;
 	}
 
 	/**

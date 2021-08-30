@@ -3,10 +3,72 @@
 namespace IlBronza\CRUD\Traits;
 
 use IlBronza\Button\Button;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 trait CRUDRelationshipTrait
 {
+	public function filterRelationshipsFields(array $fields)
+	{
+		foreach($fields as $key => $field)
+			if(empty($field['relation']))
+				unset($fields[$key]);
+
+		return $fields;
+	}
+
+	public function filterFieldsByForeignKeysExistence(array $fields) : array
+	{
+		$attributes = Schema::getColumnListing($this->modelInstance->getTable());
+
+		foreach($fields as $key => $field)
+		{
+			if(in_array($key, $attributes))
+				continue;
+
+			unset($fields[$key]);
+		}
+
+		return $fields;
+	}
+
+	public function filterFieldsByForeignRelationshipsExistence(array $fields) : array
+	{
+		$attributes = Schema::getColumnListing($this->modelInstance->getTable());
+
+		foreach($fields as $key => $field)
+		{
+			$relationName = $field['relation'];
+
+			$relationType = $this->modelInstance->{$relationName}();
+
+			if(class_basename($relationType) == 'BelongsTo')
+				continue;
+
+			unset($fields[$key]);
+		}
+
+		return $fields;
+	}
+
+	public function getForeignKeysFieldsByType(string $type = 'store') : array
+	{
+		$fields = $this->getFlattenFormFieldsByType($type);
+
+		$relationshipFields = $this->filterRelationshipsFields($fields);
+
+		return $this->filterFieldsByForeignKeysExistence($relationshipFields);		
+	}
+
+	public function getForeignRelationshipsFieldsByType(string $type = 'store') : array
+	{
+		$fields = $this->getFlattenFormFieldsByType($type);
+
+		$relationshipFields = $this->filterRelationshipsFields($fields);
+
+		return $this->filterFieldsByForeignRelationshipsExistence($relationshipFields);
+	}
+
 	private function getRelationTypeFieldsByFormType(string $formType)
 	{
 		$relations = [];
