@@ -4,7 +4,7 @@ namespace IlBronza\CRUD\Traits;
 
 trait CRUDCallerTableNameTrait
 {
-	private function managecallertablename()
+	private function manageCallerTableName()
 	{
 		if(! $callertablename = request()->input('callertablename', null))
 			return ;
