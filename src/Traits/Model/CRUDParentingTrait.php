@@ -124,4 +124,9 @@ trait CRUDParentingTrait
         if($this->recursiveParents)
             return $this->collectRecursiveParentNames();
     }
+
+    public function isRoot()
+    {
+        return empty($this->parent_id);
+    }
 }

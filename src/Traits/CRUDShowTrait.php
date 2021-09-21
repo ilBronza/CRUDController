@@ -2,14 +2,15 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Traits\CRUDRelationshipsManagerTrait;
 use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
 
 trait CRUDShowTrait
 {
 	use CRUDShowRelationshipsTrait;
+	use CRUDRelationshipsManagerTrait;
 
 	//edit parameters
-	public $showView;
 	public $standardShowView = 'crud::uikit.show';
 	public $showButtons = [];
 
@@ -22,7 +23,7 @@ trait CRUDShowTrait
 	 **/
 	public function getShowView()
 	{
-		if($this->showView)
+		if($this->showView ?? false)
 			return $this->showView;
 
 		return $this->standardShowView;
@@ -40,7 +41,7 @@ trait CRUDShowTrait
 	{
 		$allowedFields = $fields = array_keys($this->modelInstance->getAttributes());
 
-		$allowedFields = array_diff($allowedFields, $this->guardedShowDBFields);
+		$allowedFields = array_diff($allowedFields, $this->guardedShowDBFields ?? []);
 		view()->share('allowedFields', $allowedFields);
 	}
 

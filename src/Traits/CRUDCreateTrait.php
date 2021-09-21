@@ -54,6 +54,8 @@ trait CRUDCreateTrait
 	 **/
 	public function beforeRenderCreate() { }
 
+	public function userCanPerformCreate() { }
+
 	/**
 	 * get modelInstance create view
 	 *
@@ -61,6 +63,7 @@ trait CRUDCreateTrait
 	 **/
 	public function create()
 	{
+		$this->userCanPerformCreate();
 		$this->manageReturnBack();
 
 		$this->modelInstance = new $this->modelClass;

@@ -12,6 +12,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 trait CRUDModelTrait
 {
+    static $teaserFields = [];
+
     use LogsActivity;
     use CRUDDeleterTrait;
 
@@ -177,5 +179,10 @@ trait CRUDModelTrait
     public function userCanSee(User $user = null)
     {
         return true;
+    }
+
+    public function getTeaserFields()
+    {
+        return $this->teaserFields;
     }
 }
