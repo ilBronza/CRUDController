@@ -7,28 +7,35 @@ use Illuminate\Support\Facades\DB;
 
 trait CRUDSluggableTrait
 {
+	static function getSlugField()
+	{
+		return static::$slugField ?? 'slug';
+	}
+
 	protected static function boot()
 	{
 		parent::boot();
 
 		static::saving(function ($model) {
-			if(! $slug = $model->slug)
+			$slugField = static::getSlugField();
+
+			if(! $slug = $model->{$slugField})
 				$slug = $model->getName();
 
 			$slug = Str::slug($slug);
 
 			$existingsSlugs = DB::table((new self())->getTable())
-					->select('slug')
+					->select($slugField)
 					->where($model->getKeyName(), '!=', $model->getKey())
-					->where(function($query) use($slug)
+					->where(function($query) use($slug, $slugField)
 					{
-						$query->where('slug', $slug);
-						$query->orWhere('slug', 'LIKE', $slug . '-%');
+						$query->where($slugField, $slug);
+						$query->orWhere($slugField, 'LIKE', $slug . '-%');
 					})
 					->get();
 
-			if(! $existingsSlugs->firstWhere('slug', $slug))
-				return $model->slug = $slug;
+			if(! $existingsSlugs->firstWhere($slugField, $slug))
+				return $model->{$slugField} = $slug;
 
 			$i = 0;
 
@@ -36,8 +43,8 @@ trait CRUDSluggableTrait
 			{
 				$i++;
 			}
-			while($existingsSlugs->firstWhere('slug', $slug . '-' . $i));
-				return $model->slug = $slug . '-' . $i;
+			while($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
+				return $model->{$slugField} = $slug . '-' . $i;
 		});
 	}
 }
