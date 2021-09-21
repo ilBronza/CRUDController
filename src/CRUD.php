@@ -32,6 +32,7 @@ class CRUD extends Controller
 
 	public $editFormDivider = false;
 	public $createFormDivider = false;
+	public $relationshipManager;
 
 
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];

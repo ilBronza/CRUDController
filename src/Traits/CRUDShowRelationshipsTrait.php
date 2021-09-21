@@ -95,6 +95,11 @@ trait CRUDShowRelationshipsTrait
 
 	private function shareRelationships()
 	{
+		if(isset($this->relationshipsManagerClass))
+			return $this->useRelationshipsManager();
+		else
+			echo "GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers ";
+
 		// ['account', 'roles', 'permissions', 'images']
 		$relationships = $this->getShowRelationships();
 

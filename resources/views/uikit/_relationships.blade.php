@@ -1,4 +1,6 @@
-@if(count($relationships))
+DEPRECATO A MANETTA
+
+@if(isset($relationships) && count($relationships))
 <div class="uk-card-footer">
 
     @foreach($relationships as $name)
@@ -18,4 +20,30 @@
     @endforeach
 
 </div>
+@endif
+
+
+DEPRECATO A MANETTA
+
+
+
+@if(isset($relationshipManager))
+<div class="uk-card-footer">
+
+@foreach($relationshipManager->getReationships() as $relationship)
+
+    <div class="uk-card uk-card-small">
+        <div class="uk-card-header">
+            <span class="uk-h3">
+                {!! $relationship->getCardTitle() !!}
+            </span>
+        </div>
+        <div class="uk-card-body">
+            {!! $relationship->render() !!}            
+        </div>
+    </div>
+@endforeach
+
+</div>
+
 @endif

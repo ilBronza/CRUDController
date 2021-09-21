@@ -149,11 +149,11 @@ trait CRUDIndexTrait
 		return 'related';
 	}
 
-	public function getIndependentTable(Collection $elements, string $fieldsGroupName)
+	public function getIndependentTable(Collection $elements, $fieldsGroupsName)
 	{
 		$tableName = $this->getModelClassBasename();
-		$fieldsGroupName = $this->getOrRelatedFieldsGroup($fieldsGroupName);
-		$fieldsGroup = $this->getTableFieldsGroups([$fieldsGroupName]);
+		$fieldsGroupsName = $this->getOrRelatedFieldsGroup($fieldsGroupsName);
+		$fieldsGroup = $this->getTableFieldsGroups([$fieldsGroupsName]);
 
 		$this->table = Datatables::create(
 			$tableName,
@@ -168,8 +168,8 @@ trait CRUDIndexTrait
 		);
 
 		$this->table->setArrayTable();
-		$this->table->setPageLength(10);
-		$this->table->setMinimalDom();
+		$this->table->setPageLength(30);
+		// $this->table->setMinimalDom();
 
 		return $this->table;
 	}
