@@ -2,9 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\FormField\FormField;
+use IlBronza\Form\Facades\Form;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use IlBronza\Form\Facades\Form;
 
 trait CRUDUpdateEditorTrait
 {
@@ -102,9 +103,47 @@ trait CRUDUpdateEditorTrait
 		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
+	private function findFormFieldByName($fieldsets, $fieldName)
+	{
+		foreach($fieldsets as $fieldset)
+		{
+			$fields = $this->getFieldsetFields($fieldset);
+
+			foreach($fields as $_fieldName => $field)
+				if($_fieldName == $fieldName)
+					return $field;
+
+			$childrenFieldsets = $this->getFieldsetFieldsets($fieldsetParameters);
+
+			if($formField = $this->findFormFieldByName($childrenFieldsets, $fieldName))
+				return $formField;
+		}
+
+		return null;
+	}
+
+	private function getUpdatingFormField(string $fieldName)
+	{
+		$fieldsets = $this->getFormFieldsets('updateEditor');
+
+		return $this->findFormFieldByName($fieldsets, $fieldName);
+	}
+
+	private function getUpdatingFormFieldInstance(Request $request) : FormField
+	{
+		$fieldName = $request->field;
+
+		$formFieldParameters = $this->getUpdatingFormField($fieldName);
+		$formFieldParameters['name'] = $fieldName;
+
+		return FormField::createFromArray($formFieldParameters);
+	}
+
 	private function manageUpdateGeneric(Request $request)
 	{
 		$updateParameters = $this->validateUpdateEditorRequest($request);
+
+		$formField = $this->getUpdatingFormFieldInstance($request);
 
 		$this->updateModelInstance($updateParameters);
 
@@ -112,6 +151,12 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['update-editor'] = true;
 		$updateParameters['model-id'] = $this->modelInstance->getKey();
 		$updateParameters['value'] = $updateParameters[$request->field];
+
+		if($formFieldAction = $formField->getEditorAction())
+		{
+			$updateParameters['ibaction'] = true;
+			$updateParameters['action'] = $formFieldAction;			
+		}
 
 		return $this->returnUpdateParameters($request, $updateParameters);
 	}
