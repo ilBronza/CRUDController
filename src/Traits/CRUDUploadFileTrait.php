@@ -23,8 +23,8 @@ trait CRUDUploadFileTrait
 
 		//gestire la validazione del file come tipo file da array parameters?
 
-		$fieldName = $request->fieldname;
-
+		$fieldName = str_replace("[]", "", $request->fieldname);
+		
 		if(! $request->multiple)
 			$this->modelInstance->clearMediaCollection($fieldName);
 

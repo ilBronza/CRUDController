@@ -106,7 +106,6 @@ trait CRUDStoreTrait
 		$this->manageParentModelAssociation();
 
 		$this->bindModelInstance($parameters);
-
 		$this->associateRelationshipsByType($parameters, 'store');
 
 		$this->modelInstance->save();

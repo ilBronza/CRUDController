@@ -26,7 +26,7 @@ trait CRUDRelationshipsManagerTrait
 		$this->relationshipsTableNames = [];
 		$this->relationshipsElements = [];
 
-		foreach($this->relationshipManager->getReationships() as $name => $relationshipsParameters)
+		foreach($this->relationshipManager->getRelationships() as $name => $relationshipsParameters)
 			$relationshipsParameters->setShowParameters();
 
 		view()->share('relationshipManager', $this->relationshipManager);

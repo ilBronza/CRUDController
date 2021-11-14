@@ -4,12 +4,20 @@ namespace IlBronza\CRUD\Traits\Model;
 
 trait CRUDDeleterTrait
 {
+    public function getDeletingRelationshipsField()
+    {
+        if($this->deletingRelationships ?? false)
+            return $this->deletingRelationships;
+
+        if(static::$deletingRelationships ?? false)
+            return static::$deletingRelationships;
+
+        throw new \Exception('Dichiara i campi static deletingRelationships nel model ' . class_basename($this));
+    }
+
     public function deleterDelete()
     {
-        if(! isset($this->deletingRelationships))
-            throw new \Exception('Dichiara i campi deletingRelationships nel model ' . class_basename($this));
-
-        foreach($this->deletingRelationships as $relationship)
+        foreach($this->getDeletingRelationshipsField() as $relationship)
         {
             $elements = $this->$relationship();
 
@@ -32,10 +40,7 @@ trait CRUDDeleterTrait
 
     public function deleterForceDelete()
     {
-        if(! isset($this->deletingRelationships))
-            throw new \Exception('Dichiara i campi deletingRelationships nel model ' . class_basename($this));
-
-        foreach($this->deletingRelationships as $relationship)
+        foreach($this->getDeletingRelationshipsField() as $relationship)
         {
             $thing = $this->$relationship()->make();
 

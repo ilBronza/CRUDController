@@ -30,7 +30,7 @@ DEPRECATO A MANETTA
 @if(isset($relationshipManager))
 <div class="uk-card-footer">
 
-@foreach($relationshipManager->getReationships() as $relationship)
+@foreach($relationshipManager->getRelationships() as $relationship)
 
     <div class="uk-card uk-card-small">
         <div class="uk-card-header">

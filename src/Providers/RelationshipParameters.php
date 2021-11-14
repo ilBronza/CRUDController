@@ -19,6 +19,7 @@ class RelationshipParameters
 	public $extraVariables;
 	public $translatedTitle;
 	public $buttonsMethods = [];
+	public $elementGetterMethod;
 
 
 
@@ -225,6 +226,11 @@ class RelationshipParameters
 		return $this->fieldsGroupsNames;
 	}
 
+	public function getElementGetterMethod()
+	{
+		return $this->elementGetterMethod;
+	}
+
 	/**
 	 * set relation's elements by given or load defaults
 	 *
@@ -238,9 +244,13 @@ class RelationshipParameters
 		if($elements)
 			return $this->elements = $elements;
 
-		$relationMethod = $this->getRelationshipMethod();
 
-		$this->elements = $this->relationshipsManager->model->{$relationMethod};
+		if($elementGetterMethod = $this->getElementGetterMethod())
+			return $this->elements = $this->relationshipsManager->model->{$elementGetterMethod}();
+
+		$relationMethod = $this->getRelationshipMethod();
+		
+		return $this->elements = $this->relationshipsManager->model->{$relationMethod};
 	}
 
 	/**
@@ -352,6 +362,11 @@ class RelationshipParameters
 	 **/
 	public function setTable()
 	{
+
+		if(request()->rowId)
+			if($this->name != 'quantities')
+				return ;
+
 		$parameters = [
 			'name' => $this->getTableName(),
 			'fieldsGroups' => $this->getTableFieldsGroups(),

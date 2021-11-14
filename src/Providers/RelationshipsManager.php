@@ -73,7 +73,7 @@ abstract class RelationshipsManager
 		return array_keys($this->relationships);
 	}
 
-	public function getReationships()
+	public function getRelationships()
 	{
 		return $this->relationships;
 	}

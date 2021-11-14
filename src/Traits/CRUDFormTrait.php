@@ -7,10 +7,13 @@ use IlBronza\CRUD\Traits\CRUDArrayFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDFormFieldsTrait;
 use IlBronza\CRUD\Traits\CRUDUploadFileTrait;
+use IlBronza\FormField\DatabaseField;
 use IlBronza\FormField\Facades\FormField;
 use IlBronza\FormField\Fields\JsonFormField;
 use IlBronza\Form\Form;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * come compilare il fieldset con opzioni e senza opzioni
@@ -327,6 +330,18 @@ trait CRUDFormTrait
 		return $this->$parameterName;
 	}
 
+	private function assignDatabaseFieldsParameters()
+	{
+		$databaseFields = [];
+
+		$fields = DB::select('describe ' . $this->modelInstance->getTable());
+
+		foreach($fields as $dbField)
+			$databaseFields[$dbField->Field] = new DatabaseField($dbField);
+
+		$this->form->setAllDatabaseFields($databaseFields);
+	}
+
 	/**
 	 * share form parameters for defualt view
 	 *
@@ -353,7 +368,9 @@ trait CRUDFormTrait
 		);
 
 		$this->form->assignModel($this->modelInstance);
+		$this->assignDatabaseFieldsParameters();
 
+		// if($type == 'create')
 		$this->addFieldsetsByTypeToForm($type);
 
 		$this->setFormCardByType($type);

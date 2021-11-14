@@ -108,6 +108,9 @@ trait CRUDRelationshipTrait
 
 	private function relateBelongsToElements(string $relationship, $related)
 	{
+		if((is_array($related))&&(count($related) == 0))
+			$related = null;
+
 		$this->modelInstance->{$relationship}()->associate($related);
 	}
 
@@ -128,6 +131,7 @@ trait CRUDRelationshipTrait
 	private function callStandardMethod($relationship, $values)
 	{
 		$relationshipsFields = $this->learnMethodType($relationship);
+
 		$associationMethod = 'relate' . class_basename($relationshipsFields) . 'Elements';
 
 		$this->$associationMethod($relationship, $values);
