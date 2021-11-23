@@ -102,7 +102,7 @@ trait CRUDIndexTrait
     public function beforeRenderIndex() { }
 
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
-	{	
+	{
 		if(! $tableName)
 			$tableName = $this->getTableName();
 

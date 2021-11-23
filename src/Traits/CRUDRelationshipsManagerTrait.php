@@ -31,4 +31,26 @@ trait CRUDRelationshipsManagerTrait
 
 		view()->share('relationshipManager', $this->relationshipManager);
 	}
+
+	public function useSingleRelationRelationshipsManager(string $type = 'show', string $relation, $modelKey)
+	{
+		$this->relationshipManager = new $this->relationshipsManagerClass($type, $this->modelInstance, $relation, $modelKey);
+
+		$relationshipManager = $this->relationshipManager;
+
+		$this->relationshipManager->relationship->elementsGetter = function() use($relationshipManager)
+		{
+			$relationMethod = $relationshipManager->relationship->relation;
+
+			$dummyRelatedModel = $relationshipManager->model->{$relationMethod}()->make();
+			$relationKeyName = $dummyRelatedModel->getKeyName();
+
+			if(! is_array($relationshipManager->modelKey))
+				$relationshipManager->modelKey = [$relationshipManager->modelKey];
+
+			return $relationshipManager->model->{$relationMethod}()->whereIn($relationKeyName, $relationshipManager->modelKey)->get();
+		};
+
+		return $this->relationshipManager->relationship->renderTableRowsArray();
+	}
 }

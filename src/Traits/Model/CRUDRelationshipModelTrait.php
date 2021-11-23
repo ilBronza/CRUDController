@@ -2,8 +2,9 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use Auth;
+use App\Models\Referent;
 use App\Models\User;
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;

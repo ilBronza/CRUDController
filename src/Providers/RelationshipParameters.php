@@ -486,6 +486,38 @@ class RelationshipParameters
 		);
 	}
 
+	public function renderTableRowsArray()
+	{
+        $this->table = Datatables::create(
+            $this->getTableName(),
+            $this->getTableFieldsGroups(),
+            $this->elementsGetter,
+            $this->hasSelectRowCheckboxes(),
+            $this->getExtraVariables(),
+            $this->getRelatedModelClass()
+        );
+
+		return $this->table->renderPage();
+
+
+
+
+
+		// $parameters = [
+		// 	'name' => $this->getTableName(),
+		// 	'fieldsGroups' => $this->getTableFieldsGroups(),
+		// 	'elements' => $this->getElements(),
+		// 	'selectRowCheckboxes' => $this->hasSelectRowCheckboxes(),
+		// 	'extraVariables' => $this->getExtraVariables(),
+		// 	'modelClass' => $this->getRelatedModelClass()
+		// ];
+
+		// $this->table = Datatables::createStandAloneTable($parameters);
+
+
+		// return $this->table->returnSingleElement($this->elementsGetter);
+	}
+
 	public function render()
 	{
 		if($this->renderAsView())

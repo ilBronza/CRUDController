@@ -17,6 +17,9 @@ trait CRUDValidateTrait
 
 		foreach($fieldsets as $fieldset)
 		{
+			if(! $this->userCanSeeFieldsetByRoles($fieldset))
+				continue;
+
 			$fields = $this->getFieldsetFields($fieldset);
 
 			foreach($fields as $fieldName => $validation)
@@ -111,6 +114,9 @@ trait CRUDValidateTrait
 
 	private function getValidationArrayByFieldset(array $fieldset, array $validationArray)
 	{
+		if(! $this->userCanSeeFieldsetByRoles($fieldset))
+			return $validationArray;
+
 		$fields = $this->getFieldsetFields($fieldset);
 
 		foreach($fields as $fieldName => $fieldContent)

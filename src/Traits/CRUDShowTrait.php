@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Traits\CRUDRelationshipsManagerTrait;
 use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
+use Illuminate\Http\Request;
 
 trait CRUDShowTrait
 {
@@ -83,11 +84,24 @@ trait CRUDShowTrait
 			view()->share('showButtons', $this->showButtons);
 	}
 
+	private function manageEditorRequest(Request $request)
+	{
+		$pluralModelType = $request->pluralModelType;
+		$pluralModelType = 'quantities';
+
+		$modelId = $request->rowId;
+
+		return $this->useSingleRelationRelationshipsManager('show', $pluralModelType, $modelId);
+	}
+
 	public function _show($modelInstance)
 	{
 		$this->modelInstance = $modelInstance;
 
 		$this->checkIfUserCanSee();
+
+		if(request()->ibeditor)
+			return $this->manageEditorRequest(request());
 
 		$view = $this->getShowView();
 

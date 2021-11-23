@@ -2,11 +2,13 @@
 
 namespace IlBronza\CRUD\Providers;
 
+use IlBronza\CRUD\Providers\RelationshipParameters;
 use Illuminate\Database\Eloquent\Model;
 
 abstract class RelationshipsManager
 {
 	public $name;
+	public $type;
 	public $model;
 	public $relationships;
 
@@ -17,26 +19,67 @@ abstract class RelationshipsManager
 		return get_class($this->model);
 	}
 
-	public function getRelationsParameters(string $type = 'show')
+	public function getRelationsParameters()
 	{
 		$parameters = $this->getAllRelationsParameters();
 
-		return $parameters[$type];
+		return $parameters[$this->type];
 	}
 
-	public function __construct(string $type = 'show', Model $model)
+	public function getRelationParameters(string $relation)
 	{
-		$this->name = $type;
-		$this->model = $model;
+		$parameters = $this->getAllRelationsParameters();
 
+		return $parameters[$this->type]['relations'][$relation];
+	}
+
+	private function instantiateAllRelations()
+	{
 		$this->relationships = collect();
 
-		$relationsParameters = $this->getRelationsParameters($type);
+		$relationsParameters = $this->getRelationsParameters();
 
 		foreach($relationsParameters['relations'] as $name => $parameters)
 			$this->addRelationship($name, $parameters);
 
 		$this->loadModelRelatedElements();
+	}
+
+	private function getRelationMethodByParameters(array $relationParameters) : string
+	{
+		return $relationParameters['relation'];
+	}
+
+	private function instantiateSingleRelation(string $relation) : self
+	{
+		$relationParameters = $this->getRelationParameters($relation);
+
+		$this->relationship = $this->createRelationship($relation, $relationParameters);
+
+		return $this;
+
+		dd($relationship);
+
+		$dummyRelatedModel = $this->model->{$relationMethod}()->make();
+		$relationKeyName = $dummyRelatedModel->getKeyName();
+
+		if(! is_array($modelKey))
+			$modelKey = [$modelKey];
+
+		$this->relatedModels = $this->model->{$relationMethod}()->whereIn($relationKeyName, $modelKey)->get();
+	}
+
+	public function __construct(string $type = 'show', Model $model, string $relation = null, $modelKey = null)
+	{
+		$this->name = $type;
+		$this->type = $type;
+		$this->model = $model;
+		$this->modelKey = $modelKey;
+
+		if(! $relation)
+			return $this->instantiateAllRelations();
+
+		return $this->instantiateSingleRelation($relation);
 	}
 
 	private function loadModelRelatedElements()

@@ -9,7 +9,7 @@ trait CRUDDeleterTrait
         if($this->deletingRelationships ?? false)
             return $this->deletingRelationships;
 
-        if(static::$deletingRelationships ?? false)
+        if(isset(static::$deletingRelationships))
             return static::$deletingRelationships;
 
         throw new \Exception('Dichiara i campi static deletingRelationships nel model ' . class_basename($this));

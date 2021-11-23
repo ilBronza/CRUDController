@@ -232,8 +232,19 @@ trait CRUDFormTrait
 		return $fieldsetParameters;
 	}
 
+	public function userCanSeeFieldsetByRoles(array $fieldsetParameters) : bool
+	{
+		if(! ($fieldsetParameters['roles'] ?? false))
+			return true;
+
+		return Auth::user()->hasAnyRole($fieldsetParameters['roles']);
+	}
+
 	public function addFieldset($target, string $name, array $fieldsetParameters)
 	{
+		if(! $this->userCanSeeFieldsetByRoles($fieldsetParameters))
+			return ;
+
 		$fields = $this->getFieldsetFields($fieldsetParameters);
 		$fieldsets = $this->getFieldsetFieldsets($fieldsetParameters);
 		$parameters = $this->getFieldsetParameters($fieldsetParameters);
