@@ -12,6 +12,15 @@
     "homepage": "https://github.com/ilbronza/crud",
     "keywords": ["Laravel", "CRUD"],
     "require": {
+        "ilbronza/buttons": "@dev",
+        "ilbronza/datatables": "@dev",
+        "ilbronza/form": "@dev",
+        "ilbronza/formfield": "@dev",
+        "ilbronza/notifications": "@dev",
+        "ilbronza/uikittemplate": "@dev",
+        "ilbronza/ukn": "@dev",
+        "spatie/laravel-activitylog": "^3.16",
+        "spatie/laravel-medialibrary": "^9.0.0"
     },
     "require-dev": {
     },

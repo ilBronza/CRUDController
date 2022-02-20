@@ -319,19 +319,41 @@ trait CRUDFormTrait
 		return $this->$methodName();
 	}
 
-	private function setFormTitleByType(string $type)
+	private function setEditFormTitle()
 	{
 		$translationFileName = $this->getModelTranslationFileName();
 
-		if($type == 'edit')
-			$this->form->setTitle(
+		if(trans()->has($translationFileName . '.' . 'cardTitleEdit'))
+			return $this->form->setTitle(
 				__($translationFileName . '.' . 'cardTitleEdit', ['element' => $this->modelInstance->getName()])
 			);
 
-		if($type == 'create')
-			$this->form->setTitle(
-				__($translationFileName . '.' . 'cardTitleCreate :element', ['element' => __('relations.' . lcfirst(class_basename($this->modelInstance)))])
+		return $this->form->setTitle(
+			trans('crud::crud.cardTitleEdit', ['element' => $this->modelInstance->getName()])
+		);
+	}
+
+	private function setCreateFormTitle()
+	{
+		$translationFileName = $this->getModelTranslationFileName();
+
+		if(trans()->has($translationFileName . '.' . 'cardTitleCreate'))
+			return $this->form->setTitle(
+				__($translationFileName . '.' . 'cardTitleCreate', ['element' => __('relations.' . lcfirst(class_basename($this->modelInstance)))])
 			);
+
+		return $this->form->setTitle(
+			trans('crud::crud.cardTitleCreate', ['element' => __('relations.' . lcfirst(class_basename($this->modelInstance)))])
+		);
+	}
+
+	private function setFormTitleByType(string $type)
+	{
+		if($type == 'edit')
+			return $this->setEditFormTitle();
+
+		if($type == 'create')
+			return $this->setCreateFormTitle();
 	}
 
 	public function hasFormDivider(string $formType)
@@ -397,7 +419,23 @@ trait CRUDFormTrait
 				$this->getFormIntroByType($type)
 			);
 
+		if($this->hasSaveAndNew())
+			$this->form->addSaveAndNewButton();
+
+		if($this->hasSaveAndRefresh())
+			$this->form->addSaveAndRefreshButton();
+
 		view()->share('form', $this->form);
+	}
+
+	public function hasSaveAndNew()
+	{
+		return $this->saveAndNew ?? config('crud.saveAndNew');
+	}
+
+	public function hasSaveAndRefresh()
+	{
+		return $this->saveAndRefresh ?? config('crud.saveAndRefresh');		
 	}
 
 	/**

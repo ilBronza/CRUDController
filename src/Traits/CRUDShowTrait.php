@@ -31,10 +31,28 @@ trait CRUDShowTrait
 	}
 
 
+	/**
+	 * get show view name
+	 *
+	 * if declared an overridden view return it, otherwise return default one
+	 *
+	 * @return string
+	 **/
+	public function get_ShowView() : ? string
+	{
+		return $this->_showView ?? 'crud::uikit._show';
+	}
+
+
 	private function checkIfUserCanSee()
 	{
 		if(! $this->modelInstance->userCanSee(auth()->user()))
 			abort(403);
+	}
+
+	private function getGuardedShowDBFields()
+	{
+		return $this->guardedShowDBFields ?? [];
 	}
 
 	//TODO mettere i campi visibili per show
@@ -42,7 +60,7 @@ trait CRUDShowTrait
 	{
 		$allowedFields = $fields = array_keys($this->modelInstance->getAttributes());
 
-		$allowedFields = array_diff($allowedFields, $this->guardedShowDBFields ?? []);
+		$allowedFields = array_diff($allowedFields, $this->getGuardedShowDBFields());
 		view()->share('allowedFields', $allowedFields);
 	}
 
@@ -54,11 +72,25 @@ trait CRUDShowTrait
 			view()->share('parentModelInstance', $this->parentModel);
 	}
 
+	public function getEditModelIsntanceUrl()
+	{
+		return null;
+	}
+
 	private function shareShowParameters()
 	{
 		$this->shareShowModels();
-		$this->shareRelationships();
+
+		$relationships = $this->shareRelationships();
+
+		if(request()->ajax())
+			return $relationships;
+
 		$this->shareAllowedFields();
+
+		view()->share('showStickyButtonsNavbar', $this->showStickyButtonsNavbar);
+		view()->share('canEditModelInstance', $this->canEditModelInstance);
+		view()->share('editModelInstanceUrl', $this->getEditModelIsntanceUrl());
 
 		if(in_array('index', $this->allowedMethods))
 			view()->share('backToListUrl', $this->getIndexUrl());
@@ -71,7 +103,6 @@ trait CRUDShowTrait
 
 	public function getExtendedShowButtons()
 	{
-		
 	}
 
 	public function shareShowButtons()
@@ -86,8 +117,8 @@ trait CRUDShowTrait
 
 	private function manageEditorRequest(Request $request)
 	{
-		$pluralModelType = $request->pluralModelType;
-		$pluralModelType = 'quantities';
+		$pluralModelType = $request->modelName;
+		// $pluralModelType = 'quantities';
 
 		$modelId = $request->rowId;
 
@@ -104,12 +135,17 @@ trait CRUDShowTrait
 			return $this->manageEditorRequest(request());
 
 		$view = $this->getShowView();
+		$_showView = $this->get_ShowView();
 
-		$this->shareShowParameters();
+		$showParameters = $this->shareShowParameters();
+
+		if(request()->ajax())
+			return $showParameters;
+
 		$this->shareShowButtons();
 
 		$this->shareExtraViews();
 
-		return view($view);
+		return view($view, ['_showView' => $_showView]);
 	}
 }

@@ -16,6 +16,12 @@ trait CRUDStoreTrait
 	 */
 	public function getAfterStoredRedirectUrl()
 	{
+		if($this->isSaveAndNew())
+			return $this->getRouteUrlByType('create');
+
+		if($this->isSaveAndRefresh())
+			return $this->getRouteUrlByType('edit');		
+
 		return $this->getRouteUrlByType('index');
 	}
 

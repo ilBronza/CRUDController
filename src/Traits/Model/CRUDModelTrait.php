@@ -3,8 +3,8 @@
 namespace IlBronza\CRUD\Traits\Model;
 
 use App\Models\User;
-use App\Providers\Helpers\dgButton;
 use Auth;
+use IlBronza\Button\Button;
 use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -64,7 +64,7 @@ trait CRUDModelTrait
 
         $text = trans('generals.create' . class_basename(static::class));
 
-        return new dgButton($href, $text, 'plus');
+        return new Button($href, $text, 'plus');
     }
 
     static function getCreateChildButton(Model $model)
@@ -83,7 +83,7 @@ trait CRUDModelTrait
 
         $text = trans('generals.create' . class_basename(static::class));
 
-        return new dgButton($href, $text, 'plus');
+        return new Button($href, $text, 'plus');
     }
 
     public function getRouteClassname()
@@ -171,6 +171,9 @@ trait CRUDModelTrait
             return false;
 
         if($user->hasRole('administrator'))
+            return true;
+
+        if($user->hasRole('superadmin'))
             return true;
 
         return false;

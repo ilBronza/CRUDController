@@ -1,4 +1,7 @@
-DEPRECATO A MANETTA
+<!--DEPRECATO A MANETTA-->
+<script type="text/javascript">
+    console.log('DEPRECATO A MANETTA');
+</script>
 
 @if(isset($relationships) && count($relationships))
 <div class="uk-card-footer">
@@ -23,7 +26,7 @@ DEPRECATO A MANETTA
 @endif
 
 
-DEPRECATO A MANETTA
+<!--DEPRECATO A MANETTA-->
 
 
 

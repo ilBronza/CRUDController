@@ -4,18 +4,26 @@
 
 @include('uikittemplate::utilities.__extraViews', ['position' => 'top'])
 
-<div class="uk-card uk-card-default">
+<div class="uk-card uk-card-default show-{{ strtolower(class_basename($modelInstance)) }}">
+
     <div class="uk-card-header">
         <div uk-grid>
             <div class="uk-width-expand">
                 <span class="uk-h3 uk-display-block">@indexLink($modelInstance) {{ $modelInstance->getName() }}</span>
 
                 @if((isset($backToListUrl))||(isset($showButtons)))
-                    <nav class="uk-navbar-container" uk-navbar>
+                    <nav
+                        class="uk-navbar-container"
+                        uk-navbar
+
+                        @if($showStickyButtonsNavbar)
+                        uk-sticky
+                        @endif
+                        >
                         <div class="uk-navbar-left">
                             <ul class="uk-navbar-nav">
                                 @isset($backToListUrl)
-                                <li><a href="{{ $backToListUrl }}">@lang('crud.backToList')</a></li>
+                                <li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
                                 @endisset
 
                                 @if(isset($showButtons))
@@ -31,28 +39,19 @@
                 @endif
             </div>
 
-            @if($modelInstance->userCanUpdate(Auth::user()))
+            @if(($modelInstance->userCanUpdate(Auth::user())&&($canEditModelInstance)))
                 <div class="uk-width-auto">
-                    <a href="{{ $modelInstance->getEditURL() }}">@lang('crud.editElement', ['element' => $modelInstance->getName()])</a>
+                    <a href="{{ $editModelInstanceUrl ?? $modelInstance->getEditURL() }}">@lang('crud.editElement', ['element' => $modelInstance->getName()])</a>
                 </div>
             @endif
 
         </div>
     </div>
     <div class="uk-card-body">
-        <dl class="uk-column-1-4">
-        @foreach($allowedFields as $field)
-            <dt>{{ __('fields.' . $field) }}</dt>
-            <dd>
-                @if((is_object($modelInstance->{$field}))||(is_array($modelInstance->{$field})))
-                    {{ json_encode($modelInstance->{$field}) }}
-                @else
-                    {{ $modelInstance->{$field} }}
-                @endif
-            </dd>
-        @endforeach
-        </dl>
+	    @include($_showView)
     </div>
+
+
 
     @include('crud::uikit._relationships')
 

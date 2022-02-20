@@ -8,6 +8,7 @@ use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
 use IlBronza\CRUD\Middleware\CRUDPareseAjaxBooleansAndNull;
+use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\ResourceRegistrar;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
@@ -30,12 +31,11 @@ class CRUDServiceProvider extends ServiceProvider
     {
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
+        $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
         app()->bind(BaseResourceRegistrar::class, function () {
             return new ResourceRegistrar(app()->make(Router::class));
         });
-
-
 
         /**
          * child Resource for dependants models, 
@@ -95,7 +95,7 @@ class CRUDServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'crud');
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'crud');
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         // $this->app['router']->aliasMiddleware('CRUDAllowedMethods', __DIR__.'/Middleware/CRUDAllowedMethods.php');
@@ -154,6 +154,7 @@ class CRUDServiceProvider extends ServiceProvider
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);
         $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
+        $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 
@@ -194,6 +195,11 @@ class CRUDServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/assets' => base_path('resources'),
         ], 'crud.assets');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations')
+        ], 'crud-migrations');
+
 
         // Publishing the translation files.
         /*$this->publishes([

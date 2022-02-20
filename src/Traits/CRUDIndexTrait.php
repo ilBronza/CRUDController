@@ -39,67 +39,67 @@ trait CRUDIndexTrait
 		return $groups;
 	}
 
-    public function getTableFieldsGroup(string $key)
-    {
-        if(($table = $this::$tables[$key]?? null) === null)
-            return null;
+	public function getTableFieldsGroup(string $key)
+	{
+		if(($table = $this::$tables[$key]?? null) === null)
+			return null;
 
-        // if(isset($table['fields']))
-        //     return $table['fields'];
+		// if(isset($table['fields']))
+		//     return $table['fields'];
 
-        return $table;
-    }
+		return $table;
+	}
 
-    public function userCanCreate()
-    {
-    	if(! $this->methodIsAllowed('index'))
-    		return false;
+	public function userCanCreate()
+	{
+		if(! $this->methodIsAllowed('index'))
+			return false;
 
-    	return $this->modelClass::userCanCreate(Auth::user());
-    }
+		return $this->modelClass::userCanCreate(Auth::user());
+	}
 
-    public function addCreateButton()
-    {
+	public function addCreateButton()
+	{
 		$createButton = $this->getCreateNewModelButton();
 
 		$this->table->addButton($createButton);
-    }
+	}
 
-    private function manageCreateButton()
-    {
+	private function manageCreateButton()
+	{
 		if($this->avoidCreateButton ?? false)
 			return ;
 
-    	try
-    	{
+		try
+		{
 			if(! $this->userCanCreate())
 				return ;
-    	}
-    	catch(\Exception $e)
-    	{
-    		throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass);
-    	}
+		}
+		catch(\Exception $e)
+		{
+			throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass . '. ' . $e->getMessage());
+		}
 
 		$createButton = $this->getCreateNewModelButton();
 
 		$this->table->addButton($createButton);
-    }
+	}
 
-    private function addIndexButtonsToTable()
-    {
-    	$this->manageCreateButton();
+	private function addIndexButtonsToTable()
+	{
+		$this->manageCreateButton();
 
-    	$this->addIndexButtons();
-    }
+		$this->addIndexButtons();
+	}
 
-    public function addIndexButtons() { }
+	public function addIndexButtons() { }
 
-    private function getTableName()
-    {
-    	return Str::slug($this->getModelClassBasename());
-    }
+	private function getTableName()
+	{
+		return Str::slug($this->getModelClassBasename());
+	}
 
-    public function beforeRenderIndex() { }
+	public function beforeRenderIndex() { }
 
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
 	{
@@ -127,7 +127,7 @@ trait CRUDIndexTrait
 			$baseModel ?? $this->modelClass
 		);
 
-        if(request()->ajax())
+		if(request()->ajax())
 			return $this->table->renderPage();
 
 		$this->table->addBaseModelClass($this->modelClass);

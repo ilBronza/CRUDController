@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use Carbon\Carbon;
 use IlBronza\CRUD\Traits\Model\CRUDBrotherhoodTrait;
+use IlBronza\Ukn\Ukn;
 
 trait CRUDValidityTrait
 {
@@ -12,30 +13,42 @@ trait CRUDValidityTrait
     private function unvalidateBrothers()
     {
         static::brothers()
-            ->where($this->getKeyName(), '!=', $this->getKey())
+            // ->where($this->getKeyName(), '!=', $this->getKey())
             ->update([
                 'valid' => false
             ]);
     }
 
+    private function deleteWithEmptyValidity()
+    {
+        // if(static::class == "App\ManufacturerWave")
+        //     return ;
+
+        static::brothers()->whereNull('valid_from')->delete();
+    }
+
     public function checkTimingValidity()
     {
+        // $this->deleteWithEmptyValidity();
         $elements = static::brothers()->get();
 
         $elements->push($this);
+
+        $elementIds = $elements->pluck('id');
 
         $elements = $elements->sortBy('valid_from')->values()->all();
 
         $currentValidFrom = null;
 
         foreach($elements as $element)
-            if($element->isValidBeforeNow())
-                $currentValidFrom = $element;
+            if($element->isValidAfterNow())
+                if($element->isValidBeforeNow())
+                    $currentValidFrom = $element;
 
-        if($currentValidFrom->isValidAfterNow())
+        if($currentValidFrom)
             return $currentValidFrom->setValid();
 
-        static::whereIn('id', $elements->pluck($this->getKeyName()))->update(['valid' => false]);
+        static::whereIn('id', $elementIds)->update(['valid' => false]);
 
         Ukn::w('Nessun element valido per ' . $this->getName());
     }
@@ -82,11 +95,18 @@ trait CRUDValidityTrait
         return $this->isValidAfter(Carbon::now());
     }
 
+    public function isValid()
+    {
+        return $this->valid;
+    }
+
     private function setValid()
     {
+        $this->unvalidateBrothers();
+
         static::where($this->getKeyName(), $this->getKey())->update(['valid' => true]);
 
-        $this->unvalidateBrothers();
+        // dd(static::where($this->getKeyName(), $this->getKey())->first());
     }
 
 

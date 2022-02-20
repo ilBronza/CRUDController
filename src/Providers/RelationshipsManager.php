@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Providers;
 
 use IlBronza\CRUD\Providers\RelationshipParameters;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 abstract class RelationshipsManager
 {
@@ -126,4 +127,11 @@ abstract class RelationshipsManager
 		return $this->relationships->pluck('relation')->toArray();
 	}
 
+	public function manageAjaxTableRequest()
+	{
+		foreach($this->getRelationships() as $name => $relationshipsParameters)
+			if($name == request()->model)
+				return $relationshipsParameters->setShowParameters();
+
+	}
 }

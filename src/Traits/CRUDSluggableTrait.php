@@ -5,6 +5,12 @@ namespace IlBronza\CRUD\Traits;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
+//public $nameField = 'name'
+//the field to take the string from, when creating the alias
+
+//public $slugField = 'slug'
+//the field where to save the alias value
+
 trait CRUDSluggableTrait
 {
 	static function getSlugField()
@@ -24,7 +30,7 @@ trait CRUDSluggableTrait
 
 			$slug = Str::slug($slug);
 
-			$existingsSlugs = DB::table((new self())->getTable())
+			$existingsSlugs = DB::table((new static)->getTable())
 					->select($slugField)
 					->where($model->getKeyName(), '!=', $model->getKey())
 					->where(function($query) use($slug, $slugField)

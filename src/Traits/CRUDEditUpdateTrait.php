@@ -13,7 +13,8 @@ trait CRUDEditUpdateTrait
 
 	//edit parameters
 	public $editView;
-	public $standardEditView = 'form::uikit.form';
+	// public $standardEditView = 'form::uikit.form';
+	public $standardEditView = 'crud::uikit.edit';
 
 	public function getAfterUpdateRoute()
 	{
@@ -92,6 +93,18 @@ trait CRUDEditUpdateTrait
         }
     }
 
+	public function getExtendedEditButtons()
+	{
+	}
+
+	public function shareEditButtons()
+	{
+		$this->getExtendedEditButtons();
+
+		if((isset($this->editButtons))&&(count($this->editButtons)))
+			view()->share('buttons', $this->editButtons);
+	}
+
 	public function addEditExtraViews()
 	{
 		
@@ -117,13 +130,13 @@ trait CRUDEditUpdateTrait
 
 		$view = $this->getEditView();
 
-
 		if($view == $this->standardEditView)
 			$this->shareDefaultEditFormParameters();
 
 		$this->setFormParametersByType('edit');
 
 		$this->loadEditRelationshipsValues();
+		$this->shareEditButtons();
 		$this->loadEditExtraViews();
 
 		if(method_exists($this, 'beforeRenderEdit'))

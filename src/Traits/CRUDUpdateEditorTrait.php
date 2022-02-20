@@ -73,6 +73,9 @@ trait CRUDUpdateEditorTrait
 			$updateParameters['action'] = 'refreshRow';
 		}
 
+		if($fieldExtraData['ibaction'] ?? null)
+			$updateParameters['ibaction'] = $fieldExtraData['ibaction'];
+
 		return $updateParameters;
 	}
 

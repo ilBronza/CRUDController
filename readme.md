@@ -9,10 +9,28 @@ This is where your description should go. Take a look at [contributing.md](contr
 
 ## Installation
 
+Before install media library 
+(https://github.com/spatie/laravel-medialibrary)
+
+Before install spatie permissions 
+(https://github.com/spatie/laravel-medialibrary)
+
+Before install activity log 
+(https://spatie.be/docs/laravel-activitylog/v4/introduction)
+USE php artisan vendor:publish to publish activity-log migrations and config. Installation is bugged
+
 Via Composer
 
 ``` bash
 $ composer require ilbronza/crud
+```
+
+``` bash
+$ php artisan notifications:table
+$ php artisan migrate
+
+$ php artisan vendor:publish --tag=crud-migrations
+$ php artisan migrate
 ```
 
 on config/media-library.php

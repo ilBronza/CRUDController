@@ -125,6 +125,11 @@ trait CRUDParentingTrait
             return $this->collectRecursiveParentNames();
     }
 
+    public function isChild()
+    {
+        return !! $this->parent_id;
+    }
+
     public function isRoot()
     {
         return empty($this->parent_id);

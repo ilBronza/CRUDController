@@ -101,6 +101,16 @@ trait CRUDRelationshipTrait
 		return get_class($this->modelInstance->{$method}());
 	}
 
+	private function relateHasOneElements(string $relationship, $related)
+	{
+		if(! $related)
+			return ;
+
+		$foreign = $this->modelInstance->{$relationship}()->getForeignKeyName();
+
+		$this->modelInstance->{$foreign} = $related;
+	}
+
 	private function relateBelongsToManyElements(string $relationship, $related)
 	{
 		$this->modelInstance->{$relationship}()->sync($related);

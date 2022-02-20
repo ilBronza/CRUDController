@@ -244,7 +244,6 @@ class RelationshipParameters
 		if($elements)
 			return $this->elements = $elements;
 
-
 		if($elementGetterMethod = $this->getElementGetterMethod())
 			return $this->elements = $this->relationshipsManager->model->{$elementGetterMethod}();
 
@@ -264,6 +263,7 @@ class RelationshipParameters
 	 **/
 	public function getElements()
 	{
+
 		if(! $this->elements)
 			$this->setElements();
 
@@ -377,6 +377,9 @@ class RelationshipParameters
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
+
+		if(request()->ajax())
+			return $this->table->renderPage();
 
 		$this->manageTableButtons();
 	}

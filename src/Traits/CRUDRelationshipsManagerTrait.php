@@ -20,6 +20,9 @@ trait CRUDRelationshipsManagerTrait
 	{
 		$this->setRelationshipsManager($type);
 
+		if(request()->ajax())
+			return $this->relationshipManager->manageAjaxTableRequest();
+
 		if(! $this->relationshipManager)
 			return false;
 

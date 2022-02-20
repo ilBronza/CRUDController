@@ -2,7 +2,8 @@
 
 namespace IlBronza\CRUD;
 
-use App\Providers\Helpers\dgButton;
+use IlBronza\Button\Button;
+use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
@@ -30,9 +31,15 @@ class CRUD extends Controller
 	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
 
+	//show parameters
+	public $canEditModelInstance = true;
+	public $editModelInstanceUrl;
+
 	public $editFormDivider = false;
 	public $createFormDivider = false;
 	public $relationshipManager;
+
+	public $showStickyButtonsNavbar = false;
 
 
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
@@ -47,7 +54,7 @@ class CRUD extends Controller
 
 		//perchè si applica solo se non viene usato il metodo only()???
 		$this->middleware('CRUDPareseAjaxBooleansAndNull');
-
+		$this->middleware(CRUDParseComasAndDots::class);
 		$this->checkIfModelUsesTrait();
 	}
 
@@ -143,9 +150,9 @@ class CRUD extends Controller
 	/**
 	 * return a button to create new given model instance
 	 *
-	 * @return dgButton
+	 * @return Button
 	 */
-	public function getCreateNewModelButton() : dgButton
+	public function getCreateNewModelButton() : Button
 	{
 		if(isset($this->parentModel))
 			return $this->modelClass::getCreateChildButton($this->parentModel);

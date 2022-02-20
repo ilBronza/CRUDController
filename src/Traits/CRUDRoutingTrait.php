@@ -4,6 +4,16 @@ namespace IlBronza\CRUD\Traits;
 
 trait CRUDRoutingTrait
 {
+	public function isSaveAndNew()
+	{
+		return request()->has('save_and_new');
+	}
+
+	public function isSaveAndRefresh()
+	{
+		return request()->has('save_and_refresh');
+	}
+
 	public function getIndexUrl()
 	{
 		return $this->getRouteUrlByType('index');

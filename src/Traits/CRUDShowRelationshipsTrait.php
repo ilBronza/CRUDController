@@ -98,7 +98,9 @@ trait CRUDShowRelationshipsTrait
 		if(isset($this->relationshipsManagerClass))
 			return $this->useRelationshipsManager();
 		else
-			echo "GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers ";
+			echo "
+		<script>console.log('GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers');</script>
+		<!--GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers -->";
 
 		// ['account', 'roles', 'permissions', 'images']
 		$relationships = $this->getShowRelationships();
