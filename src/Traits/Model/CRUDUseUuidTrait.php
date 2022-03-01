@@ -20,7 +20,7 @@ trait CRUDUseUuidTrait
             $model->incrementing = false; // this is used for new instances
 
             if (empty($model->{$model->getKeyName()})) { // if it's not empty, then we want to use a specific id
-                $model->{$model->getKeyName()} = (string)Uuid::uuid4();
+                $model->{$model->getKeyName()} = (string) Uuid::uuid4();
             }
         });
     }
