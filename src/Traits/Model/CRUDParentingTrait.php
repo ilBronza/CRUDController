@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Illuminate\Support\Collection;
+
 trait CRUDParentingTrait
 {
     public function scopeRoot($query)
@@ -133,5 +135,22 @@ trait CRUDParentingTrait
     public function isRoot()
     {
         return empty($this->parent_id);
+    }
+
+    public function getBrothers() : Collection
+    {
+        if(! $this->parent_id)
+            return collect();
+
+        return static::where('parent_id', $this->parent_id)
+                ->where($this->getKeyName(), '!=', $this->getKey())
+                ->get();
+    }
+
+    public function getBrothersByField(string $field) : Collection
+    {
+        return static::where($field, $this->{$field})
+                ->where($this->getKeyName(), '!=', $this->getKey())
+                ->get();        
     }
 }

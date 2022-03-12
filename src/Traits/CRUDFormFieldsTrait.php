@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\FormField\FormField;
+
 trait CRUDFormFieldsTrait
 {
 	public function getAllRecursiveFieldsByFieldset(array $fieldset) : array
@@ -38,4 +40,20 @@ trait CRUDFormFieldsTrait
 
 		return $this->filterByRolesAndPermissions($fields);
 	}
+
+	public function getFieldParametersByTypeAndName(string $type, string $fieldName)
+	{
+		$fieldsets = $this->getFlattenFormFieldsByType($type);
+
+		return $fieldsets[$fieldName];
+	}
+
+	public function getFormFieldByTypeAndName(string $type, string $fieldName)
+	{
+		$fieldParameters = $this->getFieldParametersByTypeAndName($type, $fieldName);
+		$fieldParameters['name'] = $fieldName;
+
+		return FormField::createFromArray($fieldParameters);
+	}
+
 }

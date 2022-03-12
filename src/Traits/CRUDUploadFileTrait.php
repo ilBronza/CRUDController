@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 trait CRUDUploadFileTrait
@@ -22,10 +23,13 @@ trait CRUDUploadFileTrait
 		]);
 
 		//gestire la validazione del file come tipo file da array parameters?
-
 		$fieldName = str_replace("[]", "", $request->fieldname);
-		
-		if(! $request->multiple)
+
+		$field = $this->getFormFieldByTypeAndName('update', $fieldName);
+		$field->assignModel($this->modelInstance);
+
+		// if(! $request->multiple)
+		if($field->isMultiple())
 			$this->modelInstance->clearMediaCollection($fieldName);
 
 		//gestire update or store :-/
@@ -33,18 +37,34 @@ trait CRUDUploadFileTrait
 		//gestire uuid
 
 		$file = $this->modelInstance->addMediaFromRequest('file')
-			->toMediaCollection($fieldName);
+			->toMediaCollection('ASD');
 
 		//TODO TODO TODO TODO TODO
-		$thumbUrl = ($isImage ?? false)? $file->getTemporaryUrl(Carbon::now()->addMinutes(5), 'thumb') : null;
+		try
+		{
+			$thumbUrl = ($isImage ?? false)? $file->getTemporaryUrl(Carbon::now()->addMinutes(5), 'thumb') : null;
+		}
+		catch(\Exception $e)
+		{
+			$thumbUrl = ($isImage ?? false)? $file->getUrl() : null;			
+		}
 
 		$this->modelInstance->{$fieldName} = $file->getKey();
 		$this->modelInstance->save();
 
+		try
+		{
+			$fileUrl = 	$file->getTemporaryUrl(Carbon::now()->addMinutes(5));		
+		}
+		catch(\Exception $e)
+		{
+			$fileUrl = 	$file->getFullUrl();			
+		}
+
 		return [
 			'success' => true,
 			'filename' => $file->name,
-			'fileurl' => $file->getUrl(),
+			'fileurl' => $fileUrl,
 			'deleteurl' => $file->getDeleteUrl(),
 			'thumburl' => $thumbUrl
 		];

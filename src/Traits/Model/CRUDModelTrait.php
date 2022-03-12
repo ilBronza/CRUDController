@@ -181,6 +181,9 @@ trait CRUDModelTrait
 
     public function userCanSee(User $user = null)
     {
+        if(Auth::guest())
+            return false;
+
         return true;
     }
 

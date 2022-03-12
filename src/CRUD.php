@@ -22,6 +22,8 @@ class CRUD extends Controller
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 
+	public $pageLength = 50;
+
     public $returnBack = false;
     public $avoidBackToList = false;
     public $showFormIntro = true;

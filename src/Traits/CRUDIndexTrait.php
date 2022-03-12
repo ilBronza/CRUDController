@@ -85,6 +85,11 @@ trait CRUDIndexTrait
 		$this->table->addButton($createButton);
 	}
 
+	public function getPageLength()
+	{
+		return $this->pageLength ?? 50;
+	}
+
 	private function addIndexButtonsToTable()
 	{
 		$this->manageCreateButton();
@@ -132,7 +137,9 @@ trait CRUDIndexTrait
 
 		$this->table->addBaseModelClass($this->modelClass);
 
-		if(isset($this->parentModel))
+		$this->table->setPageLength($this->getPageLength());
+
+		if(isset($this->parentModel)&&($this->mustDisplayParentModel()))
 			$this->table->addParentModel($this->parentModel);
 
 		$this->addIndexButtonsToTable();

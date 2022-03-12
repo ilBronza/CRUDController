@@ -381,6 +381,8 @@ class RelationshipParameters
 		if(request()->ajax())
 			return $this->table->renderPage();
 
+		$this->table->setAjaxTable();
+
 		$this->manageTableButtons();
 	}
 
