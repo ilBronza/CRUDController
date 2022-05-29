@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD;
 
 use IlBronza\Button\Button;
+use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
@@ -53,6 +54,9 @@ class CRUD extends Controller
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['destroy', 'forceDelete']);
+
+		if(config('crud.useConcurrentRequestsAlert'))
+			$this->middleware(CRUDConcurrentUrlAlert::class);
 
 		//perchè si applica solo se non viene usato il metodo only()???
 		$this->middleware('CRUDPareseAjaxBooleansAndNull');

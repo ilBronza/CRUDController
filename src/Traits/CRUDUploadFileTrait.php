@@ -29,7 +29,7 @@ trait CRUDUploadFileTrait
 		$field->assignModel($this->modelInstance);
 
 		// if(! $request->multiple)
-		if($field->isMultiple())
+		if(! $field->isMultiple())
 			$this->modelInstance->clearMediaCollection($fieldName);
 
 		//gestire update or store :-/
@@ -37,7 +37,10 @@ trait CRUDUploadFileTrait
 		//gestire uuid
 
 		$file = $this->modelInstance->addMediaFromRequest('file')
-			->toMediaCollection('ASD');
+			->toMediaCollection(
+				$fieldName,
+				$field->getDisk()
+			);
 
 		//TODO TODO TODO TODO TODO
 		try
@@ -52,19 +55,10 @@ trait CRUDUploadFileTrait
 		$this->modelInstance->{$fieldName} = $file->getKey();
 		$this->modelInstance->save();
 
-		try
-		{
-			$fileUrl = 	$file->getTemporaryUrl(Carbon::now()->addMinutes(5));		
-		}
-		catch(\Exception $e)
-		{
-			$fileUrl = 	$file->getFullUrl();			
-		}
-
 		return [
 			'success' => true,
 			'filename' => $file->name,
-			'fileurl' => $fileUrl,
+			'fileurl' => $file->getServeImageUrl(),
 			'deleteurl' => $file->getDeleteUrl(),
 			'thumburl' => $thumbUrl
 		];

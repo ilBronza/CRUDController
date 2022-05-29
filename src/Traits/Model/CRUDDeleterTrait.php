@@ -2,8 +2,12 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\CRUD\Traits\Model\CRUDModelUsesTrait;
+
 trait CRUDDeleterTrait
 {
+    use CRUDModelUsesTrait;
+
     public function getDeletingRelationshipsField()
     {
         if($this->deletingRelationships ?? false)
@@ -38,25 +42,33 @@ trait CRUDDeleterTrait
         return $this->delete();
     }
 
+    private function relationshipHasSoftDeletes(string $relationshipName) : bool
+    {
+        $related = $this->$relationshipName()->make();
+
+        return $this->modelUsesSoftDeletes($related);
+    }
+
     public function deleterForceDelete()
     {
+
         foreach($this->getDeletingRelationshipsField() as $relationship)
         {
-            $thing = $this->$relationship()->make();
-
             $elements = $this->$relationship();
 
-            if(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($thing)))
+            if($this->relationshipHasSoftDeletes($relationship))
                 $elements->withTrashed();
 
             foreach($elements->get() as $element)
-                if(in_array('IlBronza\CRUD\Traits\Model\CRUDDeleterTrait', class_uses($element)))
+                if($this->modelUsesTrait($element, 'CRUDDeleterTrait'))
                     $element->deleterForceDelete();
 
-                elseif(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($element)))
+                elseif($this->modelUsesSoftDeletes($element))
                     $element->forceDelete();
+
                 else
                     $element->delete();
+
         }
 
         return $this->forceDelete();

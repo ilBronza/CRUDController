@@ -10,10 +10,6 @@ class Media extends BaseMedia
 {
 	use SoftDeletes;
 
-	protected $casts = [
-		'middleware' => 'array'
-	];
-
 	public function getDeleteUrl()
 	{
 		return $this->model->getDeleteMediaUrl($this);
@@ -34,11 +30,6 @@ class Media extends BaseMedia
 	public function isPublic()
 	{
 		return $this->getDiskDriverName() == 'public';
-	}
-
-	public function getMiddleware()
-	{
-		return $this->middleware;
 	}
 
 	public function getServeImageUrl()

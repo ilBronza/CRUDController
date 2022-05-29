@@ -33,6 +33,9 @@ class CRUDServiceProvider extends ServiceProvider
         $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
+        if(config('crud.useConcurrentRequestsAlert'))
+            $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);
+
         app()->bind(BaseResourceRegistrar::class, function () {
             return new ResourceRegistrar(app()->make(Router::class));
         });

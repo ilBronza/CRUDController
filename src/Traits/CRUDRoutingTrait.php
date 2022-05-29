@@ -58,6 +58,9 @@ trait CRUDRoutingTrait
 
 	public function getRouteBaseNamePieces()
 	{
+		if(! empty($this->routeBaseNamePieces))
+			return $this->routeBaseNamePieces;
+
 		return [
 			$this->getLcfirstPluralModelClassname(new $this->modelClass())
 		];

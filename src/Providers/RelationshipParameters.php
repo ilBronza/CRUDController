@@ -312,7 +312,7 @@ class RelationshipParameters
 	 *
 	 * @return mixed
 	 **/
-	public function getExtraVariables() : ? mixed
+	public function getExtraVariables()
 	{
 		return $this->extraVariables;
 	}
@@ -391,7 +391,7 @@ class RelationshipParameters
 	 *
 	 * @return mixed
 	 **/
-	public function hasOwnView() : ? mixed
+	public function hasOwnView()
 	{
 		return $this->view;
 	}

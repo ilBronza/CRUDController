@@ -8,6 +8,7 @@ use IlBronza\Button\Button;
 use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 trait CRUDModelTrait
@@ -24,6 +25,11 @@ trait CRUDModelTrait
 
     //     return true;
     // }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults();
+    }
 
     public function getBrowserTitle()
     {
