@@ -228,9 +228,10 @@ trait CRUDEditUpdateTrait
 	 * @param array $parameters
 	 * @return boolean
 	 **/
-	public function updateModelInstance(array $parameters)
+	public function updateModelInstance(array $parameters, bool $cleanRelationships = true)
 	{
-		$parameters = $this->cleanParametersFromRelationshipsByType($parameters, 'update');
+		if($cleanRelationships)
+			$parameters = $this->cleanParametersFromRelationshipsByType($parameters, 'update');
 
 		//this way I don't need to set fillable parameters
 		// $this->modelInstance->fill($parameters);

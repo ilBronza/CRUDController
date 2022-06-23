@@ -148,7 +148,7 @@ trait CRUDUpdateEditorTrait
 
 		$formField = $this->getUpdatingFormFieldInstance($request);
 
-		$this->updateModelInstance($updateParameters);
+		$this->updateModelInstance($updateParameters, false);
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;

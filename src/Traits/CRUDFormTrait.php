@@ -173,9 +173,7 @@ trait CRUDFormTrait
 
 	public function filterByRoles(array $fields) : array
 	{
-		$user = Auth::user();
-
-		if($user->hasRole('superadmin'))
+		if(($user = Auth::user())&&($user->hasRole('superadmin')))
 			return $fields;
 
 		foreach($fields as $key => $field)
@@ -183,7 +181,7 @@ trait CRUDFormTrait
 			if(! isset($field['roles']))
 				continue;
 
-			if($user->hasRole($field['roles']))
+			if(($user)&&($user->hasRole($field['roles'])))
 				continue;
 
 			unset($fields[$key]);
@@ -194,9 +192,7 @@ trait CRUDFormTrait
 
 	public function filterByPermissions(array $fields) : array
 	{
-		$user = Auth::user();
-
-		if($user->hasRole('superadmin'))
+		if(($user = Auth::user())&&($user->hasRole('superadmin')))
 			return $fields;
 
 		foreach($fields as $key => $field)
@@ -204,7 +200,7 @@ trait CRUDFormTrait
 			if(! isset($field['permissions']))
 				continue;
 
-			if($user->hasAnyPermission($field['permissions']))
+			if(($user)&&($user->hasAnyPermission($field['permissions'])))
 				continue;
 
 			unset($fields[$key]);
