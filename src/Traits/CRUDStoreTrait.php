@@ -20,7 +20,7 @@ trait CRUDStoreTrait
 			return $this->getRouteUrlByType('create');
 
 		if($this->isSaveAndRefresh())
-			return $this->getRouteUrlByType('edit');		
+			return $this->getRouteUrlByType('edit');
 
 		return $this->getRouteUrlByType('index');
 	}

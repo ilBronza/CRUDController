@@ -7,7 +7,7 @@ use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
-use IlBronza\CRUD\Middleware\CRUDPareseAjaxBooleansAndNull;
+use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\ResourceRegistrar;
@@ -30,7 +30,7 @@ class CRUDServiceProvider extends ServiceProvider
     public function boot()
     {
         $router = $this->app->make(Router::class);
-        $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
+        $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
         if(config('crud.useConcurrentRequestsAlert'))
@@ -156,7 +156,7 @@ class CRUDServiceProvider extends ServiceProvider
         $router = $this->app['router'];
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);
-        $router->aliasMiddleware('CRUDPareseAjaxBooleansAndNull', CRUDPareseAjaxBooleansAndNull::class);
+        $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');

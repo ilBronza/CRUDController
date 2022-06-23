@@ -59,7 +59,7 @@ class CRUD extends Controller
 			$this->middleware(CRUDConcurrentUrlAlert::class);
 
 		//perchè si applica solo se non viene usato il metodo only()???
-		$this->middleware('CRUDPareseAjaxBooleansAndNull');
+		$this->middleware('CRUDParseAjaxBooleansAndNull');
 		$this->middleware(CRUDParseComasAndDots::class);
 		$this->checkIfModelUsesTrait();
 	}
@@ -186,7 +186,8 @@ class CRUD extends Controller
 	 **/
 	public function shareExtraViews()
 	{
-		view()->share('extraViews', $this->extraViews);
+		if(count($this->extraViews))
+			view()->share('extraViews', $this->extraViews);
 	}
 
 	public function avoidBackToList()
