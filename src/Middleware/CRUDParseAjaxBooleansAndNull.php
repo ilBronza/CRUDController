@@ -4,7 +4,7 @@ namespace IlBronza\CRUD\Middleware;
 
 use Illuminate\Foundation\Http\Middleware\TransformsRequest;
 
-class CRUDPareseAjaxBooleansAndNull extends TransformsRequest
+class CRUDParseAjaxBooleansAndNull extends TransformsRequest
 {
     protected function transform($key, $value)
     {
