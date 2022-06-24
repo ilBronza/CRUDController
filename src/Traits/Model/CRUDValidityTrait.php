@@ -90,7 +90,7 @@ trait CRUDValidityTrait
         return $this->isValidBefore(Carbon::now());
     }
 
-    private function isValidAfterNow()
+    public function isValidAfterNow()
     {
         return $this->isValidAfter(Carbon::now());
     }
