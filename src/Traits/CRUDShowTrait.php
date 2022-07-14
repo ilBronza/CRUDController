@@ -92,7 +92,7 @@ trait CRUDShowTrait
 		view()->share('canEditModelInstance', $this->canEditModelInstance);
 		view()->share('editModelInstanceUrl', $this->getEditModelIsntanceUrl());
 
-		if(in_array('index', $this->allowedMethods))
+		if((in_array('index', $this->allowedMethods))&&(! $this->avoidBackToList))
 			view()->share('backToListUrl', $this->getIndexUrl());
 	}
 
@@ -107,9 +107,9 @@ trait CRUDShowTrait
 
 	public function shareShowButtons()
 	{
-		$this->setShowButtons();
-
 		$this->getExtendedShowButtons();
+
+		$this->setShowButtons();
 
 		if(count($this->showButtons))
 			view()->share('showButtons', $this->showButtons);

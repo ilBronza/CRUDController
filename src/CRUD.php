@@ -173,12 +173,9 @@ class CRUD extends Controller
 	 * @param string $view //view name
 	 * @param array $parameters //view parameters
 	 **/
-	public function addView(string $position, string $view, array $parameters = [])
+	public function addFormExtraView(string $position, string $view, array $parameters = [])
 	{
-		if(empty($this->extraViews[$position]))
-			$this->extraViews[$position] = [];
-
-		$this->extraViews[$position][$view] = $parameters;		
+		$this->form->addExtraView($position, $view, $parameters);
 	}
 
 	/**
@@ -187,7 +184,10 @@ class CRUD extends Controller
 	public function shareExtraViews()
 	{
 		if(count($this->extraViews))
-			view()->share('extraViews', $this->extraViews);
+		{
+			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
+			view()->share('extraViews', $this->extraViews);			
+		}
 	}
 
 	public function avoidBackToList()

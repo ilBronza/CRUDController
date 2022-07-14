@@ -357,6 +357,12 @@ class RelationshipParameters
 			);
 	}
 
+	public function manageDomTable()
+	{
+		if($this->domMode ??false)
+			$this->table->setDomMode($this->domMode);
+	}
+
 	/**
 	 * set elements table by class properties
 	 **/
@@ -377,6 +383,8 @@ class RelationshipParameters
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
+
+		$this->manageDomTable();
 
 		if(request()->ajax())
 			return $this->table->renderPage();

@@ -132,6 +132,10 @@ abstract class RelationshipsManager
 		foreach($this->getRelationships() as $name => $relationshipsParameters)
 			if($name == request()->model)
 				return $relationshipsParameters->setShowParameters();
+	}
 
+	public function getCustomDom()
+	{
+		dd($this);
 	}
 }

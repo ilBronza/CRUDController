@@ -113,7 +113,9 @@ trait CRUDEditUpdateTrait
     public function loadEditExtraViews()
     {
     	$this->addEditExtraViews();
-        $this->shareExtraViews();
+
+    	//DEPRECATED 06/2022 - use form extraViews
+        // $this->shareExtraViews();
     }
 
 	/**
