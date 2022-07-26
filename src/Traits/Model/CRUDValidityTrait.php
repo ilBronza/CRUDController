@@ -10,27 +10,21 @@ trait CRUDValidityTrait
 {
     use CRUDBrotherhoodTrait;
 
+    abstract public function canBeValid();
+
     private function unvalidateBrothers()
     {
-        static::brothers()
-            // ->where($this->getKeyName(), '!=', $this->getKey())
-            ->update([
-                'valid' => false
-            ]);
-    }
-
-    private function deleteWithEmptyValidity()
-    {
-        // if(static::class == "App\ManufacturerWave")
-        //     return ;
-
-        static::brothers()->whereNull('valid_from')->delete();
+        foreach(static::brothers()->get() as $brother)
+            if($brother->isValid()||$this->hasNotBeenUnvalidated())
+                $brother->setUnvalid($save = true);
     }
 
     public function checkTimingValidity()
     {
-        // $this->deleteWithEmptyValidity();
-        $elements = static::brothers()->get();
+        $elements = $this->brothers()->get();
+
+        if($this->created_at === null)
+            $this->created_at = Carbon::now();
 
         $elements->push($this);
 
@@ -38,19 +32,26 @@ trait CRUDValidityTrait
 
         $elements = $elements->sortBy('valid_from')->values()->all();
 
-        $currentValidFrom = null;
+        $validElements = collect();
 
         foreach($elements as $element)
             if($element->isValidAfterNow())
                 if($element->isValidBeforeNow())
-                    $currentValidFrom = $element;
+                    if($element->canBeValid())
+                        $validElements->push($element);
 
-        if($currentValidFrom)
-            return $currentValidFrom->setValid();
+        if(count($validElements) == 0)
+        {
+            static::whereIn('id', $elementIds)->update(['valid' => false]);
 
-        static::whereIn('id', $elementIds)->update(['valid' => false]);
+            throw new \Exception('nessun elemento valido trovato per ' . class_basename($this) . ' ' . $this->getKey());
+        }
 
-        Ukn::w('Nessun element valido per ' . $this->getName());
+        $valid = $validElements->sortBy('created_at')->last();
+
+        $valid->unvalidateBrothers();
+
+        return $valid->setValid();
     }
 
     public function scopeValid($query)
@@ -85,6 +86,14 @@ trait CRUDValidityTrait
         return false;
     }
 
+    public function hasNotBeenUnvalidated()
+    {
+        if(! array_key_exists('unvalidated_at', $this->attributes))
+            false;
+
+        return ! $this->unvalidated_at;
+    }
+
     private function isValidBeforeNow()
     {
         return $this->isValidBefore(Carbon::now());
@@ -100,14 +109,26 @@ trait CRUDValidityTrait
         return $this->valid;
     }
 
-    private function setValid()
+    private function setValid(bool $save = true)
     {
-        $this->unvalidateBrothers();
+        $this->validated_at = Carbon::now();
+        $this->valid = true;
 
-        static::where($this->getKeyName(), $this->getKey())->update(['valid' => true]);
-
-        // dd(static::where($this->getKeyName(), $this->getKey())->first());
+        if($save)
+            $this->save();
     }
 
+    public function setUnvalid(bool $save = true)
+    {
+        $this->unvalidate();
 
+        if($save)
+            $this->save();
+    }
+
+    public function unvalidate()
+    {
+        $this->valid = false;
+        $this->unvalidated_at = Carbon::now();
+    }
 }

@@ -23,6 +23,18 @@ class BaseModel extends Model
 		'deleted_at'
 	];
 
+	public function scopeWhereBooleanNotFalse($query, string $fieldName)
+	{
+		return $query->whereNull($fieldName)
+				->orWhere($fieldName, true);
+	}
+
+	public function scopeWhereBooleanNotTrue($query, string $fieldName)
+	{
+		return $query->whereNull($fieldName)
+				->orWhere($fieldName, false);
+	}
+
 	public function getActivitylogOptions(): LogOptions
 	{
 		return LogOptions::defaults();

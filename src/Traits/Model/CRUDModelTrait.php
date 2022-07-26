@@ -31,6 +31,11 @@ trait CRUDModelTrait
         return LogOptions::defaults();
     }
 
+    public function printJsonFieldHtml($array)
+    {
+        return view('formfield::show.uikit._json', ['arrayElement' => $array])->render();
+    }
+
     public function getBrowserTitle()
     {
         return $this->getName();

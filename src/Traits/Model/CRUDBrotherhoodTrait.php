@@ -22,10 +22,21 @@ trait CRUDBrotherhoodTrait
         return $result;
     }
 
-    public function scopeBrothers($query)
+    public function scopeExcludingMe($query)
     {
-        $brotherhoodFields = $this->getBrotherhoodFields();
+        return $query->where(
+                $this->getKeyName(),
+                '!=',
+                $this->getKey()
+            );
+    }
+
+    public function scopeBrothers($query, bool $excludingMe = true)
+    {
         $brotherhoodConditions = $this->getBrotherhoodConditions();
+
+        if($excludingMe)
+            $query->excludingMe();
 
         return $query->where($brotherhoodConditions);
     }
