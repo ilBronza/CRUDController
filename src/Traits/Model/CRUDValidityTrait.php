@@ -69,7 +69,7 @@ trait CRUDValidityTrait
         if(empty($this->valid_from))
             return true;
 
-        if($this->valid_from < $date)
+        if($this->valid_from <= $date)
             return true;
 
         return false;
@@ -130,5 +130,15 @@ trait CRUDValidityTrait
     {
         $this->valid = false;
         $this->unvalidated_at = Carbon::now();
+    }
+
+    public function getValidFrom() : ? Carbon
+    {
+        return $this->valid_from;
+    }
+
+    public function getValidTo() : ? Carbon
+    {
+        return $this->valid_to;
     }
 }

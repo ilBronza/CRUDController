@@ -4,7 +4,7 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use App\Models\User;
 use Auth;
-use IlBronza\Button\Button;
+use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,7 +15,7 @@ trait CRUDModelTrait
 {
     static $teaserFields = [];
 
-    use LogsActivity;
+    // use LogsActivity;
     use CRUDDeleterTrait;
 
     // public function hasOwnership()

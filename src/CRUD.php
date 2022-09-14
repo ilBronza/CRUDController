@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD;
 
-use IlBronza\Button\Button;
+use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFormTrait;

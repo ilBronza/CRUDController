@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use IlBronza\Button\Button;
+use IlBronza\Buttons\Button;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 

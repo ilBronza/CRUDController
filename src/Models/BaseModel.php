@@ -8,14 +8,12 @@ use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class BaseModel extends Model 
 {
-	use LogsActivity;
+	use SoftDeletes;
 
 	use CRUDCacheTrait;
-	use SoftDeletes;
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 
