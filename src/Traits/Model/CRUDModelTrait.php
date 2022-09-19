@@ -73,9 +73,13 @@ trait CRUDModelTrait
             $routeParameters
         );
 
-        $text = trans('generals.create' . class_basename(static::class));
+        $text = 'generals.create' . class_basename(static::class);
 
-        return new Button($href, $text, 'plus');
+        return Button::create([
+            'href' => $href, 
+            'text' => $text,
+            'icon' => 'plus'
+        ]);
     }
 
     static function getCreateChildButton(Model $model)
@@ -94,7 +98,11 @@ trait CRUDModelTrait
 
         $text = trans('generals.create' . class_basename(static::class));
 
-        return new Button($href, $text, 'plus');
+        return Button::create([
+            'href' => $href,
+            'text' => $text,
+            'icon' => 'plus'
+        ]);
     }
 
     public function getRouteClassname()

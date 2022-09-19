@@ -204,13 +204,17 @@ trait CRUDRelationshipTrait
 
 	public function getRelationshipButton(string $relationship)
 	{
-		if(! $url = $this->getRelationshipButtonUrl($relationship))
+		if(! $href = $this->getRelationshipButtonUrl($relationship))
 			return ;
 
 		$text = $this->getCreateRelationshipsButtonLabel($relationship);
 		$icon = $this->getCreateRelationshipsButtonIcon($relationship);
 
-		return new Button($url, $text, $icon);
+		return Button::create([
+			'href' => $href,
+			'text' => $text,
+			'icon' => $icon
+		]);
 	}
 
 	public function buildEditableRelationshipsButtons()

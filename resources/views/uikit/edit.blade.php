@@ -1,4 +1,4 @@
-@extends('uikittemplate::app')
+@extends('app')
 
 @section('content')
 
