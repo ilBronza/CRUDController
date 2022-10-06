@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use App\Providers\Helpers\dgButton;
+use IlBronza\Buttons\Button;
 
 trait CRUDBelongsToButtonsTrait
 {
@@ -25,11 +25,12 @@ trait CRUDBelongsToButtonsTrait
 		return trans(implode(".", [$fileName, $key]), compact('element'));
 	}
 
-	public function getCreateButton() : dgButton
+	public function getCreateButton() : Button
 	{
-		$href = $this->getCreateButtonUrl();
-		$text = $this->getCreateButtonText();
-
-        return new dgButton($href, $text, 'plus');
+		return Button::create([
+                'href' => $this->getCreateButtonUrl(),
+                'translatedText' => $this->getCreateButtonText(),
+                'icon' => 'plus'
+            ]);
 	}
 }

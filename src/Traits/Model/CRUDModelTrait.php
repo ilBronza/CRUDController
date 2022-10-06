@@ -66,18 +66,11 @@ trait CRUDModelTrait
         return Str::plural(lcfirst(class_basename(static::class)));
     }
 
-    static function getCreateButton(array $routeParameters = [])
+    static function getCreateButton(array $routeParameters = []) : Button
     {
-        $href = route(
-            static::getPluralCamelcaseClassBasename() . '.create',
-            $routeParameters
-        );
-
-        $text = 'generals.create' . class_basename(static::class);
-
         return Button::create([
-            'href' => $href, 
-            'text' => $text,
+            'href' => route(static::getPluralCamelcaseClassBasename() . '.create', $routeParameters), 
+            'text' => 'generals.create' . class_basename(static::class),
             'icon' => 'plus'
         ]);
     }
