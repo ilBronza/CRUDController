@@ -158,9 +158,16 @@ trait CRUDModelTrait
         ], $data);
     }
 
+    public function getNameFieldName()
+    {
+        return static::$nameField ?? 'name';
+    }
+
     public function getName()
     {
-        return $this->{static::$nameField ?? 'name'};
+        $nameField = $this->getNameFieldName();
+
+        return $this->{$nameField};
     }
 
     public function userCanUpdate(User $user = null)
