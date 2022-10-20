@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 
 trait CRUDParentingTrait
 {
+    public $parentingTrait = true;
+
     public function scopeRoot($query)
     {
         return $query->whereNull('parent_id');
@@ -135,6 +137,13 @@ trait CRUDParentingTrait
     public function isRoot()
     {
         return empty($this->parent_id);
+    }
+
+    public function getParentPossibleValuesArray() : array
+    {
+        $result = static::select($this->getKeyName(), $this->getNameFieldName())->where($this->getKeyName(), '!=', $this->getKey())->get();
+
+        return $result->pluck($this->getNameFieldName(), $this->getKeyName())->toArray();
     }
 
     public function getBrothers() : Collection
