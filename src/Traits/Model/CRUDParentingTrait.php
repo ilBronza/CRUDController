@@ -8,19 +8,24 @@ trait CRUDParentingTrait
 {
     public $parentingTrait = true;
 
+    static function getParentKeyName()
+    {
+        return static::$parentKeyName ?? 'parent_id';
+    }
+
     public function scopeRoot($query)
     {
-        return $query->whereNull('parent_id');
+        return $query->whereNull(static::getParentKeyName());
     }
 
     public function parent()
     {
-        return $this->belongsTo(static::class, 'parent_id');
+        return $this->belongsTo(static::class, static::getParentKeyName());
     }
 
     public function children()
     {
-        return $this->hasMany(static::class, 'parent_id');
+        return $this->hasMany(static::class, static::getParentKeyName());
     }
 
     public function recursiveChildren()
@@ -151,7 +156,7 @@ trait CRUDParentingTrait
         if(! $this->parent_id)
             return collect();
 
-        return static::where('parent_id', $this->parent_id)
+        return static::where(static::getParentKeyName(), $this->parent_id)
                 ->where($this->getKeyName(), '!=', $this->getKey())
                 ->get();
     }
