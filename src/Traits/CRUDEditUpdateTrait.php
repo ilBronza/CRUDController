@@ -182,6 +182,7 @@ trait CRUDEditUpdateTrait
 					$rule[$index] = implode(",", [
 						$rule[$index],
 						// $this->modelInstance->getKeyName(),
+						$this->modelInstance->getKeyName(),
 						$this->modelInstance->getKey()
 					]);
 
