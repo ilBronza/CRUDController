@@ -60,7 +60,7 @@ class {{ class }} extends CRUD
         'deleted',
         'archived',
         'reorder',
-        'stroreReorder'
+        'storeReorder'
     ];
 
     /**

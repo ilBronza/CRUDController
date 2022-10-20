@@ -30,7 +30,7 @@ trait CRUDNestableTrait
         );
 
         $result = [
-            'action' => $this->getRouteUrlByType('stroreReorder'),
+            'action' => $this->getRouteUrlByType('storeReorder'),
             'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
             'createChildUrl' => $createChildUrl,
             'rootUrl' => null,
@@ -43,10 +43,10 @@ trait CRUDNestableTrait
 
             $result['rootUrl'] = $this->getRouteUrlByType('reorder');
 
-            if($this->modelInstance->parent_id)
+            if($this->modelInstance->{$this->modelInstance->getParentKeyName()})
             {
                 $result['parentUrl'] = ($this->modelInstance) ? $this->getRouteUrlByType('reorder', [
-                    $modelBasename => $this->modelInstance->parent_id
+                    $modelBasename => $this->modelInstance->{$this->modelInstance->getParentKeyName()}
                 ]) : null;                
             }
         }
@@ -88,7 +88,7 @@ trait CRUDNestableTrait
         foreach($tree as $id => $element)
         {
             # A direct child is found
-            if($element->parent_id == $parentId)
+            if($element->{$element->getParentKeyName()} == $parentId)
             {
                 # Remove item from tree (we don't need to traverse this again)
                 $tree->forget($id);
@@ -104,7 +104,7 @@ trait CRUDNestableTrait
         return $return->sortBy('sorting_index');     
     }
 
-    public function stroreReorder(Request $request)
+    public function storeReorder(Request $request)
     {
         if ($request->filled('parent_id')) {
             if($request->filled('element_id')){
@@ -113,7 +113,7 @@ trait CRUDNestableTrait
 
                 $item = $this->modelClass::findOrFail($request->input('element_id'));
 
-                $item->parent_id = $parentId;
+                $item->{$item->getParentKeyName()} = $parentId;
                 $item->save();
             }
         }

@@ -54,7 +54,7 @@ class {{ class }} extends BelongsToCRUDController
         'deleted',
         'archived',
         'reorder',
-        'stroreReorder'
+        'storeReorder'
     ];
 
     /**
