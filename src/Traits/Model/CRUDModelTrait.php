@@ -158,7 +158,7 @@ trait CRUDModelTrait
         ], $data);
     }
 
-    public function getNameFieldName()
+    public static function getNameFieldName()
     {
         return static::$nameField ?? 'name';
     }
