@@ -18,6 +18,11 @@ trait CRUDSluggableTrait
 		return static::$slugField ?? 'slug';
 	}
 
+	public function getNameForSlug()
+	{
+		return $this->getName();
+	}
+
 	protected static function boot()
 	{
 		parent::boot();
@@ -26,7 +31,7 @@ trait CRUDSluggableTrait
 			$slugField = static::getSlugField();
 
 			if(! $slug = $model->{$slugField})
-				$slug = $model->getName();
+				$slug = $model->getNameForSlug();
 
 			$slug = Str::slug($slug);
 
