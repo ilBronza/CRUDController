@@ -160,6 +160,12 @@ trait CRUDEditUpdateTrait
 		if($url = $this->getAfterUpdateRoute())
 			return $url;
 
+		if($this->isSaveAndNew())
+			return $this->getRouteUrlByType('create');
+
+		if($this->isSaveAndRefresh())
+			return $this->getRouteUrlByType('edit');
+
 		if(in_array('index', $this->allowedMethods))
 			return $this->getRouteUrlByType('index');
 

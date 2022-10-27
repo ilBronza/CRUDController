@@ -150,11 +150,13 @@ trait CRUDRelationshipTrait
 	public function associateRelationshipsByType(array $parameters, string $type)
 	{
 		$parameters = $this->getParametersForRelationshipsByType($parameters, $type);
-
 		$relationshipsFields = $this->getRelationshipsFieldsByType($type);
 
 		foreach($relationshipsFields as $relationship => $fieldParameters)
 		{
+			if(! request()->has($relationship))
+				continue;
+
 			$values = request()->input($relationship, []);
 
 			if($this->tryCustomMethod($relationship, $values) !== null)

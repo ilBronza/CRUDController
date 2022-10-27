@@ -66,7 +66,7 @@ trait CRUDDbFieldsTrait
 	{
 		if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByGuarded($type))
 			if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByAllowed($type))
-				mori("non c'è signò");
+				throw new \Exception("non c'è validazione per " . $type);
 
 		return [
 			'default' => $validationArray

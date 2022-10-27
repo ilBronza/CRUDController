@@ -3,7 +3,7 @@
 
 return [
 	'add' => 'Aggiungi :what',
-	'backToList' => 'Torna alla lista',
+	'backToList' => 'Vai alla lista',
 	'editElement' => 'Modifica :element',
 	'singleModel_categories' => 'Categoria',
 	'singleModel_operators' => 'Operatore',
