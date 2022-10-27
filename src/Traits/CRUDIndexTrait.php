@@ -65,6 +65,21 @@ trait CRUDIndexTrait
 		$this->table->addButton($createButton);
 	}
 
+	private function canReorder()
+	{
+		return in_array('reorder', $this->allowedMethods);
+	}
+
+	private function manageReorderButton()
+	{
+		if(! $this->canReorder())
+			return ;
+
+		$reorderButton = $this->getReorderButton();
+
+		$this->table->addButton($reorderButton);
+	}
+
 	private function manageCreateButton()
 	{
 		if($this->avoidCreateButton ?? false)
@@ -93,6 +108,7 @@ trait CRUDIndexTrait
 	private function addIndexButtonsToTable()
 	{
 		$this->manageCreateButton();
+		$this->manageReorderButton();
 
 		$this->addIndexButtons();
 	}

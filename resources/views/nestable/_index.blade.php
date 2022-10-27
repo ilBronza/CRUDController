@@ -43,7 +43,9 @@
 
             $(this).append('<a class="createchild uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
 
+            @if($createChildUrl)
             $(this).append('<a class="sortby uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
+            @endif
         });
 
         $('body').on('mouseleave', '.dd-content', function()

@@ -41,6 +41,11 @@ trait CRUDModelTrait
         return $this->getName();
     }
 
+    public function getNestableName() : ? string
+    {
+        return $this->getName();
+    }
+
     public function getOwningMethod(Model $model)
     {
         return  'owns' . class_basename($model);
@@ -73,6 +78,15 @@ trait CRUDModelTrait
             'text' => 'generals.create' . class_basename(static::class),
             'icon' => 'plus'
         ]);
+    }
+
+    static function getReorderButton(array $routeParameters = []) : Button
+    {
+        return Button::create([
+            'href' => route(static::getPluralCamelcaseClassBasename() . '.reorder', $routeParameters), 
+            'text' => 'generals.reorder' . class_basename(static::class),
+            'icon' => 'bars-staggered'
+        ]);        
     }
 
     static function getCreateChildButton(Model $model)
@@ -158,7 +172,7 @@ trait CRUDModelTrait
         ], $data);
     }
 
-    public function getNameFieldName()
+    public static function getNameFieldName()
     {
         return static::$nameField ?? 'name';
     }

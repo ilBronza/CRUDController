@@ -1,7 +1,7 @@
 <li class="dd-item" data-id="{{ $element->getKey() }}">
 
 	<a class="dd-handle" uk-icon="icon: table"></a>
-	<div class="dd-content">{{ $element->getName() }}</div>
+	<div class="dd-content">{{ $element->getNestableName() }}</div>
 
 	@if (isset($element->childs) and $element->childs->count() > 0)
 	<ol class="dd-list">

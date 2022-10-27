@@ -24,15 +24,18 @@ trait CRUDNestableTrait
         $routeModelBasename = Str::plural($modelBasename);
 
         //categories.children.create, ['parent_id' => '%s']
-        $createChildUrl = route(
-            implode(".", [$routeModelBasename, 'children', 'create']),
-            ['parent' => '%s']
-        );
+
+        //controllare prima di tutto se posso creare dei children, come su ilbronza/categories, poi eventualmente dichiaro questa cosa
+
+        // $createChildUrl = route(
+        //     implode(".", [$routeModelBasename, 'children', 'create']),
+        //     ['parent' => '%s']
+        // );
 
         $result = [
             'action' => $this->getRouteUrlByType('storeReorder'),
             'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
-            'createChildUrl' => $createChildUrl,
+            'createChildUrl' => $createChildUrl ?? null,
             'rootUrl' => null,
             'parentUrl' => null
         ];

@@ -166,6 +166,11 @@ class CRUD extends Controller
 		return $this->modelClass::getCreateButton();
 	}
 
+	public function getReorderButton() : Button
+	{
+		return $this->modelClass::getReorderButton();		
+	}
+
 	/**
 	 * add extra view to default page. can be used in index, show, create, edit
 	 *
@@ -186,7 +191,7 @@ class CRUD extends Controller
 		if(count($this->extraViews))
 		{
 			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
-			view()->share('extraViews', $this->extraViews);			
+			view()->share('extraViews', $this->extraViews);	
 		}
 	}
 
