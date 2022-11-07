@@ -11,6 +11,14 @@ trait InteractsWithMedia
 
 	use SpatieInteractsWithMedia;
 
+	static function getMediaFolder()
+	{
+		if(static::$mediaFolder ?? false)
+			return static::$mediaFolder;
+
+		return class_basename(static::class);
+	}
+
 	public function getMediaDisksByFieldName(string $fieldName)
 	{
 		if(! (static::$mediaDisks ?? null))

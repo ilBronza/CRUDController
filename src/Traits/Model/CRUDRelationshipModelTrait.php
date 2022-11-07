@@ -14,17 +14,6 @@ trait CRUDRelationshipModelTrait
 {
     use CRUDDeleterTrait;
 
-    // public function owns(Model $model)
-    // {
-    //     if(Auth::user()->hasRole('superadmin'))
-    //         return true;
-
-    //     if($model->user_id == $this->getKey())
-    //         return true;
-
-    //     mori($model);
-    // }
-
     /**
      * resolve and call getter function for possible related models
      *

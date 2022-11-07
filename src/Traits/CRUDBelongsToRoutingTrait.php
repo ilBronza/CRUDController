@@ -19,5 +19,4 @@ trait CRUDBelongsToRoutingTrait
 			$this->getLcfirstPluralModelClassname(new $this->modelClass())
 		];
 	}
-
 }

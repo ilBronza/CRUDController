@@ -135,9 +135,6 @@ trait CRUDModelTrait
         $routeBasename = $this->getRouteBasename();
         $routeClassname = $this->getRouteClassname();
 
-        if(class_basename($this) == 'Filecabinetrow')
-            mori($this);
-
         return route($routeBasename . '.' . $action, [$routeClassname => $this->getKey()], $data);
 	}
 
@@ -213,6 +210,14 @@ trait CRUDModelTrait
     }
 
     public function userCanSee(User $user = null)
+    {
+        if(Auth::guest())
+            return false;
+
+        return true;
+    }
+
+    public function userCanSeeTeaser(User $user = null)
     {
         if(Auth::guest())
             return false;

@@ -64,6 +64,11 @@ class CRUD extends Controller
 		$this->checkIfModelUsesTrait();
 	}
 
+	public function isIframed()
+	{
+		return request()->input('iframed', false);
+	}
+
 	public function mustReturnBack()
 	{
 		return !! $this->returnBack;
