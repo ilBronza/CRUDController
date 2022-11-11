@@ -13,5 +13,14 @@ return [
 
     'concurrentUriPrefix' => env('CRUD_CONCURRENT_URI_PREFIX', 'concurrentUri'),
     'concurrentUriCacheLifetime' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 10),
-    'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000)
+    'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000),
+
+
+    'meta' => [
+    	'mandatoryNames' => [
+    		'name',
+    		'keywords',
+    		'description'
+    	]
+    ]
 ];

@@ -165,6 +165,10 @@ class CRUDServiceProvider extends ServiceProvider
         $this->app->singleton('crud', function ($app) {
             return new CRUD;
         });
+
+        $this->app->singleton('MetaManager', function ($app) {
+            return new MetaManager;
+        });
     }
 
     /**
