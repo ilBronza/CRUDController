@@ -46,16 +46,21 @@ trait CRUDSluggableTrait
 					->get();
 
 			if(! $existingsSlugs->firstWhere($slugField, $slug))
-				return $model->{$slugField} = $slug;
-
-			$i = 0;
-
-			do
 			{
-				$i++;
+				$model->{$slugField} = $slug;
 			}
-			while($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
-				return $model->{$slugField} = $slug . '-' . $i;
+			else
+			{
+				$i = 0;
+
+				do
+				{
+					$i++;
+				}
+				while($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
+				
+				$model->{$slugField} = $slug . '-' . $i;				
+			}
 		});
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use App\Models\User;
+use App\Models\ProjectSpecific\User;
 use Auth;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;

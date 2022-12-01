@@ -36,7 +36,14 @@ class MetaManager
 
 		foreach($names as $name)
 			if(! isset($this->meta[$name]))
-				$this->meta[$name] = trans('meta.' . $name . "_" . Str::slug(app('uikittemplate')->getPageTitle()));
+			{
+				$translationString = 'meta.' . $name . "_" . Str::slug(app('uikittemplate')->getPageTitle());
+
+				$translatedString = trans($translationString);
+
+				if($translatedString != $translationString)
+					$this->meta[$name] = $translatedString;
+			}
 	}
 
 	public function setByModel(Model $model)
