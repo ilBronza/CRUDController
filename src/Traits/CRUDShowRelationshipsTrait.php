@@ -133,7 +133,7 @@ trait CRUDShowRelationshipsTrait
 
 	private function loadShowRelationshipsValues()
     {
-    	dd($this->relatedFields);
+    	dd("loadShowRelationshipsValues");
         foreach($this->relatedFields as $relation => $fieldName)
         {
             $this->modelInstance->{$fieldName} = [];

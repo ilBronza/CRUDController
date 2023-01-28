@@ -4,6 +4,7 @@
 return [
 	'add' => 'Aggiungi :what',
 	'backToList' => 'Vai alla lista',
+	'showElementPage' => 'Show :element',
 	'editElement' => 'Modifica :element',
 	'singleModel_categories' => 'Categoria',
 	'singleModel_operators' => 'Operatore',

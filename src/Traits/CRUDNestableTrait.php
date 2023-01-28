@@ -95,7 +95,7 @@ trait CRUDNestableTrait
             {
                 # Remove item from tree (we don't need to traverse this again)
                 $tree->forget($id);
-                // dd($tree);
+
                 # Append the child into result array and parse its children
                 if($level <= $this->maxReorderDepth)
                     $element->childs = $this->parseTree($tree, $element->getKey(), $level);

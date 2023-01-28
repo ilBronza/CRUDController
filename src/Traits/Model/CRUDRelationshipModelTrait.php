@@ -14,15 +14,20 @@ trait CRUDRelationshipModelTrait
 {
     use CRUDDeleterTrait;
 
+    public function getRelatedClassByRelationshipName(string $relationship) : string
+    {
+        return get_class($this->{$relationship}()->getRelated());
+    }
+
     /**
      * resolve and call getter function for possible related models
      *
      * @param string $relationship
      * @return callable
      **/
-    public function _getRelationshipPossibleValuesArray(string $relationship)
+    public function _getRelationshipPossibleValuesArray(string $relationship) : array
     {
-        $relationModelClassBaseName = get_class($this->{$relationship}()->getRelated());
+        $relationModelClassBaseName = $this->getRelatedClassByRelationshipName($relationship);
 
         $elements = $relationModelClassBaseName::all();
 

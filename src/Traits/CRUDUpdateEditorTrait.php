@@ -116,7 +116,7 @@ trait CRUDUpdateEditorTrait
 				if($_fieldName == $fieldName)
 					return $field;
 
-			$childrenFieldsets = $this->getFieldsetFieldsets($fieldsetParameters);
+			$childrenFieldsets = $this->getFieldsetFieldsets($fieldset);
 
 			if($formField = $this->findFormFieldByName($childrenFieldsets, $fieldName))
 				return $formField;

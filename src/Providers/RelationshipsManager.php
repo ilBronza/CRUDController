@@ -59,15 +59,15 @@ abstract class RelationshipsManager
 
 		return $this;
 
-		dd($relationship);
+		// die("ASDADS relationship");
 
-		$dummyRelatedModel = $this->model->{$relationMethod}()->make();
-		$relationKeyName = $dummyRelatedModel->getKeyName();
+		// $dummyRelatedModel = $this->model->{$relationMethod}()->make();
+		// $relationKeyName = $dummyRelatedModel->getKeyName();
 
-		if(! is_array($modelKey))
-			$modelKey = [$modelKey];
+		// if(! is_array($modelKey))
+		// 	$modelKey = [$modelKey];
 
-		$this->relatedModels = $this->model->{$relationMethod}()->whereIn($relationKeyName, $modelKey)->get();
+		// $this->relatedModels = $this->model->{$relationMethod}()->whereIn($relationKeyName, $modelKey)->get();
 	}
 
 	public function __construct(string $type = 'show', Model $model, string $relation = null, $modelKey = null)
@@ -136,6 +136,6 @@ abstract class RelationshipsManager
 
 	public function getCustomDom()
 	{
-		dd($this);
+		dd("get custom dom");
 	}
 }

@@ -185,12 +185,14 @@ trait CRUDEditUpdateTrait
 			foreach($rule as $index => $_rule)
 				if(strpos($_rule, "unique:") !== false)
 				{
-					$rule[$index] = implode(",", [
-						$rule[$index],
-						// $this->modelInstance->getKeyName(),
-						$this->modelInstance->getKeyName(),
-						$this->modelInstance->getKey()
-					]);
+					// $rule[$index] = implode(",", [
+					// 	$rule[$index],
+					// 	// $this->modelInstance->getKeyName(),
+					// 	$this->modelInstance->getKeyName(),
+					// 	$this->modelInstance->getKey()
+					// ]);
+
+					$rule[$index] = \Illuminate\Validation\Rule::unique($this->modelInstance->getTable())->ignore($this->modelInstance->getKey(), $this->modelInstance->getKeyName());
 
 					$rules[$field] = $rule;
 				}

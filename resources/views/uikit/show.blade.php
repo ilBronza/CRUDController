@@ -52,7 +52,6 @@
     </div>
 
 
-
     @include('crud::uikit._relationships')
 
 </div>

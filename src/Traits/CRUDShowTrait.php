@@ -4,6 +4,8 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Traits\CRUDRelationshipsManagerTrait;
 use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
+use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
 use Illuminate\Http\Request;
 
 trait CRUDShowTrait
@@ -125,6 +127,31 @@ trait CRUDShowTrait
 		return $this->useSingleRelationRelationshipsManager('show', $pluralModelType, $modelId);
 	}
 
+	public function getShowParametersFile() : ? string
+	{
+		if($this->showParametersFile ?? null)
+			return $this->showParametersFile;
+
+		if($this->parametersFile ?? null)
+			return $this->parametersFile;
+
+		return null;
+	}
+
+	public function getShowParametersClass() : ? FieldsetParametersFile
+	{
+		if($file = $this->getShowParametersFile())
+			return new $file();
+
+		return null;
+	}
+
+	public function getShowFieldsets()
+	{
+		if($class = $this->getShowParametersClass())
+			return ShowFieldsetsProvider::getFieldsetsByParametersFile($class, $this->modelInstance);
+	}
+
 	public function _show($modelInstance)
 	{
 		$this->modelInstance = $modelInstance;
@@ -146,6 +173,9 @@ trait CRUDShowTrait
 
 		$this->shareExtraViews();
 
-		return view($view, ['_showView' => $_showView]);
+		return view($view, [
+			'_showView' => $_showView,
+			'fieldsets' => $this->getShowFieldsets()
+		]);
 	}
 }

@@ -11,6 +11,7 @@ use IlBronza\FormField\DatabaseField;
 use IlBronza\FormField\Facades\FormField;
 use IlBronza\FormField\Fields\JsonFormField;
 use IlBronza\Form\Form;
+use IlBronza\Form\Helpers\FieldsetsProvider\EditFieldsetsProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -280,6 +281,10 @@ trait CRUDFormTrait
 		if(! property_exists($this, 'formFields'))
 			return $this->addFieldsFromDBByType($type);
 
+		// $fieldsets = EditFieldsetsProvider::getFieldsetsArray();
+
+		// dd($fieldsets);
+
 		$fieldsets = $this->getFormFieldsets($type);
 
 		foreach($fieldsets as $name => $fieldsetParameters)
@@ -396,6 +401,8 @@ trait CRUDFormTrait
 			$this->hasFormDivider($type)
 		);
 
+		EditFieldsetsProvider::addFieldsetsToFormByParametersFile();
+
 		$this->form->assignModel($this->modelInstance);
 		$this->assignDatabaseFieldsParameters();
 
@@ -457,7 +464,7 @@ trait CRUDFormTrait
 		if(count($fieldContent) == 1)
 			return array_key_first($fieldContent);
 
-		mori('fieldcontent multiplo, risolvere: ' . json_encode($fieldContent));
+		dd('fieldcontent multiplo, risolvere: ' . json_encode($fieldContent));
 
 		// return $this->addValidationArrayMultipleRow($validationArray, $fieldContent, $fieldName);
 	}
