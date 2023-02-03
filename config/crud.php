@@ -15,6 +15,7 @@ return [
     'concurrentUriCacheLifetime' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 10),
     'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000),
 
+    'nestableLeadingId' => 'nest',
 
     'meta' => [
     	'mandatoryNames' => [

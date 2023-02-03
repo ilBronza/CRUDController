@@ -107,24 +107,35 @@ trait CRUDNestableTrait
         return $return->sortBy('sorting_index');     
     }
 
+    private function removeLeadingControlCharacter(string $elementId = null)
+    {
+        if(! $elementId)
+            return $elementId;
+
+        return substr($elementId, strlen(config('crud.nestableLeadingId')));
+    }
+
     public function storeReorder(Request $request)
     {
-        if ($request->filled('parent_id')) {
-            if($request->filled('element_id')){
-                if(0 == $parentId = $request->input('parent_id'))
-                    $parentId = null;
+        $elementId = $this->removeLeadingControlCharacter($request->element_id);
+        $parentId = $this->removeLeadingControlCharacter($request->parent_id);
 
-                $item = $this->modelClass::findOrFail($request->input('element_id'));
+        if(($parentId == 0)||($parentId == ""))
+            $parentId = null;
 
-                $item->{$item->getParentKeyName()} = $parentId;
-                $item->save();
-            }
-        }
+        $item = $this->modelClass::findOrFail($elementId);
+
+        $item->{$item->getParentKeyName()} = $parentId;
+        $item->save();
 
         if ($request->filled('siblings')) {
             $siblings = json_decode($request->input('siblings'));
-            foreach ($siblings as $index => $sibling) {
-                $item = $this->modelClass::findOrFail($sibling);
+
+            foreach ($siblings as $index => $sibling)
+            {
+                $siblingId = $this->removeLeadingControlCharacter($sibling);
+
+                $item = $this->modelClass::findOrFail($siblingId);
                 $item->sorting_index = $index;
                 $item->save();
             }

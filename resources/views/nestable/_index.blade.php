@@ -1,3 +1,6 @@
+<link rel="stylesheet" type="text/css" href="/css/nestable.css?v={{ config('uikittemplate.version', "1.0.0") }}"/>
+<script src="/js/ilbronza.crud.nestable.min.js"></script>
+
 <div class="uk-card uk-card-default uk-card-default">
     <div class="uk-card-header">@lang('crud::sortElements')</div>
     <div class="uk-card-header">
@@ -14,9 +17,10 @@
             @endif
         </menu>
     </div>
-    <div class="uk-card-body">
+    {{-- <div class="uk-card-body" id="nestablelist"> --}}
         @if ($elements->count() > 0)
-            <div class="dd dd-item" data-id="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}">
+            {{-- <div class="dd dd-item" data-id="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}"> --}}
+            <div class="dd pointer-handler" id="nestablelist" data-id="{{ ($modelInstance)? $modelInstance->getNestableKey() : 0 }}">
                 <ol class="dd-list">
                 @foreach ($elements as $element)
                     @include('crud::nestable.element_nestable', compact('element'))
@@ -28,12 +32,63 @@
                 @lang('crud::nestableNoItemsPresent')
             </div>
         @endif        
-    </div>
+    {{-- </div> --}}
     <div class="uk-card-footer"></div>
 </div>
 
+<script>
+
+$(document).ready(function()
+{
+    $('#nestablelist').nestable({
+        maxDepth : 99,
+    }).on('dragEnd', function(
+        e,
+        item,               // List item
+        sourceList,         // Source list
+        destinationList,    // Destination list
+        position            // Position        
+        )
+    {
+        var element_id = $(item).data('id');
+        var element = $('#' + element_id);
+        var parent = $(element).parents('.dd-item');
+        var parent_id = $(parent).data('id');
+
+        setTimeout(function()
+        {
+            var childrens = element.parent().children();
+
+            var siblings = [];
+
+            if( childrens != null){
+                childrens.each(function( index )
+                {
+                    siblings.push($( this ).data('id'));
+                });
+            }
+
+            $.post('{{ $action }}',
+            {
+                element_id: element_id,
+                parent_id: parent_id,
+                siblings: JSON.stringify(siblings),
+            }, function (data)
+            {
+                window.addSuccessNotification(element_id + " {{ __('crud::nestableElementMovedTo') }} " + parent_id);
+            }).fail(function(response)
+            {
+                alert(response.responseText);
+                window.location.reload();
+            });
+        }, 1000);
+    });
+});
+</script>
+
 
 <script type="text/javascript">
+/*
     $(document).ready(function() {
 
         $('body').on('mouseenter', '.dd-content', function()
@@ -71,7 +126,7 @@
 
 
         $('.dd').nestable({
-            /* config options */
+
             maxDepth: {{ $maxDepth }},
 
             callback: function(l,e){
@@ -107,4 +162,5 @@
         });
 
     });
+    */
 </script>
