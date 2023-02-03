@@ -14,6 +14,7 @@ return [
 	'youAlreadyOpenedThisUrlOnADifferentPage' => 'Questo link è già aperto in un altra finestra',
 	'youOwnThisUri' => 'Hai la precedenza su questa finestra',
 	'aDifferentUserIsWatchingThisPage' => 'Un altro utente ha la precedenza su questa finestra',
-	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'L\'altra finestra è stata chiusa, questa ha guadagnato la precedenza'
+	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'L\'altra finestra è stata chiusa, questa ha guadagnato la precedenza',
+	'sortElements' => 'Riordina elementi'
 ];
 

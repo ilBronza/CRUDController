@@ -10,6 +10,7 @@ return [
 	'singleModel_operators' => 'Operatore',
 	'singleModel_children' => 'Elementi figli',
 	'singleModel_user' => 'Utente',
-	'cardTitleCreate' => 'Crea :element'
+	'cardTitleCreate' => 'Crea :element',
+	'sortElements' => 'Sort elements'
 ];
 

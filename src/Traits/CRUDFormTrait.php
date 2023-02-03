@@ -376,6 +376,17 @@ trait CRUDFormTrait
 		$this->form->setAllDatabaseFields($databaseFields);
 	}
 
+	public function getCustomEditSubmitButtonText() : ? string
+	{
+		return null;
+	}
+
+	public function manageSubmitButton()
+	{
+		if($text = $this->getCustomEditSubmitButtonText())
+			$this->form->setSubmitButtonText($text);
+	}
+
 	/**
 	 * share form parameters for defualt view
 	 *
@@ -421,6 +432,8 @@ trait CRUDFormTrait
 			$this->form->setIntro(
 				$this->getFormIntroByType($type)
 			);
+
+		$this->manageSubmitButton();
 
 		if($this->hasSaveAndNew())
 			$this->form->addSaveAndNewButton();

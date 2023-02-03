@@ -46,6 +46,16 @@ trait CRUDModelTrait
         return $this->getName();
     }
 
+    public function getNestableIndex() : int
+    {
+        return $this->sorting_index ?? 0;
+    }
+
+    public function getNestableKey() : string
+    {
+        return config('crud.nestableLeadingId') . $this->getKey();
+    }
+
     public function getOwningMethod(Model $model)
     {
         return  'owns' . class_basename($model);
