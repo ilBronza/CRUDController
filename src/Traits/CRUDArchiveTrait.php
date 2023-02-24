@@ -43,10 +43,10 @@ trait CRUDArchiveTrait
 			},
 			false,
 			[],
-			$this->modelClass
+			$this->getModelClass()
 		);
 
-		$this->table->addBaseModelClass($this->modelClass);
+		$this->table->addBaseModelClass($this->getModelClass());
 
 		return $this->table->renderPage();
 	}

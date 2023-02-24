@@ -99,6 +99,18 @@ trait CRUDModelTrait
         ]);        
     }
 
+    public function getTranslationsFileName()
+    {
+        if($this->translationsFilename ?? false)
+            return $this->translationsFilename;
+
+        return Str::plural(
+            Str::camel(
+                class_basename($this)
+            )
+        );
+    }
+
     static function getCreateChildButton(Model $model)
     {
         $singularCamelModel = Str::camel(class_basename($model));

@@ -26,7 +26,7 @@ trait CRUDUploadFileTrait
 		$fieldName = str_replace("[]", "", $request->fieldname);
 
 		$field = $this->getFormFieldByTypeAndName('update', $fieldName);
-		$field->assignModel($this->modelInstance);
+		$field->setModel($this->modelInstance);
 
 		// if(! $request->multiple)
 		if(! $field->isMultiple())

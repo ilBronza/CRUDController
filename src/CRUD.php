@@ -5,14 +5,17 @@ namespace IlBronza\CRUD;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
+use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
 
 class CRUD extends Controller
 {
+	use CRUDFileParametersTrait;
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
@@ -53,7 +56,7 @@ class CRUD extends Controller
 			parent::__construct();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
-		$this->middleware('CRUDCanDelete:' . $this->modelClass)->only(['destroy', 'forceDelete']);
+		$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
 
 		if(config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
@@ -110,8 +113,8 @@ class CRUD extends Controller
 	{
 		//TODO RISOLVERE STA ROBA
 		// foreach($this->neededTraits as $neededTrait)
-		// 	if(! in_array($neededTrait, class_uses(new $this->modelClass())))
-		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->modelClass);
+		// 	if(! in_array($neededTrait, class_uses(new ($this->getModelClass())())))
+		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->getModelClass());
 	}
 
 	/**
@@ -121,7 +124,7 @@ class CRUD extends Controller
 	 **/
 	protected function getModelTranslationFileName() : string
 	{
-		$classNamePieces = explode('\\', $this->modelClass);
+		$classNamePieces = explode('\\', $this->getModelClass());
 		$className = array_pop($classNamePieces);
 
 		return Str::plural(Str::camel($className));
@@ -134,10 +137,20 @@ class CRUD extends Controller
 	 **/
 	public function getModelClassBasename() : string
 	{
+		return class_basename($this->getModelClass());
+	}
+
+	/**
+	 * get subject model class
+	 *
+	 * @return string
+	 **/
+	public function getModelClass() : string
+	{
 		if(! $this->modelClass)
 			throw new \Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 
-		return class_basename($this->modelClass);
+		return $this->modelClass;
 	}
 
 	/**
@@ -166,14 +179,14 @@ class CRUD extends Controller
 	public function getCreateNewModelButton() : Button
 	{
 		if(isset($this->parentModel))
-			return $this->modelClass::getCreateChildButton($this->parentModel);
+			return $this->getModelClass()::getCreateChildButton($this->parentModel);
 
-		return $this->modelClass::getCreateButton();
+		return $this->getModelClass()::getCreateButton();
 	}
 
 	public function getReorderButton() : Button
 	{
-		return $this->modelClass::getReorderButton();		
+		return $this->getModelClass()::getReorderButton();		
 	}
 
 	/**
@@ -204,4 +217,37 @@ class CRUD extends Controller
 	{
 		return $this->avoidBackToList;
 	}
+
+
+
+
+
+
+
+	public function getModelDefaultParameters() : array
+	{
+		return [];
+	}
+
+	public function getModel()
+	{
+		return $this->modelInstance;
+	}
+
+	public function makeModel() : Model
+	{
+		$modelClass = $this->getModelClass();
+
+		$this->manageParentModelAssociation();
+
+		return $modelClass::make(
+			$this->getModelDefaultParameters()
+		);
+
+	}
+
+
+
+
+
 }

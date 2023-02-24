@@ -62,7 +62,7 @@ trait CRUDRoutingTrait
 			return $this->routeBaseNamePieces;
 
 		return [
-			$this->getLcfirstPluralModelClassname(new $this->modelClass())
+			$this->getLcfirstPluralModelClassname(new ($this->getModelClass())())
 		];
 	}
 

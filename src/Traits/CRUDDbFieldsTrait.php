@@ -232,7 +232,7 @@ trait CRUDDbFieldsTrait
 	private function getDbFields($model = null)
 	{
 
-		$tableName = (($model)? new $model : new $this->modelClass)->getTable();
+		$tableName = (($model)? new $model : new ($this->getModelClass()))->getTable();
 
 		return DB::select('describe ' . $tableName);
 	}

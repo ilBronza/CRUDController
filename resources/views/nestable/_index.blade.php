@@ -88,18 +88,25 @@ $(document).ready(function()
 
 
 <script type="text/javascript">
-/*
+
     $(document).ready(function() {
 
         $('body').on('mouseenter', '.dd-content', function()
         {
             let elementId = $(this).parent('.dd-item').data('id');
-            let elementText = $(this).text();
+            // let elementText = $(this).text();
 
-            $(this).append('<a class="createchild uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
+            // $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
+            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy')</a>');
+
+            @if($editUrl)
+            // $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.editElement') ' + elementText + '</a>');
+            $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.editElement')</a>');
+            @endif
 
             @if($createChildUrl)
-            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
+            // $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
+            $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild')</a>');
             @endif
         });
 
@@ -107,6 +114,8 @@ $(document).ready(function()
         {
             $(this).find('a.sortby').remove();
             $(this).find('a.createchild').remove();
+            $(this).find('a.editelement').remove();
+
         });
 
         $('#nestable-menu').on('click', function(e) {
@@ -125,42 +134,42 @@ $(document).ready(function()
         }
 
 
-        $('.dd').nestable({
+        // $('.dd').nestable({
 
-            maxDepth: {{ $maxDepth }},
+        //     maxDepth: {{ $maxDepth }},
 
-            callback: function(l,e){
-                // l is the main container
-                // e is the element that was moved
-                var id = e.data('id'), parent = e.parent().closest('.dd-item');
-                var parent_id = parent.data('id');
-                let parentText = parent.children('.dd-content').text();
+        //     callback: function(l,e){
+        //         // l is the main container
+        //         // e is the element that was moved
+        //         var id = e.data('id'), parent = e.parent().closest('.dd-item');
+        //         var parent_id = parent.data('id');
+        //         let parentText = parent.children('.dd-content').text();
 
-                var childrens = parent.find('ol.dd-list').first().children('li.dd-item');
-                // var order = JSON.stringify($('.dd').nestable('serialize'));
-                // console.log( l );
-                var siblings = [];
-                if( childrens != null){
-                    childrens.each(function( index ) {
-                        siblings.push($( this ).data('id'));
-                        // console.log( index + ": " + $( this ).data('id') );
-                    });
-                }
+        //         var childrens = parent.find('ol.dd-list').first().children('li.dd-item');
+        //         // var order = JSON.stringify($('.dd').nestable('serialize'));
+        //         // console.log( l );
+        //         var siblings = [];
+        //         if( childrens != null){
+        //             childrens.each(function( index ) {
+        //                 siblings.push($( this ).data('id'));
+        //                 // console.log( index + ": " + $( this ).data('id') );
+        //             });
+        //         }
 
-                $.post('{{ $action }}', {
-                    element_id: id,
-                    parent_id: parent_id,
-                    siblings: JSON.stringify(siblings),
-                }, function (data) {
-                    window.addSuccessNotification(id+ "{{ __('crud::nestableElementMovedTo') }} " + parentText);
-                });
+        //         $.post('{{ $action }}', {
+        //             element_id: id,
+        //             parent_id: parent_id,
+        //             siblings: JSON.stringify(siblings),
+        //         }, function (data) {
+        //             window.addSuccessNotification(id+ "{{ __('crud::nestableElementMovedTo') }} " + parentText);
+        //         });
     
 
-                // console.log( order );
-                // UIkit.notification(id+' was moved to '+ parent_id, 'success');
-            }
-        });
+        //         // console.log( order );
+        //         // UIkit.notification(id+' was moved to '+ parent_id, 'success');
+        //     }
+        // });
 
     });
-    */
+
 </script>

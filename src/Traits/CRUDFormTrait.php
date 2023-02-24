@@ -376,7 +376,7 @@ trait CRUDFormTrait
 		$this->form->setAllDatabaseFields($databaseFields);
 	}
 
-	public function getCustomEditSubmitButtonText() : ? string
+	public function getCustomSubmitButtonText() : ? string
 	{
 		return null;
 	}
@@ -386,6 +386,19 @@ trait CRUDFormTrait
 		if($text = $this->getCustomEditSubmitButtonText())
 			$this->form->setSubmitButtonText($text);
 	}
+
+	// public function instantiateForm(string $type)
+	// {
+	// 	$action = $this->getModelActionByForm($type);
+	// 	$method = $this->getMethod($type);
+
+	// 	$this->form = Form::createFromArray([
+	// 		'action' => $action,
+	// 		'method' => $method
+	// 	]);
+
+	// 	view()->share('form', $this->form);
+	// }
 
 	/**
 	 * share form parameters for defualt view
@@ -400,21 +413,19 @@ trait CRUDFormTrait
 	 */
 	public function shareDefaultFormParameters(string $type)
 	{
-		$action = $this->getModelActionByForm($type);
-		$method = $this->getMethod($type);
+		// $action = $this->getModelActionByForm($type);
+		// $method = $this->getMethod($type);
 
-		$this->form = Form::createFromArray([
-			'action' => $action,
-			'method' => $method
-		]);
+		// $this->form = Form::createFromArray([
+		// 	'action' => $action,
+		// 	'method' => $method
+		// ]);
 
 		$this->form->setDivider(
 			$this->hasFormDivider($type)
 		);
 
-		EditFieldsetsProvider::addFieldsetsToFormByParametersFile();
-
-		$this->form->assignModel($this->modelInstance);
+		$this->form->setModel($this->modelInstance);
 		$this->assignDatabaseFieldsParameters();
 
 		// if($type == 'create')
@@ -484,7 +495,9 @@ trait CRUDFormTrait
 
 	public function transformParametersByFieldsAndType(array $parameters, string $type)
 	{
-		$fieldsets = $this->getFormFieldsetsByType($type);
+		// $fieldsets = $this->getFormFieldsetsByType($type);
+
+		$fieldsets = $this->fieldsetsProvider->getParametersArray();
 
 		$confirmations = [];
 

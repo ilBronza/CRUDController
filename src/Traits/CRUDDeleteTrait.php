@@ -42,7 +42,7 @@ trait CRUDDeleteTrait
 
 	public function forceDelete($id)
 	{
-		$element = $this->modelClass::withTrashed()->find($id);
+		$element = $this->getModelClass()::withTrashed()->find($id);
 		$element->deleterForceDelete();
 
 		return $this->returnDeletionResponse($element);

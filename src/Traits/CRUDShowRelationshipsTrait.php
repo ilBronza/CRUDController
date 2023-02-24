@@ -45,7 +45,7 @@ trait CRUDShowRelationshipsTrait
 
 		$controllerName = $this->getRelationControllerName($name);
 
-		$fieldsGroup = Str::camel(class_basename($this->modelClass));
+		$fieldsGroup = Str::camel(class_basename($this->getModelClass()));
 
 		$this->relationshipsTableNames[$name] = app($controllerName)->getIndependentTable($elements, $fieldsGroup);
 

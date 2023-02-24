@@ -55,7 +55,7 @@ trait CRUDIndexTrait
 		if(! $this->methodIsAllowed('index'))
 			return false;
 
-		return $this->modelClass::userCanCreate(Auth::user());
+		return $this->getModelClass()::userCanCreate(Auth::user());
 	}
 
 	public function addCreateButton()
@@ -92,7 +92,7 @@ trait CRUDIndexTrait
 		}
 		catch(\Exception $e)
 		{
-			throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass . '. ' . $e->getMessage());
+			throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->getModelClass() . '. ' . $e->getMessage());
 		}
 
 		$createButton = $this->getCreateNewModelButton();
@@ -145,13 +145,13 @@ trait CRUDIndexTrait
 			},
 			$selectRow,
 			$tableVariables,
-			$baseModel ?? $this->modelClass
+			$baseModel ?? $this->getModelClass()
 		);
 
 		if(request()->ajax())
 			return $this->table->renderPage();
 
-		$this->table->addBaseModelClass($this->modelClass);
+		$this->table->addBaseModelClass($this->getModelClass());
 
 		$this->table->setPageLength($this->getPageLength());
 
@@ -187,7 +187,7 @@ trait CRUDIndexTrait
 			},
 			false,
 			[],
-			$this->modelClass
+			$this->getModelClass()
 		);
 
 		$this->table->setArrayTable();

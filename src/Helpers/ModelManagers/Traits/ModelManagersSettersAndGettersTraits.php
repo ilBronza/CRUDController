@@ -1,0 +1,42 @@
+<?php
+
+namespace IlBronza\CRUD\Helpers\ModelManagers\Traits;
+
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
+use Illuminate\Database\Eloquent\Model;
+
+trait ModelManagersSettersAndGettersTraits
+{
+	abstract public function initializeFieldsetsProvider() : FieldsetsProvider;
+
+	public function setFieldsetsProvider()
+	{
+		$this->fieldsetsProvider = $this->initializeFieldsetsProvider();
+	}
+
+	public function getFieldsetsProvider() : FieldsetsProvider
+	{
+		return $this->fieldsetsProvider;
+	}
+
+	public function setFieldsetParametersFile(FieldsetParametersFile $parametersFile)
+	{
+		$this->parametersFile = $parametersFile;
+	}
+
+	public function getFieldsetParametersFile() : FieldsetParametersFile
+	{
+		return $this->parametersFile;
+	}
+
+	public function setModel(Model $model)
+	{
+		$this->model = $model;
+	}
+
+	public function getModel() : Model
+	{
+		return $this->model;
+	}
+}

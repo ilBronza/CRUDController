@@ -14,12 +14,16 @@ trait CRUDNestableTrait
     public function getSortableElements($modelInstance) : Collection
     {
         //usare modelinstance per avere i suoi figli (per coerenza)
-        return $this->modelClass::all();
+        return $this->getModelClass()::all();
     }
 
     public function getSortableUrls() : array
     {
-        $modelBasename = lcfirst((class_basename($this->modelClass)));
+        $modelBasename = lcfirst(
+            class_basename(
+                $this->getModelClass()
+            )
+        );
 
         $routeModelBasename = Str::plural($modelBasename);
 
@@ -35,6 +39,7 @@ trait CRUDNestableTrait
         $result = [
             'action' => $this->getRouteUrlByType('storeReorder'),
             'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
+            'editUrl' => $this->getRouteUrlByType('edit', [$modelBasename => '%s']),
             'createChildUrl' => $createChildUrl ?? null,
             'rootUrl' => null,
             'parentUrl' => null
@@ -78,7 +83,7 @@ trait CRUDNestableTrait
 
         $maxDepth = $this->getMaxReorderDepth();
 
-        return view('crud::nestable.index', compact('modelInstance', 'createChildUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
+        return view('crud::nestable.index', compact('modelInstance', 'createChildUrl', 'editUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
     }
 
     //https://stackoverflow.com/questions/2915748/convert-a-series-of-parent-child-relationships-into-a-hierarchical-tree
@@ -123,7 +128,7 @@ trait CRUDNestableTrait
         if(($parentId == 0)||($parentId == ""))
             $parentId = null;
 
-        $item = $this->modelClass::findOrFail($elementId);
+        $item = $this->getModelClass()::findOrFail($elementId);
 
         $item->{$item->getParentKeyName()} = $parentId;
         $item->save();
@@ -135,7 +140,7 @@ trait CRUDNestableTrait
             {
                 $siblingId = $this->removeLeadingControlCharacter($sibling);
 
-                $item = $this->modelClass::findOrFail($siblingId);
+                $item = $this->getModelClass()::findOrFail($siblingId);
                 $item->sorting_index = $index;
                 $item->save();
             }

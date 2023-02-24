@@ -21,7 +21,10 @@ trait CRUDUpdateEditorTrait
 
 	private function validateUpdateEditorRequest(Request $request)
 	{
-		$validationArray = $this->getUpdateEditorValidationArray();
+		$this->setUpdateFieldsetsProvider();
+		$validationArray = $this->fieldsetsProvider->getValidationParameters();
+
+		// $validationArray = $this->getUpdateEditorValidationArray();
 
 		$parameters = $request->validate([
 			'field' => 'string|required|in:' . implode(",", array_keys($validationArray)),
@@ -38,7 +41,9 @@ trait CRUDUpdateEditorTrait
 
 	private function validateToggleRequest(Request $request)
 	{
-		$validationArray = $this->getUpdateEditorValidationArray();
+		$this->setUpdateFieldsetsProvider();
+		$validationArray = $this->fieldsetsProvider->getValidationParameters();
+		// $validationArray = $this->getUpdateEditorValidationArray();
 
 		$parameters = $request->validate([
 			'field' => 'string|required|in:' . implode(",", array_keys($validationArray)),

@@ -2,8 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use Illuminate\Http\Request;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelCreator;
 use IlBronza\Form\Facades\Form;
+use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
+use Illuminate\Http\Request;
 
 trait CRUDCreateTrait
 {
@@ -52,9 +54,29 @@ trait CRUDCreateTrait
 	/**
 	 * overrideable method to manage modelInstance before view rendering
 	 **/
-	public function beforeRenderCreate() { }
+	public function userCanPerformCreate() {}
+	public function manageBeforeCreate() {
+		$this->shareCreateButtons();
+		$this->loadCreateExtraViews();		
+	}
 
-	public function userCanPerformCreate() { }
+	public function overrideWithCustomSettingsToDefaults(array $settings) : array
+	{
+		return $settings;
+	}
+
+	public function provideFormDefaultSettings() : array
+	{
+		$defaults = [];
+
+		if(in_array('index', $this->allowedMethods)&&(! $this->avoidBackToList()))
+			$defaults['backToListUrl'] = $this->getIndexUrl();
+
+		$defaults['saveAndNew'] = $this->hasSaveAndNew();
+		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
+
+		return $this->overrideWithCustomSettingsToDefaults($defaults);
+	}
 
 	/**
 	 * get modelInstance create view
@@ -63,20 +85,20 @@ trait CRUDCreateTrait
 	 **/
 	public function create()
 	{
+		$this->modelInstance = $this->makeModel();
+
 		$this->userCanPerformCreate();
 		$this->manageReturnBack();
 
-		$this->modelInstance = new $this->modelClass;
+		$this->modelFormHelper = CrudModelCreator::buildForm(
+			$this->getModel(),
+			$this->getCreateParametersClass(),
+			$this->getStoreModelAction(),
+			$this->provideFormDefaultSettings(),
+		);
 
-		$this->manageParentModelAssociation();
+		$this->manageBeforeCreate();
 
-		$view = $this->getCreateView();
-
-		if($view == $this->standardCreateView)
-			$this->shareDefaultCreateFormParameters();
-
-		$this->beforeRenderCreate();
-
-		return view($view);
+		return $this->modelFormHelper->render();
 	}
 }
