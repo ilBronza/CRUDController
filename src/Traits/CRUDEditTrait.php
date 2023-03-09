@@ -131,7 +131,7 @@ trait CRUDEditTrait
 	 **/
 	public function _edit($modelInstance)
 	{
-		$this->modelInstance = $modelInstance;
+		$this->setModel($modelInstance);
 
 		$this->checkIfUserCanUpdate();
 		$this->manageReturnBack();

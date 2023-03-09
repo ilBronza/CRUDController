@@ -20,7 +20,7 @@
     {{-- <div class="uk-card-body" id="nestablelist"> --}}
         @if ($elements->count() > 0)
             {{-- <div class="dd dd-item" data-id="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}"> --}}
-            <div class="dd pointer-handler" id="nestablelist" data-id="{{ ($modelInstance)? $modelInstance->getNestableKey() : 0 }}">
+            <div class="dd pointer-handler" id="nestablelist" data-key="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}" data-id="{{ ($modelInstance)? $modelInstance->getNestableKey() : 0 }}">
                 <ol class="dd-list">
                 @foreach ($elements as $element)
                     @include('crud::nestable.element_nestable', compact('element'))
@@ -93,20 +93,20 @@ $(document).ready(function()
 
         $('body').on('mouseenter', '.dd-content', function()
         {
-            let elementId = $(this).parent('.dd-item').data('id');
+            let elementKey = $(this).parent('.dd-item').data('key');
             // let elementText = $(this).text();
 
-            // $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
-            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.reorderBy')</a>');
+            // $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
+            $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.reorderBy')</a>');
 
             @if($editUrl)
-            // $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.editElement') ' + elementText + '</a>');
-            $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.editElement')</a>');
+            // $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement') ' + elementText + '</a>');
+            $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement')</a>');
             @endif
 
             @if($createChildUrl)
-            // $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
-            $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementId) + '">@lang('crud::nestable.createChild')</a>');
+            // $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.createChild') ' + elementText + '</a>');
+            $(this).append('<a class="createchild uk-align-right" href="' + '{{ $createChildUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.createChild')</a>');
             @endif
         });
 

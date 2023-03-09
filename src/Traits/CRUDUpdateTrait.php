@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -183,6 +184,11 @@ trait CRUDUpdateTrait
 		return $this->setUpdateFieldsetsProvider();
 	}
 
+	public function getFieldsetsProvider() : FieldsetsProvider
+	{
+		return $this->fieldsetsProvider;
+	}
+
 	public function getValidatedUpdateParameters(Request $request) : array
 	{
 		$this->setUpdateFieldsetsProvider();
@@ -200,7 +206,8 @@ trait CRUDUpdateTrait
 	 **/
 	public function _update(Request $request, $modelInstance)
 	{
-		$this->modelInstance = $modelInstance;
+		$this->setModel($modelInstance);
+
 		$this->checkIfUserCanUpdate();
 
 		if($this->hasEditorUpdateRequest($request))
@@ -210,7 +217,7 @@ trait CRUDUpdateTrait
 			return $this->_uploadFile($request, 'update');
 
 		$this->modelInstance = CrudModelUpdater::saveByRequest(
-			$modelInstance,
+			$this->getModel(),
 			$this->getUpdateParametersClass(),
 			$request
 		);

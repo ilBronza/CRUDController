@@ -32,17 +32,20 @@ abstract class CrudModelStoringHelper
 	{
 		$fields = $this->getFieldsetsProvider()->getAllFieldsArray();
 
-		$confirmations = [];
-
 		foreach($fields as $fieldName => $fieldParameters)
 		{
-			if(isset($fieldParameters['rules']['confirmed']))
-				$confirmations[$fieldParameters['name'] . '_confirmation'] = true;
+			if(substr($fieldName, -13) == '_confirmation')
+			{
+				unset($parameters[$fieldName]);
+
+				continue;
+			}
 
 			$formField = FormField::createFromArray($fieldParameters);
 
-			// if(isset($parameters[$fieldName]))
-			$parameters[$fieldName] = $formField->transformValueBeforeStore($parameters[$fieldName] ?? null);
+			//avoid repopulation of disabled fields or non compiled fields
+			if(isset($parameters[$fieldName]))
+				$parameters[$fieldName] = $formField->transformValueBeforeStore($parameters[$fieldName] ?? null);
 
 			// //RESET NULL JSON FORM FIELDS
 			// if($formField instanceof JsonFormField)
@@ -50,7 +53,7 @@ abstract class CrudModelStoringHelper
 			// 		$parameters[$fieldName] = [];
 		}
 
-		return array_diff_key($parameters, $confirmations);
+		return $parameters;
 	}
 
 	public function getValidatedRequestParameters() : array
@@ -125,7 +128,8 @@ abstract class CrudModelStoringHelper
 		$model = $this->getModel();
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
-			$model->$attributeName = $parameters[$requestName];
+			if(array_key_exists($requestName, $parameters))
+				$model->$attributeName = $parameters[$requestName];
 
 		$model->save();
 

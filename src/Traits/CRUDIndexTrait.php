@@ -50,12 +50,12 @@ trait CRUDIndexTrait
 		return $table;
 	}
 
-	public function userCanCreate()
+	public function userCanCreate(User $user = null)
 	{
 		if(! $this->methodIsAllowed('index'))
 			return false;
 
-		return $this->getModelClass()::userCanCreate(Auth::user());
+		return $this->getModelClass()::userCanCreate($user);
 	}
 
 	public function addCreateButton()
@@ -122,6 +122,11 @@ trait CRUDIndexTrait
 
 	public function beforeRenderIndex() { }
 
+	public function getRowSelectCheckboxes()
+	{
+		return $this->rowSelectCheckboxes;
+	}
+
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
 	{
 		if(! $tableName)
@@ -143,7 +148,7 @@ trait CRUDIndexTrait
 
 				return $this->getIndexElements();
 			},
-			$selectRow,
+			$selectRow ? : $this->getRowSelectCheckboxes(),
 			$tableVariables,
 			$baseModel ?? $this->getModelClass()
 		);

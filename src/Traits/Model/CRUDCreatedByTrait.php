@@ -9,6 +9,16 @@ trait CRUDCreatedByTrait
     static $createdByTypeKeyName = 'created_by_type';
     static $createdByIdKeyName = 'created_by_id';
 
+    public function checkIfUsesOnlyUserModel()
+    {
+        return static::$usesOnlyUserModel ?? false;
+    }
+
+    public function getCreatedByForeignKeyName()
+    {
+        return static::$createdByForeignKeyName;        
+    }
+
     public function getCreadByTypeKeyName()
     {
         return static::$createdByTypeKeyName;
@@ -28,16 +38,25 @@ trait CRUDCreatedByTrait
     {
         static::saving(function ($model)
         {
-            if(! $creatingOperator = $model->getCreadByOperator())
+            if($model->checkIfUsesOnlyUserModel())
             {
-                $model->{$model->getCreadByTypeKeyName()} = null;
-                $model->{$model->getCreadByIdKeyName()} = null;
-
-                return ;
+                $model->{$model->getCreadByForeignKey()} = Auth::id();
             }
+            else
+            {
+                if(! $creatingOperator = $model->getCreadByOperator())
+                {
+                    $model->{$model->getCreadByTypeKeyName()} = null;
+                    $model->{$model->getCreadByIdKeyName()} = null;
 
-            $model->{$model->getCreadByTypeKeyName()} = get_class($creatingOperator);
-            $model->{$model->getCreadByIdKeyName()} = $creatingOperator->getKey();
+                    return ;
+                }
+                else
+                {
+                    $model->{$model->getCreadByTypeKeyName()} = get_class($creatingOperator);
+                    $model->{$model->getCreadByIdKeyName()} = $creatingOperator->getKey();
+                }
+            }
         });
 
     }

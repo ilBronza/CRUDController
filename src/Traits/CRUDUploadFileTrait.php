@@ -22,21 +22,27 @@ trait CRUDUploadFileTrait
 			'multiple' => 'boolean|nullable'
 		]);
 
+		$this->setUpdateFieldsetsProvider();
+
+
 		//gestire la validazione del file come tipo file da array parameters?
 		$fieldName = str_replace("[]", "", $request->fieldname);
 
-		$field = $this->getFormFieldByTypeAndName('update', $fieldName);
-		$field->setModel($this->modelInstance);
+		$field = $this->getFieldsetsProvider()->getFormFieldByName($fieldName);
+
+		$field->setModel(
+			$this->getModel()
+		);
 
 		// if(! $request->multiple)
 		if(! $field->isMultiple())
-			$this->modelInstance->clearMediaCollection($fieldName);
+			$this->getModel()->clearMediaCollection($fieldName);
 
 		//gestire update or store :-/
 		//gestire index
 		//gestire uuid
 
-		$file = $this->modelInstance->addMediaFromRequest('file')
+		$file = $this->getModel()->addMediaFromRequest('file')
 			->toMediaCollection(
 				$fieldName,
 				$field->getDisk()
@@ -52,14 +58,17 @@ trait CRUDUploadFileTrait
 			$thumbUrl = ($isImage ?? false)? $file->getUrl() : null;			
 		}
 
-		$this->modelInstance->{$fieldName} = $file->getKey();
-		$this->modelInstance->save();
+		if(! $field->isMultiple())
+		{
+			$this->getModel()->{$fieldName} = $file->getKey();
+			$this->getModel()->save();			
+		}
 
 		return [
 			'success' => true,
 			'filename' => $file->name,
 			'fileurl' => $file->getServeImageUrl(),
-			'deleteurl' => $file->getDeleteUrl(),
+			'deleteurl' => $this->getModel()->getDeleteMediaUrlByKey($file->getKey()),
 			'thumburl' => $thumbUrl
 		];
 	}

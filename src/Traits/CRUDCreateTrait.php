@@ -85,7 +85,9 @@ trait CRUDCreateTrait
 	 **/
 	public function create()
 	{
-		$this->modelInstance = $this->makeModel();
+		$this->setModel(
+			$this->makeModel()
+		);
 
 		$this->userCanPerformCreate();
 		$this->manageReturnBack();

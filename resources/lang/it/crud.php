@@ -11,6 +11,7 @@ return [
 	'singleModel_children' => 'Elementi figli',
 	'singleModel_user' => 'Utente',
 	'cardTitleEdit' => 'Modifica elemento :element',
+	'cardIntroEdit' => 'In questa sezione puoi modificare i dati dell\'oggetto scelto.<br />Ricorda di salvare la pagina prima dell\'uscita.',
 	'youAlreadyOpenedThisUrlOnADifferentPage' => 'Questo link è già aperto in un altra finestra',
 	'youOwnThisUri' => 'Hai la precedenza su questa finestra',
 	'aDifferentUserIsWatchingThisPage' => 'Un altro utente ha la precedenza su questa finestra',

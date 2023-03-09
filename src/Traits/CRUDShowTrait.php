@@ -138,9 +138,10 @@ trait CRUDShowTrait
 
 	public function _show($modelInstance)
 	{
-		$this->modelInstance = $modelInstance;
+		$this->setModel($modelInstance);
 
 		$this->checkIfUserCanSee();
+
 
 		if(request()->ibeditor)
 			return $this->manageEditorRequest(request());

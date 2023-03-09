@@ -28,7 +28,6 @@ class CrudModelEditor extends CrudModelFormHelper
 
             $this->getModel()->{$relation} = $elements;
         }
-
 	}
 
 	public function getCardClasses() : array
@@ -38,7 +37,7 @@ class CrudModelEditor extends CrudModelFormHelper
 
 	public function getTitle() : string
 	{
-		return $this->getTranslationByKey('cardTitleEdit');
+		return $this->getTranslationByKey('cardTitleEdit', ['element' => $this->getModel()?->getName()]);
 	}
 
 	public function getIntro() : string

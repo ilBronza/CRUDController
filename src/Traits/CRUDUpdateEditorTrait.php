@@ -43,6 +43,7 @@ trait CRUDUpdateEditorTrait
 	{
 		$this->setUpdateFieldsetsProvider();
 		$validationArray = $this->fieldsetsProvider->getValidationParameters();
+
 		// $validationArray = $this->getUpdateEditorValidationArray();
 
 		$parameters = $request->validate([
@@ -88,7 +89,7 @@ trait CRUDUpdateEditorTrait
 	{
 		$updateParameters = $this->validateToggleRequest($request);
 
-		$this->updateModelInstance($updateParameters);
+		$this->updateModelInstance($updateParameters, false);
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;

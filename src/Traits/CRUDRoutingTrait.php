@@ -56,13 +56,31 @@ trait CRUDRoutingTrait
 		return [];
 	}
 
+	public function getRouteBaseNamePrefix() : ? string
+	{
+		return null;
+	}
+
+	public function getRouteBaseNamePiecesByModelClass()
+	{
+		return $this->getLcfirstPluralModelClassname(
+			new ($this->getModelClass())()
+		);
+	}
+
 	public function getRouteBaseNamePieces()
 	{
 		if(! empty($this->routeBaseNamePieces))
 			return $this->routeBaseNamePieces;
 
+		if($prefix = $this->getRouteBaseNamePrefix())
+			return [
+				$prefix,
+				$this->getRouteBaseNamePiecesByModelClass()
+			];
+
 		return [
-			$this->getLcfirstPluralModelClassname(new ($this->getModelClass())())
+			$this->getRouteBaseNamePiecesByModelClass()
 		];
 	}
 

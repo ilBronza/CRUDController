@@ -32,6 +32,8 @@ class CRUD extends Controller
     public $avoidBackToList = false;
     public $showFormIntro = true;
 
+    public $rowSelectCheckboxes = false;
+
 	// index parameters
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
@@ -77,12 +79,29 @@ class CRUD extends Controller
 		return !! $this->returnBack;
 	}
 
+	public function setReturnUrlToPrevious()
+	{
+		return $this->setReturnUrl(
+			url()->previous()
+		);
+	}
+
+	public function setReturnUrlIfEmpty(string $url)
+	{
+		if(! $this->checkReturnUrl())
+			$this->setReturnUrl(
+				$url
+			);
+	}
+
 	public function manageReturnBack() : ? string
 	{
 		if(! $this->mustReturnBack())
 			return null;
 
-		return $this->setReturnUrl(url()->previous());
+		return $this->setReturnUrlIfEmpty(
+			url()->previous()
+		);
 	}
 
 	static function getClassKey() : string
@@ -93,10 +112,17 @@ class CRUD extends Controller
 	public function setReturnUrl(string $url) : string
 	{
 		$classKey = static::getClassKey();
-
 		session([$classKey => $url]);
 
 		return $classKey;
+	}
+
+	public function checkReturnUrl() : bool
+	{
+		$classKey = static::getClassKey();
+		$url = session($classKey, null);
+
+		return !! $url;
 	}
 
 	public function getReturnUrl() : ? string
@@ -227,6 +253,15 @@ class CRUD extends Controller
 	public function getModelDefaultParameters() : array
 	{
 		return [];
+	}
+
+	public function setModel($model)
+	{
+		$this->modelInstance = $model;
+
+		$this->modelInstance->setRouteBaseNamePrefix(
+			$this->getRouteBaseNamePrefix()
+		);
 	}
 
 	public function getModel()

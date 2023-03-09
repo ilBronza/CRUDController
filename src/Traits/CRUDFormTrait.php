@@ -364,11 +364,11 @@ trait CRUDFormTrait
 		return $this->$parameterName;
 	}
 
-	private function assignDatabaseFieldsParameters()
+	public function assignDatabaseFieldsParameters()
 	{
 		$databaseFields = [];
 
-		$fields = DB::select('describe ' . $this->modelInstance->getTable());
+		$fields = DB::select('describe ' . $this->getModel()->getTable());
 
 		foreach($fields as $dbField)
 			$databaseFields[$dbField->Field] = new DatabaseField($dbField);

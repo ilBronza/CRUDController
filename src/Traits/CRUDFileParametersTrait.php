@@ -37,7 +37,9 @@ trait CRUDFileParametersTrait
 		if($file = $this->getParametersFileByType('create'))
 			return new $file();
 
-		return null;
+		$parameters = $this->getFormFieldsetsByType('create');
+
+		return FieldsetParametersFile::makeByParameters($parameters);
 	}
 
 	public function getStoreParametersClass() : FieldsetParametersFile
