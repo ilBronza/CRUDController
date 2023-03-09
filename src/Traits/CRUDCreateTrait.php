@@ -60,24 +60,6 @@ trait CRUDCreateTrait
 		$this->loadCreateExtraViews();		
 	}
 
-	public function overrideWithCustomSettingsToDefaults(array $settings) : array
-	{
-		return $settings;
-	}
-
-	public function provideFormDefaultSettings() : array
-	{
-		$defaults = [];
-
-		if(in_array('index', $this->allowedMethods)&&(! $this->avoidBackToList()))
-			$defaults['backToListUrl'] = $this->getIndexUrl();
-
-		$defaults['saveAndNew'] = $this->hasSaveAndNew();
-		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
-
-		return $this->overrideWithCustomSettingsToDefaults($defaults);
-	}
-
 	/**
 	 * get modelInstance create view
 	 *
