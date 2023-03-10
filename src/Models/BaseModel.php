@@ -38,4 +38,9 @@ class BaseModel extends Model
 		return LogOptions::defaults();
 	}
 
+	public function getTranslatedClassname()
+	{
+		return trans('crudModels.' . $this->getCamelcaseClassBasename());
+	}
+
 }

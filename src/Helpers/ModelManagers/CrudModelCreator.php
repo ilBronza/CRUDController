@@ -30,6 +30,11 @@ class CrudModelCreator extends CrudModelFormHelper
 
 	public function getIntro() : string
 	{
-		return $this->getTranslationByKey('cardIntroCreate');
+		return $this->getTranslationByKey(
+			'cardIntroCreate',
+			[
+				'type' => $this->getModel()->getTranslatedClassname()
+			]
+		);
 	}
 }

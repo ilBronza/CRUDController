@@ -82,7 +82,7 @@ trait CRUDValidateTrait
 	public function getFormFieldsetsByType(string $type)
 	{
 		if(config('crud.alertOldFieldsetMethods'))
-			Notification::route('slack', 'https://hooks.slack.com/services/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')
+			Notification::route('slack', 'https://hooks.slack.com/services/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')
 				->notify(new SlackNotification('getFormFieldsetsByType ' . $type . ' da commentare commentata in favore del nuovo sistema. ' . request()->path()));
 
 		// throw new \Exception('getFormFieldsetsByType commentata in favore del nuovo sistema');
