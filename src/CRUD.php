@@ -74,7 +74,7 @@ class CRUD extends Controller
 		return request()->input('iframed', false);
 	}
 
-	public function mustReturnBack()
+	public function mustReturnBack() : bool
 	{
 		return !! $this->returnBack;
 	}
@@ -271,7 +271,7 @@ class CRUD extends Controller
 		return [];
 	}
 
-	public function setModel($model)
+	public function setModel(Model $model)
 	{
 		$this->modelInstance = $model;
 
@@ -280,7 +280,7 @@ class CRUD extends Controller
 		);
 	}
 
-	public function getModel()
+	public function getModel() : Model
 	{
 		return $this->modelInstance;
 	}

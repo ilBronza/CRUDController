@@ -32,7 +32,7 @@ trait CRUDFileParametersTrait
 		return null;
 	}
 
-	public function getCreateParametersClass() : ? FieldsetParametersFile
+	public function getCreateParametersClass() : FieldsetParametersFile
 	{
 		if($file = $this->getParametersFileByType('create'))
 			return new $file();
@@ -55,7 +55,7 @@ trait CRUDFileParametersTrait
 		return FieldsetParametersFile::makeByParameters($parameters);
 	}
 
-	public function getEditParametersClass() : ? FieldsetParametersFile
+	public function getEditParametersClass() : FieldsetParametersFile
 	{
 		if($file = $this->getParametersFileByType('edit'))
 			return new $file();
