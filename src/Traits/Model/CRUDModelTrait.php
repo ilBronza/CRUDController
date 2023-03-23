@@ -94,6 +94,10 @@ trait CRUDModelTrait
         return $this->{$nameField};
     }
 
+    public function getTranslatedClassname()
+    {
+        return trans('crudModels.' . $this->getCamelcaseClassBasename());
+    }
     //Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
     //DEPRECATO, non voglio niente che non abbia array
     // public function getTeaserFields()
