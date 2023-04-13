@@ -52,10 +52,21 @@ class CRUD extends Controller
 
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
 
+	/**
+	 * function to set $modelClass dinamically 
+	 **/
+	public function setModelClass()
+	{
+		// example
+		// $this->modelClass = config('someting.model');
+	}
+
 	public function __construct()
 	{
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
+
+		$this->setModelClass();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 		$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
