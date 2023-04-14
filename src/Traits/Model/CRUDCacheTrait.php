@@ -66,7 +66,7 @@ trait CRUDCacheTrait
         ]);
     }
 
-    static function findCached(int $id)
+    static function findCached($id)
     {
         return cache()->remember(
             static::staticCacheKey($id),
@@ -74,6 +74,18 @@ trait CRUDCacheTrait
             function() use($id)
             {
                 return static::find($id);
+            }
+        );
+    }
+
+    static function findCachedField(string $fieldname, $value)
+    {
+        return cache()->remember(
+            static::staticCacheKey($fieldname . $value),
+            3600,
+            function() use($fieldname, $value)
+            {
+                return static::where($fieldname, $value)->first();
             }
         );
     }
