@@ -13,10 +13,25 @@ trait CRUDDeleteTrait
 	 *
 	 * @return string url
 	 */
+	// public function getDeletedRedirectUrl()
+	// {
+	// 	return $this->getRouteUrlByType('index');
+	// }
+
 	public function getDeletedRedirectUrl()
 	{
-		return $this->getRouteUrlByType('idnex');
+		if($url = $this->getReturnUrl())
+			return $url;
+
+		if($url = $this->getAfterDeleteRoute())
+			return $url;
+
+		if(in_array('index', $this->allowedMethods))
+			return $this->getRouteUrlByType('index');
+
+		return url()->previous();
 	}
+
 
 	private function returnDeletionResponse($element)
 	{

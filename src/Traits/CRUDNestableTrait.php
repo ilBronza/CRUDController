@@ -2,6 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\FormField\FormField;
+use IlBronza\Form\Form;
+use IlBronza\Ukn\Facades\Ukn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -11,10 +15,22 @@ trait CRUDNestableTrait
 {
     public $maxReorderDepth = 150;
 
+    public $nestableElementViewName = 'crud::nestable.element_nestable';
+
+    private function canReplaceElement()
+    {
+        return in_array('replaceElement', $this->allowedMethods);
+    }
+
     public function getSortableElements($modelInstance) : Collection
     {
         //usare modelinstance per avere i suoi figli (per coerenza)
         return $this->getModelClass()::all();
+    }
+
+    public function getReplacingElementsListArray($modelInstance)
+    {
+        return $modelInstance->getParentPossibleValuesArray();
     }
 
     public function getSortableUrls() : array
@@ -41,9 +57,13 @@ trait CRUDNestableTrait
             'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
             'editUrl' => $this->getRouteUrlByType('edit', [$modelBasename => '%s']),
             'createChildUrl' => $createChildUrl ?? null,
+            'replaceElementUrl' => false, //viene popo0lata dopo da 'canReplaceElement'
             'rootUrl' => null,
             'parentUrl' => null
         ];
+
+        if($this->canReplaceElement())
+            $result['replaceElementUrl'] = $this->getRouteUrlByType('replaceElement', [$modelBasename => '%s']);
 
         if($this->modelInstance)
         {
@@ -67,6 +87,11 @@ trait CRUDNestableTrait
         return $this->maxReorderDepth;
     }
 
+    public function getNestableElementViewName()
+    {
+        return $this->nestableElementViewName;
+    }
+
     public function _reorder(Request $request, $modelInstance) : View
     {
         $this->modelInstance = $modelInstance;
@@ -83,7 +108,9 @@ trait CRUDNestableTrait
 
         $maxDepth = $this->getMaxReorderDepth();
 
-        return view('crud::nestable.index', compact('modelInstance', 'createChildUrl', 'editUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
+        $nestableElementViewName = $this->getNestableElementViewName();
+
+        return view('crud::nestable.index', compact('replaceElementUrl', 'nestableElementViewName', 'modelInstance', 'createChildUrl', 'editUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
     }
 
     //https://stackoverflow.com/questions/2915748/convert-a-series-of-parent-child-relationships-into-a-hierarchical-tree
@@ -145,6 +172,57 @@ trait CRUDNestableTrait
                 $item->save();
             }
         }
+    }
+
+    public function _storeReplaceElement(Request $request, Model $model)
+    {
+
+        $request->validate([
+            'target_id' => 'string'
+        ]);
+
+        $target = $this->getModelClass()::findOrFail($request->target_id);
+
+        $model->replaceForeignRelationships($target);
+
+        Ukn::s('Relazioni esterne riassegnate verso ' . $target->getName());
+
+        foreach($model->children as $child)
+            $child->associateParent($target);
+
+        Ukn::s('Figli di ' . $model->getName() . ' riassegnati a ' . $target->getName());
+
+        $model->delete();
+
+        Ukn::s('Elemento ' . $model->getName() . ' cancellato');
+
+        return redirect()->to(
+            $this->getRouteUrlByType('reorder')
+        );
+    }
+
+    public function _replaceElement(Request $request, Model $model)
+    {
+        $form = Form::createFromArray([
+            'action' => $this->getRouteUrlByType('storeReplaceElement', [$model]),
+            'method' => 'POST'
+        ]);
+
+        $form->setTitle(__('crud::nestableReplaceElementFormTitle'));
+        $form->assignModel($model);
+
+        $form->addFormField(
+                FormField::createFromArray([
+                    'label' => __('crud::nestableReplaceElementTargetLabel'),
+                    'name' => 'target_id',
+                    'type' => 'select',
+                    'list' => $this->getReplacingElementsListArray(
+                        $model
+                    )
+                ])
+            );
+
+        return view('form::uikit.form', compact('form'));
     }
 
 }

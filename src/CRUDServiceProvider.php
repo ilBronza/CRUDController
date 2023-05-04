@@ -103,26 +103,6 @@ class CRUDServiceProvider extends ServiceProvider
 
         // $this->app['router']->aliasMiddleware('CRUDAllowedMethods', __DIR__.'/Middleware/CRUDAllowedMethods.php');
 
-        Blade::directive('indexLink', function ($expression) {
-
-            return "<?php
-
-                if(Route::has(($expression) . '.index')) 
-                    echo '<a href=\"' . route(($expression) . '.index') . '\">' . __('crudModels.' . ($expression)) . '</a>';
-                elseif(Route::has(Str::plural(($expression)) . '.index')) 
-                    echo '<a href=\"' . route(Str::plural(($expression)) . '.index') . '\">' . __('crudModels.' . ($expression)) . '</a>';
-                elseif(is_object(($expression)))
-                {
-                    if(method_exists(($expression), 'getIndexUrl'))
-                        echo '<a href=\"' . ($expression)->getIndexUrl() . '\">' . __('crudModels.' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
-                    else
-                        echo '<a href=\"' . route(Str::plural(lcfirst(class_basename(($expression)))) . '.index') . '\">' . __('crudModels.' . Str::plural(lcfirst(class_basename(($expression))))) . '</a>';
-                }
-                else
-                    echo __('crudModels.' . ($expression));
-                ?>";
-        });
-
         $this->commands([
             ControllerCrudParametersTraitCommand::class,
             CrudBelongsToController::class,

@@ -9,7 +9,14 @@
     <div class="uk-card-header">
         <div uk-grid>
             <div class="uk-width-expand">
-                <span class="uk-h3 uk-display-block">@indexLink($modelInstance) {{ $modelInstance->getName() }}</span>
+                <span class="uk-h3 uk-display-block">
+                    <a href="{{ $modelInstance->getIndexUrl() }}">
+                        <i class="fa-solid fa-list"></i>
+                        Torna alla lista @lang('crudModels.' . Str::plural(strtolower(class_basename($modelInstance))))
+                    </a> - 
+                    
+                    {{ $modelInstance->getName() }}
+                </span>
 
                 @if((isset($backToListUrl))||(isset($showButtons)))
                     <nav

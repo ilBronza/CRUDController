@@ -153,7 +153,7 @@ trait CRUDIndexTrait
 			$baseModel ?? $this->getModelClass()
 		);
 
-		if(request()->ajax())
+        if((request()->ajax()) && (! request()->ibFetcher))
 			return $this->table->renderPage();
 
 		$this->table->addBaseModelClass($this->getModelClass());

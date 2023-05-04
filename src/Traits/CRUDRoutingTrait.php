@@ -75,8 +75,7 @@ trait CRUDRoutingTrait
 
 		if($prefix = $this->getRouteBaseNamePrefix())
 			return [
-				$prefix,
-				$this->getRouteBaseNamePiecesByModelClass()
+				$prefix . $this->getRouteBaseNamePiecesByModelClass()
 			];
 
 		return [

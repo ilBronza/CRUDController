@@ -5,7 +5,7 @@
 	@if (isset($element->childs) and $element->childs->count() > 0)
 	<ol class="dd-list">
 		@foreach($element->childs->sortBy('sorting_index') as $_element)
-			@include('crud::nestable.element_nestable', ['element' => $_element])
+			@include($nestableElementViewName, ['element' => $_element])
 		@endforeach
 	</ol>
 	@endif

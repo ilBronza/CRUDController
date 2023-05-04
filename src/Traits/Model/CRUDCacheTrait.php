@@ -11,7 +11,7 @@ trait CRUDCacheTrait
     public function getOrFindCachedRelation(
         string $relation,
         int $time = null
-    ) : Model|Collection
+    ) : null|Model|Collection
     {
         if($this->relationLoaded($relation))
             return $this->$relation;
@@ -29,7 +29,7 @@ trait CRUDCacheTrait
     public function getOrFindCachedRelatedElement(
         string $relation,
         int $time = null
-    ) : Model|Collection
+    ) : null|Model|Collection
     {
         if($this->relationLoaded($relation))
             return $this->$relation;

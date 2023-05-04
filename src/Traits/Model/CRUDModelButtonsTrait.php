@@ -10,7 +10,7 @@ trait CRUDModelButtonsTrait
     static function getCreateButton(array $routeParameters = []) : Button
     {
         return Button::create([
-            'href' => route(static::getModelRoutesPrefix() . static::getPluralCamelcaseClassBasename() . '.create', $routeParameters), 
+            'href' => route(static::getStaticRouteBasename() . '.create', $routeParameters), 
             'text' => 'generals.create' . class_basename(static::class),
             'icon' => 'plus'
         ]);

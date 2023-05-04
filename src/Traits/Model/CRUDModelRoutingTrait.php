@@ -7,105 +7,115 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 trait CRUDModelRoutingTrait
 {
-    public $routeBasenamePrefix = null;
+	public $routeBasenamePrefix = null;
 
-    static function getModelRoutesPrefix() : ? string
+	static function getModelRoutesPrefix() : ? string
+	{
+		return static::$routePrefix ?? null;
+	}
+
+	public function getRouteClassname()
+	{
+		if($this->routeClassname ?? false)
+			return $this->routeClassname;
+
+		return lcfirst(class_basename($this));
+	}
+
+    static function getStaticRouteBasename()
     {
-        return static::$routePrefix ?? null;
+        return static::make()->getRouteBasename();
     }
 
-    public function getRouteClassname()
-    {
-        if($this->routeClassname ?? false)
-            return $this->routeClassname;
+	public function getRouteBasename()
+	{
+		if($this->routeBasename ?? false)
+			return $this->routeBasename;
 
-        return lcfirst(class_basename($this));
-    }
+		$className = $this->getRouteClassname();
 
-    public function getRouteBasename()
-    {
-        if($this->routeBasename ?? false)
-            return $this->routeBasename;
+		return implode("", [
+			$this->getRouteBaseNamePrefix(),
+			Str::plural($className)
+		]);
+	}
 
-        $className = $this->getRouteClassname();
+	public function getRouteBaseNamePrefix() : ? string
+	{
+		return $this->routeBasenamePrefix;
+	}
 
-        return implode("", [
-            $this->getRouteBaseNamePrefix(),
-            Str::plural($className)
-        ]);
-    }
+	public function setRouteBaseNamePrefix(string $prefix = null)
+	{
+		$this->routeBasenamePrefix = $prefix;
+	}
 
-    public function getRouteBaseNamePrefix() : ? string
-    {
-        return $this->routeBasenamePrefix;
-    }
+	private function getKeyedRoute(string $action, array $data)
+	{
+		$routeBasename = $this->getRouteBasename();
+		$routeClassname = $this->getRouteClassname();
 
-    public function setRouteBaseNamePrefix(string $prefix = null)
-    {
-        $this->routeBasenamePrefix = $prefix;
-    }
+		return route($routeBasename . '.' . $action, [$routeClassname => $this->getKey()], $data);
+	}
 
-    private function getKeyedRoute(string $action, array $data)
-    {
-        $routeBasename = $this->getRouteBasename();
-        $routeClassname = $this->getRouteClassname();
+	public function getDeleteMediaUrlByKey($fileId, array $data = []) : string
+	{
+		$routeBasename = $this->getRouteBasename();
+		$routeClassname = $this->getRouteClassname();
 
-        return route($routeBasename . '.' . $action, [$routeClassname => $this->getKey()], $data);
-    }
+		return route($routeBasename . '.deleteMedia', [
+			$routeClassname => $this->getKey(),
+			'media' => $fileId
+		], $data);        
+	}
 
-    public function getDeleteMediaUrlByKey($fileId, array $data = []) : string
-    {
-        $routeBasename = $this->getRouteBasename();
-        $routeClassname = $this->getRouteClassname();
+	public function getDeleteMediaUrlByMedia(Media $file, array $data = []) : string
+	{
+		$routeBasename = $this->getRouteBasename();
+		$routeClassname = $this->getRouteClassname();
 
-        return route($routeBasename . '.deleteMedia', [
-            $routeClassname => $this->getKey(),
-            'media' => $fileId
-        ], $data);        
-    }
+		return route($routeBasename . '.deleteMedia', [
+			$routeClassname => $this->getKey(),
+			'media' => $file->getKey()
+		], $data);        
+	}
 
-    public function getDeleteMediaUrlByMedia(Media $file, array $data = []) : string
-    {
-        $routeBasename = $this->getRouteBasename();
-        $routeClassname = $this->getRouteClassname();
+	public function getDeleteMediaUrl($fileId, array $data = []) : string
+	{
+		throw new \Exception('DEPRECATO in favore di getDeleteMediaUrlByKey');
+		//TODO DOGODO SISDO DEPRECATED
+		// $routeBasename = $this->getRouteBasename();
+		// $routeClassname = $this->getRouteClassname();
 
-        return route($routeBasename . '.deleteMedia', [
-            $routeClassname => $this->getKey(),
-            'media' => $file->getKey()
-        ], $data);        
-    }
+		// return route($routeBasename . '.deleteMedia', [
+		//     $routeClassname => $this->getKey(),
+		//     'media' => $fileId
+		// ], $data);
+	}
 
-    public function getDeleteMediaUrl($fileId, array $data = []) : string
-    {
-        throw new \Exception('DEPRECATO in favore di getDeleteMediaUrlByKey');
-        //TODO DOGODO SISDO DEPRECATED
-        // $routeBasename = $this->getRouteBasename();
-        // $routeClassname = $this->getRouteClassname();
+	public function getShowUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('show', $data);
+	}
 
-        // return route($routeBasename . '.deleteMedia', [
-        //     $routeClassname => $this->getKey(),
-        //     'media' => $fileId
-        // ], $data);
-    }
+	public function getIndexUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('index', $data);
+	}
 
-    public function getShowUrl(array $data = [])
-    {
-        return $this->getKeyedRoute('show', $data);
-    }
+	public function getEditUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('edit', $data);
+	}
 
-    public function getEditUrl(array $data = [])
-    {
-        return $this->getKeyedRoute('edit', $data);
-    }
+	public function getDestroyUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('forceDelete', $data);
+	}
 
-    public function getDestroyUrl()
-    {
-        return $this->getKeyedRoute('forceDelete', $data);
-    }
-
-    public function getDeleteUrl(array $data = [])
-    {
-        return $this->getKeyedRoute('destroy', $data);
-    }
+	public function getDeleteUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('destroy', $data);
+	}
 
 }

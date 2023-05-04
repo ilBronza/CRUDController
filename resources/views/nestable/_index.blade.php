@@ -23,7 +23,7 @@
             <div class="dd pointer-handler" id="nestablelist" data-key="{{ ($modelInstance)? $modelInstance->getKey() : 0 }}" data-id="{{ ($modelInstance)? $modelInstance->getNestableKey() : 0 }}">
                 <ol class="dd-list">
                 @foreach ($elements as $element)
-                    @include('crud::nestable.element_nestable', compact('element'))
+                    @include($nestableElementViewName, compact('element'))
                 @endforeach
                 </ol>
             </div>
@@ -99,6 +99,11 @@ $(document).ready(function()
             // $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.reorderBy') ' + elementText + '</a>');
             $(this).append('<a class="sortby uk-align-right" href="' + '{{ $reorderByUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.reorderBy')</a>');
 
+            @if($replaceElementUrl)
+            // $(this).append('<a class="replaceelement uk-align-right" href="' + '{{ $replaceElementUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.replaceElement') ' + elementText + '</a>');
+            $(this).append('<a class="replaceelement uk-align-right" href="' + '{{ $replaceElementUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.replaceElement')</a>');
+            @endif
+
             @if($editUrl)
             // $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement') ' + elementText + '</a>');
             $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement')</a>');
@@ -114,6 +119,7 @@ $(document).ready(function()
         {
             $(this).find('a.sortby').remove();
             $(this).find('a.createchild').remove();
+            $(this).find('a.replaceelement').remove();
             $(this).find('a.editelement').remove();
 
         });
