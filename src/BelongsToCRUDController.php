@@ -103,12 +103,12 @@ class BelongsToCRUDController extends CRUD
 		return $kebabRelation . '_id';
 	}
 
-	public function associateParentModel()
+	public function associateParentModel(array $parameters) : array
 	{
-		throw new \Exception ('Gestire con urgenza la questione parent model, contattare 329 2396409 Davide davide@sistema.srl');
-
 		$parentModelKey = $this->getParentModelKey();
-		$this->modelInstance->{$parentModelKey} = $this->parentModel->getKey();
+		$parameters[$parentModelKey] = $this->parentModel->getKey();
+
+		return $parameters;
 	}
 
 	// public function loadParentModel()

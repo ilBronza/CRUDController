@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD;
 
 use IlBronza\Buttons\Button;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
@@ -235,7 +236,12 @@ class CRUD extends Controller
 	 **/
 	public function addFormExtraView(string $position, string $view, array $parameters = [])
 	{
-		$this->form->addExtraView($position, $view, $parameters);
+		$this->getModelFormHelper()->getForm()->addExtraView($position, $view, $parameters);
+	}
+
+	public function getModelFormHelper() : CrudModelFormHelper
+	{
+		return $this->modelFormHelper;
 	}
 
 	/**
@@ -298,14 +304,13 @@ class CRUD extends Controller
 
 	public function makeModel() : Model
 	{
-		$modelClass = $this->getModelClass();
-
-		$this->manageParentModelAssociation();
-
-		return $modelClass::make(
+		$parameters = $this->addParentModelAssociationParameter(
 			$this->getModelDefaultParameters()
 		);
 
+		return $this->getModelClass()::make(
+			$parameters
+		);
 	}
 
 
