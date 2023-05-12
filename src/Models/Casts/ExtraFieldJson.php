@@ -2,18 +2,10 @@
 
 namespace IlBronza\CRUD\Models\Casts;
 
-use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use IlBronza\FormField\Casts\JsonFieldCast;
 
-class ExtraFieldJson implements CastsAttributes
+class ExtraFieldJson extends JsonFieldCast
 {
-    private function jsonField($value)
-    {
-        if(! $value)
-            return [];
-
-        return json_decode($value, true);
-    }
-
     /**
      * Cast the given value.
      *
