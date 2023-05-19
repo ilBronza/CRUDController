@@ -72,11 +72,6 @@ trait CRUDEditTrait
 	{
 	}
 
-	public function getExtendedCreateButtons()
-	{
-
-	}
-
 	public function shareEditButtons()
 	{
 		$this->getExtendedEditButtons();
@@ -85,30 +80,9 @@ trait CRUDEditTrait
 			view()->share('buttons', $this->editButtons);
 	}
 
-	public function shareCreateButtons()
-	{
-		$this->getExtendedCreateButtons();
-
-		if((isset($this->createButtons))&&(count($this->createButtons)))
-			view()->share('buttons', $this->createButtons);
-	}
-
 	public function addEditExtraViews()
 	{
 		
-	}
-
-	public function addCreateExtraViews()
-	{
-		
-	}
-
-	public function loadCreateExtraViews()
-	{
-    	$this->addCreateExtraViews();
-
-    	//DEPRECATED 06/2022 - use form extraViews
-        // $this->shareExtraViews();		
 	}
 
     public function loadEditExtraViews()

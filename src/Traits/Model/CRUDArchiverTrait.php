@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Auth;
 use Carbon\Carbon;
 use IlBronza\CRUD\Scopes\ArchivingScope;
 
@@ -37,9 +38,17 @@ trait CRUDArchiverTrait
         static::addGlobalScope(new ArchivingScope);
     }
 
+    public function scopeArchived($query)
+    {
+        return $query->withoutGlobalScope(ArchivingScope::class)->whereNotNull('archived_at');
+    }
+
     public function archive(string $archiveName = null)
     {
         $this->archived_at = Carbon::now();
+
+        if(array_key_exists('archived_by', $this->attributes))
+            $this->archived_by = Auth::id();
 
         if($archiveName)
             $this->archive = $archiveName;

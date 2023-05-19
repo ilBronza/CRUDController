@@ -53,7 +53,8 @@ trait CRUDCacheTrait
         return implode("_", [
             class_basename($this),
             $this->id,
-            Str::slug($key)
+            Str::slug($key),
+            $this->updated_at
         ]);
     }
 

@@ -29,6 +29,32 @@ trait CRUDCreateTrait
 		return $this->standardCreateView;
 	}
 
+	public function addCreateExtraViews()
+	{
+		
+	}
+
+	public function loadCreateExtraViews()
+	{
+    	$this->addCreateExtraViews();
+
+    	//DEPRECATED 06/2022 - use form extraViews
+        // $this->shareExtraViews();		
+	}
+
+	public function getExtendedCreateButtons()
+	{
+
+	}
+
+	public function shareCreateButtons()
+	{
+		$this->getExtendedCreateButtons();
+
+		if((isset($this->createButtons))&&(count($this->createButtons)))
+			view()->share('buttons', $this->createButtons);
+	}
+
 	/**
 	 * get store model action form store form
 	 *

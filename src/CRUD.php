@@ -70,7 +70,9 @@ class CRUD extends Controller
 		$this->setModelClass();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
-		$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
+
+		if((in_array('destroy', $this->getAllowedMethods()))||(in_array('forceDelete', $this->getAllowedMethods())))
+			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
 
 		if(config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
