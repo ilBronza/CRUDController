@@ -141,6 +141,12 @@ abstract class RelationshipsManager
 
 	public function getDisplayType()
 	{
+		/*
+			Possibili valori:
+				- Flat
+				- Switcher
+				- Toggler
+		*/
 		return config('crud.relationships.displayType', 'Flat');
 	}
 
