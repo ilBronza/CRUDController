@@ -37,6 +37,7 @@ class RelationshipParameters
 	static $renderAsTypes = [
 		'BelongsToMany' => 'table',
 		'HasMany' => 'table',
+		'MorphMany' => 'table',
 		'BelongsTo' => 'view'
 	];
 

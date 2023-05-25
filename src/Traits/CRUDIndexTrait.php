@@ -16,6 +16,28 @@ trait CRUDIndexTrait
 		return $this->selectRow ?? false;
 	}
 
+	public function getTableFieldsGroupsByFile(array $keys) : array|false
+	{
+		$groups = [];
+
+		foreach($keys as $key)
+		{
+			$getterMethod = "get" . ucfirst($key) . "FieldsArray";
+
+			if(! method_exists($this, $getterMethod))
+			{
+				if($this->debugMode())
+					throw new \Exception('Dichiara ' . $getterMethod . ' in ' . get_class($this));
+
+				return false;
+			}
+
+			$groups[$key] = $this->$getterMethod();
+		}
+
+		return $groups;
+	}
+
 	/**
 	 * takes all the necessary fieldsGroups by key
 	 *
@@ -24,10 +46,13 @@ trait CRUDIndexTrait
 	 *
 	 * @return array
 	 */
-	public function getTableFieldsGroups($keys)
+	public function getTableFieldsGroups(string|array $keys)
 	{
 		if(! is_array($keys))
 			$keys = [$keys];
+
+		if($groups = $this->getTableFieldsGroupsByFile($keys))
+			return $groups;
 
 		$groups = [];
 

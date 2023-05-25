@@ -21,6 +21,13 @@ class CRUD extends Controller
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
 
+	public $debug = false;
+
+	public function debugMode() : bool
+	{
+		return $this->debug;
+	}
+
 	//general parameters
 	public $modelClass;
 	public $allowedMethods;
