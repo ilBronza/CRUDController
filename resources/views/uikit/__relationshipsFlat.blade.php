@@ -1,4 +1,3 @@
-@if(isset($relationshipManager))
 <div class="uk-card-footer">
 
 @foreach($relationshipManager->getRelationships() as $relationship)
@@ -16,5 +15,3 @@
 @endforeach
 
 </div>
-
-@endif

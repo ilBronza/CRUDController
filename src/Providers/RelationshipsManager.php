@@ -138,4 +138,10 @@ abstract class RelationshipsManager
 	{
 		dd("get custom dom");
 	}
+
+	public function getDisplayType()
+	{
+		return config('crud.relationships.displayType', 'Flat');
+	}
+
 }
