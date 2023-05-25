@@ -12,6 +12,7 @@ abstract class RelationshipsManager
 	public $type;
 	public $model;
 	public $relationships;
+	public $displayType = 'Switcher';
 
 	abstract function getAllRelationsParameters();
 
@@ -147,7 +148,7 @@ abstract class RelationshipsManager
 				- Switcher
 				- Toggler
 		*/
-		return config('crud.relationships.displayType', 'Flat');
+		return $this->displayType ?? config('crud.relationships.displayType', 'Flat');
 	}
 
 }
