@@ -12,6 +12,7 @@ abstract class RelationshipsManager
 	public $type;
 	public $model;
 	public $relationships;
+	public $displayType = 'Switcher';
 
 	abstract function getAllRelationsParameters();
 
@@ -138,4 +139,16 @@ abstract class RelationshipsManager
 	{
 		dd("get custom dom");
 	}
+
+	public function getDisplayType()
+	{
+		/*
+			Possibili valori:
+				- Flat
+				- Switcher
+				- Toggler
+		*/
+		return $this->displayType ?? config('crud.relationships.displayType', 'Flat');
+	}
+
 }

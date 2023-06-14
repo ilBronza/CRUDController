@@ -58,6 +58,11 @@ class RelationshipParameters
 		return __('relationships.' . $this->getRelationshipMethod());
 	}
 
+	public function getToggleId()
+	{
+		return str_replace('.', '-', $this->getCardTitle());
+	}
+
 	/**
 	 * set parameters and build default relation parameters
 	 **/
