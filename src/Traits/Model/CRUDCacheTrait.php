@@ -2,12 +2,19 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 trait CRUDCacheTrait
 {
+    static function getCachableRelations()
+    {
+        return static::$cachableRelations ?? [];
+    }
+
     public function getOrFindCachedRelation(
         string $relation,
         int $time = null
@@ -26,10 +33,18 @@ trait CRUDCacheTrait
         );
     }
 
+    public function getOrFindCachedRelatedElements(
+        string $relation,
+        int $time = null
+    ) : Collection
+    {
+        return $this->getOrFindCachedRelation($relation, $time);
+    }
+
     public function getOrFindCachedRelatedElement(
         string $relation,
         int $time = null
-    ) : null|Model|Collection
+    ) : ? Model
     {
         if($this->relationLoaded($relation))
             return $this->$relation;
@@ -50,21 +65,28 @@ trait CRUDCacheTrait
      */
     public function cacheKey(string $key)
     {
-        return implode("_", [
+        return Str::slug(implode("_", [
             class_basename($this),
             $this->id,
-            Str::slug($key),
+            $key,
             $this->updated_at
-        ]);
+        ]));
     }
 
     static function staticCacheKey(string $key, array $relations = [])
     {
-        return implode("_", [
+        return Str::slug(implode("_", [
             class_basename(static::class),
             $key,
             json_encode($relations)
-        ]);
+        ]));
+    }
+
+    static function findIfCached($id) : ? static
+    {
+        return cache()->get(
+            static::staticCacheKey($id)
+        );
     }
 
     static function findCached($id)
@@ -74,6 +96,10 @@ trait CRUDCacheTrait
             3600,
             function() use($id)
             {
+                Ukn::s('Loaded ' . static::staticCacheKey($id));
+                if($cachableRelations = static::getCachableRelations())
+                    return static::with($cachableRelations)->find($id);
+
                 return static::find($id);
             }
         );
@@ -111,5 +137,19 @@ trait CRUDCacheTrait
             {
                 return static::$method();
             });
+    }
+
+    public function getCachedCalculatedProperty(string $name, callable $callable = null)
+    {
+        return cache()->remember(
+            $this->cacheKey($name),
+            3600,
+            function() use($name, $callable)
+            {
+                if(! $callable)
+                    return $this->{$name};
+
+                return $callable();
+            });        
     }
 }

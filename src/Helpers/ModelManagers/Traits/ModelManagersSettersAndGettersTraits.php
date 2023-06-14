@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 trait ModelManagersSettersAndGettersTraits
 {
-	abstract public function initializeFieldsetsProvider() : FieldsetsProvider;
-
 	public function setFieldsetsProvider()
 	{
 		$this->fieldsetsProvider = $this->initializeFieldsetsProvider();
@@ -23,6 +21,8 @@ trait ModelManagersSettersAndGettersTraits
 	public function setFieldsetParametersFile(FieldsetParametersFile $parametersFile)
 	{
 		$this->parametersFile = $parametersFile;
+
+		$this->parametersFile->setModelManager($this);
 	}
 
 	public function getFieldsetParametersFile() : FieldsetParametersFile

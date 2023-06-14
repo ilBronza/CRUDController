@@ -6,7 +6,7 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 
 trait CRUDFileParametersTrait
 {
-	private function getGenericParametersFile() : ? string
+	public function getGenericParametersFile() : ? string
 	{
 		if($this->parametersFile ?? null)
 			return $this->parametersFile;
@@ -21,12 +21,28 @@ trait CRUDFileParametersTrait
 		if($this->$propertyName ?? null)
 			return $this->$propertyName;
 
+		$propertyMethod = "get" . ucfirst($type) . "ParametersFile";
+
+		if(method_exists($this, $propertyMethod))
+			return $this->{$propertyMethod}();
+
 		return $this->getGenericParametersFile();
+	}
+
+	public function getTeaserParametersClass() : FieldsetParametersFile
+	{
+		if(! $file = $this->getParametersFileByType('teaser'))
+			$file = $this->getGenericParametersFile();
+
+		return new $file();
 	}
 
 	public function getShowParametersClass() : ? FieldsetParametersFile
 	{
 		if($file = $this->getParametersFileByType('show'))
+			return new $file();
+
+		if($file = $this->getGenericParametersFile())
 			return new $file();
 
 		return null;

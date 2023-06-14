@@ -50,7 +50,7 @@ trait CRUDModelRoutingTrait
 		$this->routeBasenamePrefix = $prefix;
 	}
 
-	private function getKeyedRoute(string $action, array $data)
+	public function getKeyedRoute(string $action, array $data)
 	{
 		$routeBasename = $this->getRouteBasename();
 		$routeClassname = $this->getRouteClassname();

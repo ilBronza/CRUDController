@@ -45,9 +45,7 @@ trait CRUDManyToManyTreeTrait
             );
 
         if ($mainComponentName)
-        {
             $result->where($this->getManyToManyRelationTable() . '.main_component', $mainComponentName);
-        }
 
         return $result;
     }
@@ -62,6 +60,19 @@ trait CRUDManyToManyTreeTrait
         );
 
         return $this->manageancestorsTreeResult($result, $mainComponentName);
+    }
+
+    public function descendantPivots(string $mainComponentName = null)
+    {
+        $result = $this->hasMany(
+            $related = $this->getManyToManyRelationClass(),
+            $this->getManyToManyParentKeyName()
+        );
+
+        if ($mainComponentName)
+            $result->where('main_component', $mainComponentName);
+
+        return $result;
     }
 
     public function descendants(string $mainComponentName = null)
@@ -88,10 +99,8 @@ trait CRUDManyToManyTreeTrait
 
     private function deleteAncestorRelation($ancestor = null) : bool
     {
-        if (!$ancestor)
-        {
+        if (! $ancestor)
             return false;
-        }
 
         $searchParameters = [
             'parent_id' => $ancestor->getKey(),
@@ -106,16 +115,12 @@ trait CRUDManyToManyTreeTrait
         $this->deleteAncestorRelation($ancestor);
 
         if ($this->ancestors()->count() > 0)
-        {
             return false;
-        }
 
         $descendants = $this->getDescendants();
 
         foreach ($descendants as $descendant)
-        {
             $descendant->deleteWithDescendants($this);
-        }
 
         $this->delete();
     }

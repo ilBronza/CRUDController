@@ -68,18 +68,27 @@ $(document).ready(function()
                 });
             }
 
-            $.post('{{ $action }}',
-            {
-                element_id: element_id,
-                parent_id: parent_id,
-                siblings: JSON.stringify(siblings),
-            }, function (data)
-            {
-                window.addSuccessNotification(element_id + " {{ __('crud::nestableElementMovedTo') }} " + parent_id);
-            }).fail(function(response)
-            {
-                alert(response.responseText);
-                window.location.reload();
+            $.ajax({
+                url : '{{ $action }}',
+                data : {
+                    element_id: element_id,
+                    parent_id: parent_id,
+                    siblings: JSON.stringify(siblings)
+                },
+                type : 'POST',
+                success : function(response, message, jqXhr)
+                {
+                    if(response.success == true)
+                        window.addSuccessNotification(element_id + " {{ __('crud::nestableElementMovedTo') }} " + parent_id);
+                    else
+                        this.error(response, message, jqXhr);
+
+                },
+                error : function(response, message, xhr)
+                {
+                    alert(response.responseText);
+                    window.location.reload();
+                }
             });
         }, 1000);
     });
@@ -107,6 +116,8 @@ $(document).ready(function()
             @if($editUrl)
             // $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement') ' + elementText + '</a>');
             $(this).append('<a class="editelement uk-align-right" href="' + '{{ $editUrl }}'.replace('%s', elementKey) + '">@lang('crud::nestable.editElement')</a>');
+            @else
+            $(this).append('<a class="editelement uk-align-right" href="' + $(this).data('editurl') + '">@lang('crud::nestable.editElement')</a>');
             @endif
 
             @if($createChildUrl)

@@ -9,7 +9,7 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\View\View;
 
-abstract class CrudModelFormHelper
+abstract class CrudModelFormHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 

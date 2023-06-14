@@ -143,7 +143,6 @@ trait CRUDShowTrait
 
 		$this->checkIfUserCanSee();
 
-
 		if(request()->ibeditor)
 			return $this->manageEditorRequest(request());
 

@@ -33,11 +33,26 @@ trait CRUDNestableTrait
         return $modelInstance->getParentPossibleValuesArray();
     }
 
+    public function getStoreReoderUrl()
+    {
+        return $this->getRouteUrlByType('storeReorder');
+    }
+
+    public function getReorderByUrl(string $modelBasename)
+    {
+        return $this->getRouteUrlByType('reorder', [$modelBasename => '%s']);
+    }
+
+    public function getEditReorderUrl(array $parameters = null)
+    {
+        return $this->getRouteUrlByType('edit', $parameters);
+    }
+
     public function getSortableUrls() : array
     {
         $modelBasename = lcfirst(
             class_basename(
-                $this->getModelClass()
+                $this->getModel() ?? $this->getModelClass()
             )
         );
 
@@ -53,9 +68,9 @@ trait CRUDNestableTrait
         // );
 
         $result = [
-            'action' => $this->getRouteUrlByType('storeReorder'),
-            'reorderByUrl' => $this->getRouteUrlByType('reorder', [$modelBasename => '%s']),
-            'editUrl' => $this->getRouteUrlByType('edit', [$modelBasename => '%s']),
+            'action' => $this->getStoreReoderUrl(),
+            'reorderByUrl' => $this->getReorderByUrl($modelBasename),
+            'editUrl' => $this->getEditReorderUrl([$modelBasename => '%s']),
             'createChildUrl' => $createChildUrl ?? null,
             'replaceElementUrl' => false, //viene popo0lata dopo da 'canReplaceElement'
             'rootUrl' => null,
@@ -67,15 +82,29 @@ trait CRUDNestableTrait
 
         if($this->modelInstance)
         {
-            $this->modelInstance->load('parent');
+            // $this->modelInstance->load('parent');
 
-            $result['rootUrl'] = $this->getRouteUrlByType('reorder');
-
-            if($this->modelInstance->{$this->modelInstance->getParentKeyName()})
+            try
             {
-                $result['parentUrl'] = ($this->modelInstance) ? $this->getRouteUrlByType('reorder', [
-                    $modelBasename => $this->modelInstance->{$this->modelInstance->getParentKeyName()}
-                ]) : null;                
+                $result['rootUrl'] = $this->getRouteUrlByType('reorder');                
+            }
+            catch(\Exception $e)
+            {
+                Ukn::e($e->getMessage());
+            }
+
+            try
+            {
+                if($this->modelInstance->{$this->modelInstance->getParentKeyName()})
+                {
+                    $result['parentUrl'] = ($this->modelInstance) ? $this->getRouteUrlByType('reorder', [
+                        $modelBasename => $this->modelInstance->{$this->modelInstance->getParentKeyName()}
+                    ]) : null;
+                }
+            }
+            catch(\Exception $e)
+            {
+                Ukn::e($e->getMessage());
             }
         }
 
@@ -92,16 +121,23 @@ trait CRUDNestableTrait
         return $this->nestableElementViewName;
     }
 
-    public function _reorder(Request $request, $modelInstance) : View
+    public function getSortableElementsTree()
+    {
+        $flatElements = $this->getSortableElements(
+            $this->modelInstance
+        );
+
+        return $this->parseTree(
+            $flatElements,
+            ($this->modelInstance)? $this->modelInstance->getKey() : null
+        );
+    }
+
+    public function _reorder(Request $request, $modelInstance = null) : View
     {
         $this->modelInstance = $modelInstance;
 
-        $flatElements = $this->getSortableElements($modelInstance);
-
-        $elements = $this->parseTree(
-            $flatElements,
-            ($modelInstance)? $modelInstance->getKey() : null
-        );
+        $elements = $this->getSortableElementsTree();
 
         //obtain action, rootUrl and ParentUrl
         extract($this->getSortableUrls());
@@ -149,6 +185,7 @@ trait CRUDNestableTrait
 
     public function storeReorder(Request $request)
     {
+        return "undici";
         $elementId = $this->removeLeadingControlCharacter($request->element_id);
         $parentId = $this->removeLeadingControlCharacter($request->parent_id);
 
@@ -172,11 +209,17 @@ trait CRUDNestableTrait
                 $item->save();
             }
         }
+
+        dd('asd');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Elemento spostato correttamente'
+        ]);
     }
 
     public function _storeReplaceElement(Request $request, Model $model)
     {
-
         $request->validate([
             'target_id' => 'string'
         ]);

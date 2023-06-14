@@ -6,12 +6,22 @@ use IlBronza\CRUD\Providers\RouterProvider\RoutedObjectInterface;
 
 class IbRouter
 {
-	static function route(RoutedObjectInterface $object, string $name, array $parameters = [])
+	static function routeName(RoutedObjectInterface $object, string $name)
 	{
 		if(! $prefix = $object->getRoutePrefix())
-			return route($name, $parameters);
+			return $name;
 
-		return route($prefix . $name, $parameters);
+		return $prefix . $name;
+	}
+
+	static function route(RoutedObjectInterface $object, string $name, array $parameters = [])
+	{
+		$name = static::routeName($object, $name);
+
+		return route(
+			$name,
+			$parameters
+		);
 	}
 
 }

@@ -6,11 +6,11 @@ trait CRUDRelationshipsManagerTrait
 {
 	public function setRelationshipsManager(string $type = 'show')
 	{
-		if(! isset($this->relationshipsManagerClass))
+		if(! $this->getRelationshipsManagerClass())
 			return false;
 
 		if(empty($this->relationshipManager))
-			$this->relationshipManager = new $this->relationshipsManagerClass($type, $this->modelInstance);
+			$this->relationshipManager = new ($this->getRelationshipsManagerClass())($type, $this->modelInstance);
 
 		return $this->relationshipManager;
 
@@ -37,7 +37,7 @@ trait CRUDRelationshipsManagerTrait
 
 	public function useSingleRelationRelationshipsManager(string $type = 'show', string $relation, $modelKey)
 	{
-		$this->relationshipManager = new $this->relationshipsManagerClass($type, $this->modelInstance, $relation, $modelKey);
+		$this->relationshipManager = new ($this->getRelationshipsManagerClass())($type, $this->modelInstance, $relation, $modelKey);
 
 		$relationshipManager = $this->relationshipManager;
 

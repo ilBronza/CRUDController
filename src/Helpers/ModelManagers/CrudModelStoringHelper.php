@@ -8,7 +8,7 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-abstract class CrudModelStoringHelper
+abstract class CrudModelStoringHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 

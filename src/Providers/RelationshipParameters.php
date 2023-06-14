@@ -153,6 +153,11 @@ class RelationshipParameters
 		$this->setRelatedModelClass();
 	}
 
+	public function getRelatedModel() : Model
+	{
+		return $this->relatedModel;
+	}
+
 	/** 
 	 * set all relation properties by relation type
 	 *
@@ -213,6 +218,21 @@ class RelationshipParameters
 	public function getController() : string
 	{
 		return $this->controller;
+	}
+
+	public function controllerHasTeaserMethod() : bool
+	{
+		if(! $controller = $this->getController())
+			return false;
+
+		return method_exists($controller, 'teaser');
+	}
+
+	public function renderControllerTeaser()
+	{
+		return app($this->getController())->teaser(
+			$this->getElement()
+		);
 	}
 
 	/**
@@ -340,7 +360,14 @@ class RelationshipParameters
 
 		$fieldsGroupsNames = $this->getFieldsGroupsNames();
 
-		return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);
+		try
+		{
+			return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);			
+		}
+		catch(\Throwable $e)
+		{
+			dd(($this->controller));
+		}
 	}
 
 	public function getParentModel()
@@ -369,7 +396,6 @@ class RelationshipParameters
 	 **/
 	public function setTable()
 	{
-
 		if(request()->rowId)
 			if($this->name != 'quantities')
 				return ;
@@ -484,6 +510,9 @@ class RelationshipParameters
 
 	private function renderView()
 	{
+		if($this->controllerHasTeaserMethod())
+			return $this->renderControllerTeaser();
+
 		if($this->hasStandardView())
 			return view(
 				$this->getView(),

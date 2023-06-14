@@ -88,7 +88,7 @@ class ExtraField implements CastsAttributes
     {
         if(! $this->extraModelClassname)
         {
-            if(! $model->extraFields)
+            if(! isset($model->extraFields))
                 $model->extraFields = $model->getCachedProjectExtraFieldsModel();
 
             $model->extraFields->$key = $value;

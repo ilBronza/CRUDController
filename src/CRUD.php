@@ -10,6 +10,7 @@ use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
+use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
@@ -187,6 +188,10 @@ class CRUD extends Controller
 		return class_basename($this->getModelClass());
 	}
 
+    public function findModel(string $key) : ? Model
+    {
+        return $this->getModelClass()::find($key);
+    }
 	/**
 	 * get subject model class
 	 *
@@ -306,7 +311,7 @@ class CRUD extends Controller
 		);
 	}
 
-	public function getModel() : Model
+	public function getModel() : ? Model
 	{
 		return $this->modelInstance;
 	}
@@ -322,6 +327,14 @@ class CRUD extends Controller
 		);
 	}
 
+
+    public function modelHasAutomaticCache() : bool
+    {
+        return in_array(
+            CRUDCacheAutomaticSetterTrait::class,
+            class_uses_recursive($this->getModelClass())
+        );
+    }
 
 
 

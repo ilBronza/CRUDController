@@ -93,9 +93,14 @@ trait CRUDShowRelationshipsTrait
 		$this->relationshipsElements[$name] = $related;
 	}
 
+	public function getRelationshipsManagerClass() : ? string
+	{
+		return $this->relationshipsManagerClass ?? null;
+	}
+
 	private function shareRelationships()
 	{
-		if(isset($this->relationshipsManagerClass))
+		if($this->getRelationshipsManagerClass())
 			return $this->useRelationshipsManager();
 		else
 			echo "

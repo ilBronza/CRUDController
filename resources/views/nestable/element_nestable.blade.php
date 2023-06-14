@@ -1,6 +1,13 @@
-<li class="dd-item" data-key="{{ $element->getKey() }}" data-id="{{ $element->getNestableKey() }}" id="{{ $element->getNestableKey() }}">
+<li
+	class="dd-item"
+	data-key="{{ $element->getKey() }}"
+	data-id="{{ $element->getNestableKey() }}"
+	id="{{ $element->getNestableKey() }}"
+	>
 	<div class="dd-handle"></div>
-	<div class="dd-content">{{ $element->getNestableName() }}</div>
+	<div class="dd-content" @if(! $editUrl)	data-editurl="{{ $element->getEditURL() }}" @endif>
+		{{ $element->getNestableName() }}
+	</div>
 
 	@if (isset($element->childs) and $element->childs->count() > 0)
 	<ol class="dd-list">

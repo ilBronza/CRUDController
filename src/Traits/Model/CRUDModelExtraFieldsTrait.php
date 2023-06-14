@@ -11,18 +11,34 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 trait CRUDModelExtraFieldsTrait
 {
-	abstract function extraFields();
 	abstract function getExtraFieldsClass() : string;
+
+	public function extraFields()
+	{
+		return $this->hasOne(
+			$this->getExtraFieldsClass()
+		);
+	}
+
+	public function getProjectExtraFieldsModel()
+	{
+		if($extraFields = $this->extraFields)
+			return $extraFields;
+
+		$extraFields = $this->extraFields()->make();
+
+		return $this->extraFields = $extraFields;
+	}
 
 	public function getCachedProjectExtraFieldsModel()
 	{
-		return cache()->rememberForever(
-			$this->getExtraFieldsClass()::staticCacheKey($this->getKey() . $this->updated_at),
-			function ()
-			{
+		// return cache()->rememberForever(
+		// 	$this->getExtraFieldsClass()::staticCacheKey($this->getKey() . $this->updated_at),
+		// 	function ()
+		// 	{
 				return $this->getProjectExtraFieldsModel();
-			}
-		);
+		// 	}
+		// );
 	}
 
 	public function getCachedProjectCustomExtraFieldsModel(string $customExtraAttributesModel)

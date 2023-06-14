@@ -28,6 +28,6 @@
 
 <!--DEPRECATO A MANETTA-->
 
-{{-- @include('crud::uikit.__relationshipsFlat') --}}
-@include('crud::uikit.__relationshipsToggler')
+@include('crud::uikit.__relationshipsFlat')
+{{-- @include('crud::uikit.__relationshipsToggler') --}}
 {{-- @include('crud::uikit.__relationshipsSwitcher') --}}

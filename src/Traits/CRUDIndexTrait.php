@@ -236,4 +236,85 @@ trait CRUDIndexTrait
 	{
 		return $this->indexCacheKey;
 	}
+
+	public function getPlaceholderElement()
+	{
+		return $this->getModelClass()::make();
+	}
+
+
+	public function getIndexModelIds()
+	{
+        $placeholder = $this->getPlaceholderElement();
+
+        return \DB::table(
+            $placeholder->getTable()
+        )->select(
+            $placeholder->getKeyName()
+        )->get()->pluck(
+            $placeholder->getKeyName()
+        )->toArray();		
+	}
+
+	public function getCachedModelsByIds(array $ids)
+	{
+        $cacheKeys = [];
+
+        foreach($ids as $id)
+            $cacheKeys[] = $this->getModelClass()::staticCacheKey($id);
+
+        return cache()->many($cacheKeys);
+	}
+
+	public function getIndexMissingIds($totalElementIds, $cachedModels)
+	{
+        $cachedIds = array_column(
+        	$cachedModels,
+        	'id'
+        );
+
+        return array_diff(
+				$totalElementIds,
+				$cachedIds
+        	);
+	}
+
+	public function setExecutionLimitsByMissingIds($missingIds)
+	{
+        $maxExecutionSeconds = (int) (count($missingIds) / 10);
+
+        if($maxExecutionSeconds > 300)
+            $maxExecutionSeconds = 300;
+
+        if($maxExecutionSeconds < 30)
+            $maxExecutionSeconds = 30;
+
+        ini_set('max_execution_time', $maxExecutionSeconds);
+        ini_set('memory_limit', "-1");		
+	}
+
+    public function getCachedIndexElements()
+    {
+    	$totalElementIds = $this->getIndexModelIds();
+
+        $cachedModels = $this->getCachedModelsByIds(
+        	$totalElementIds
+        );
+
+        $missingIds = $this->getIndexMissingIds(
+        	$totalElementIds,
+        	$cachedModels
+        );
+
+        $this->setExecutionLimitsByMissingIds(
+        	$missingIds
+        );
+
+        $missingElements = $this->_getIndexElements($missingIds);
+
+        foreach($missingElements as $missingElement)
+            $missingElement->storeInCache();
+
+        return $missingElements->merge($cachedModels);
+    }
 }
