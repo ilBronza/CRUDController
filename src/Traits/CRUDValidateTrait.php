@@ -4,6 +4,9 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Traits\CRUDDbFieldsTrait;
 use IlBronza\Form\Facades\Form;
+use IlBronza\Notifications\Notifications\SlackNotification;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 trait CRUDValidateTrait
 {
@@ -32,7 +35,17 @@ trait CRUDValidateTrait
 
 	private function cleanParametersFromRelationshipsByType(array $parameters, string $type)
 	{
-		$relationshipsFields = $this->getRelationshipsFieldsByType($type);
+		$fieldsetProviderMethod = implode("", [
+			'get',
+			ucfirst($type),
+			'FieldsetsProvider'
+		]);
+
+		$relationshipsFields = $this->{$fieldsetProviderMethod}()
+			->getRelationshipsFields();
+
+		// dd($relationshipsFields);
+		// $relationshipsFields = $this->getRelationshipsFieldsByType($type);
 
 		return array_diff_key(
 					$parameters, 
@@ -42,7 +55,10 @@ trait CRUDValidateTrait
 
 	private function getParametersForRelationshipsByType(array $parameters, string $type)
 	{
-		$relationshipsFields = $this->getRelationshipsFieldsByType($type);
+		// $relationshipsFields = $this->getRelationshipsFieldsByType($type);
+
+		$relationshipsFields = $this->getUpdateFieldsetsProvider()
+			->getRelationshipsFields();
 
 		return array_intersect_key(
 					$parameters, 
@@ -54,7 +70,9 @@ trait CRUDValidateTrait
 	{
 		$types = [
 			'updateEditor' => 'editor',
+			'edit' => 'edit',
 			'update' => 'edit',
+			'create' => 'create',
 			'store' => 'create'
 		];
 
@@ -63,6 +81,12 @@ trait CRUDValidateTrait
 
 	public function getFormFieldsetsByType(string $type)
 	{
+		// if(config('crud.alertOldFieldsetMethods'))
+		// 	Notification::route('slack', 'https://hooks.slack.com/services/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')
+		// 		->notify(new SlackNotification('getFormFieldsetsByType ' . $type . ' da commentare commentata in favore del nuovo sistema. ' . request()->path()));
+
+		// throw new \Exception('getFormFieldsetsByType commentata in favore del nuovo sistema');
+
 		//edit or create or editUpdate
 		$formType = $this->convertFormToRequestType($type);
 

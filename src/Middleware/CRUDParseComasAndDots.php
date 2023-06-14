@@ -13,7 +13,12 @@ class CRUDParseComasAndDots extends TransformsRequest
             $re = '/^\d+(?:,\d+)*$/';
 
             if (preg_match($re, $value))
-                return strval(floatval(str_replace(',', '.', $value)));
+                return 
+                    // strval(
+                    //     floatval(
+                            str_replace(',', '.', $value);
+                    //     )
+                    // );
         }
 
         return $value;

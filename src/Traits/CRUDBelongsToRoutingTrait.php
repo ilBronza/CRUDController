@@ -16,7 +16,7 @@ trait CRUDBelongsToRoutingTrait
 
 		return [
 			$this->getLcfirstPluralModelClassname($this->parentModel),
-			$this->getLcfirstPluralModelClassname(new $this->modelClass())
+			$this->getLcfirstPluralModelClassname($this->getModelClass()::make())
 		];
 	}
 }

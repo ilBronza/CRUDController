@@ -150,7 +150,11 @@ trait CRUDRelationshipTrait
 	public function associateRelationshipsByType(array $parameters, string $type)
 	{
 		$parameters = $this->getParametersForRelationshipsByType($parameters, $type);
-		$relationshipsFields = $this->getRelationshipsFieldsByType($type);
+
+		$relationshipsFields = $this->getUpdateFieldsetsProvider()
+			->getRelationshipsFields();
+
+		// $relationshipsFields = $this->getRelationshipsFieldsByType($type);
 
 		foreach($relationshipsFields as $relationship => $fieldParameters)
 		{
@@ -197,7 +201,11 @@ trait CRUDRelationshipTrait
 
 	public function getCreateRelationshipsButtonLabel(string $relationship)
 	{
-		$baseModelClassname = Str::camel(class_basename($this->modelClass));
+		$baseModelClassname = Str::camel(
+			class_basename(
+				$this->getModelClass()
+			)
+		);
 
 		return __('crud::crud.add', [
 			'what' => __('crudModels.' . $baseModelClassname . Str::studly($relationship))]

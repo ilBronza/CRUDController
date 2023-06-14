@@ -19,7 +19,7 @@ trait CRUDDestroyTrait
 
 	public function destroy($modelInstanceId)
 	{
-		$this->modelInstance = $this->modelClass::withTrashed()->findOrFail($modelInstanceId);
+		$this->modelInstance = $this->getModelClass()::withTrashed()->findOrFail($modelInstanceId);
 		$this->modelInstance->destroy();
 
 		return redirect()->to(

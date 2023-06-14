@@ -5,13 +5,19 @@ namespace IlBronza\CRUD\Traits;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 trait CRUDArchiveTrait
 {
+	public function getArchivedElements() : Collection
+	{
+		return $this->getModelClass()::archived()->get();
+	}
+
 	public function _archive(Request $request, Model $model)
 	{
 		$request->validate([
-			'arvhive' => 'nullable|string'
+			'archive' => 'nullable|string'
 		]);
 
 /*		$model->archive($request->input('archive'));*/
@@ -43,10 +49,10 @@ trait CRUDArchiveTrait
 			},
 			false,
 			[],
-			$this->modelClass
+			$this->getModelClass()
 		);
 
-		$this->table->addBaseModelClass($this->modelClass);
+		$this->table->addBaseModelClass($this->getModelClass());
 
 		return $this->table->renderPage();
 	}

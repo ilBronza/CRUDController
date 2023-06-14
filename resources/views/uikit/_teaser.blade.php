@@ -1,31 +1,21 @@
 <div class="uk-card uk-card-default uk-card-small">
-    <div class="uk-card-header"><span class="uk-h3">@indexLink($teaserModel): <a href="{{ $teaserModel->getShowUrl() }}">{{ $teaserModel->getName() }}</a></span></div>
-
-    @if((isset($teaserModelFields))&&(count($teaserModelFields) > 0))
-
-    <div class="uk-card-body">
-        <dl class="uk-description-list uk-column-1-4 uk-column-divider ib-horizontal-description-list">
-        @foreach($teaserModelRelationships as $relation)
-            <dt>@indexLink($relation)</dt>
-            <dd><a href="{{ $teaserModel->{$relation}->getShowUrl() }}">{{ $teaserModel->{$relation}->getName() }}</a></dd>
-        @endforeach
-        @foreach($teaserModelFields as $field)
-            <dt>{{ $field['name'] }}</dt>
-            <dd>{{ json_encode($teaserModel->{$field['name']}) }}</dd>
-        @endforeach
-        </dl>
+    <div class="uk-card-header">
+        <span class="uk-h3">
+            @if($indexUrl = $modelInstance->getIndexUrl())
+            <a href="{{ $indexUrl }}">
+                <i class="fa-solid fa-list"></i>
+                Torna alla lista @lang('crudModels.' . Str::plural(strtolower(class_basename($modelInstance))))
+            </a> - 
+            @endif
+            <a href="{{ $modelInstance->getShowUrl() }}">{{ $modelInstance->getName() }}</a>
+        </span>
     </div>
 
-    @elseif(($teaserModelFields = $teaserModel->getTeaserFields())&&(count($teaserModelFields) > 0))
+    <div uk-grid uk-height-match class="uk-grid-divider">
 
-    <div class="uk-card-body">
-        <dl class="uk-description-list uk-column-1-4 uk-column-divider ib-horizontal-description-list">
-            @foreach($teaserModelFields as $field)
-            <dt>{{ $field['name'] }}</dt>
-            <dd>{{ json_encode($teaserModel->{$field['name']}) }}</dd>
-            @endforeach
-        </dl>
+        @foreach($fieldsets as $fieldset)
+            {!! $fieldset->renderShow() !!}
+        @endforeach
     </div>
 
-    @endif
 </div>

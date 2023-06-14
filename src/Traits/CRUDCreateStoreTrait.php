@@ -12,10 +12,12 @@ trait CRUDCreateStoreTrait
 	use CRUDCreateTrait;
 	use CRUDStoreTrait;
 
-	public function manageParentModelAssociation()
+	public function addParentModelAssociationParameter(array $parameters) : array
 	{
 		if(isset($this->parentModel))
-			$this->associateParentModel();
+			return $this->associateParentModel($parameters);
+
+		return $parameters;
 	}
 
 }

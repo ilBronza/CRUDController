@@ -21,6 +21,13 @@ class BaseModel extends Model
 		'deleted_at'
 	];
 
+    public function updateWithoutEvent(array $data = [])
+    {
+        if(count($data))
+            static::where('id', $this->id)
+                ->update($data);
+    }
+
 	public function scopeWhereBooleanNotFalse($query, string $fieldName)
 	{
 		return $query->whereNull($fieldName)
@@ -36,6 +43,11 @@ class BaseModel extends Model
 	public function getActivitylogOptions(): LogOptions
 	{
 		return LogOptions::defaults();
+	}
+
+	public function getTranslatedClassname()
+	{
+		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 
 }

@@ -45,7 +45,7 @@ trait CRUDShowRelationshipsTrait
 
 		$controllerName = $this->getRelationControllerName($name);
 
-		$fieldsGroup = Str::camel(class_basename($this->modelClass));
+		$fieldsGroup = Str::camel(class_basename($this->getModelClass()));
 
 		$this->relationshipsTableNames[$name] = app($controllerName)->getIndependentTable($elements, $fieldsGroup);
 
@@ -93,9 +93,14 @@ trait CRUDShowRelationshipsTrait
 		$this->relationshipsElements[$name] = $related;
 	}
 
+	public function getRelationshipsManagerClass() : ? string
+	{
+		return $this->relationshipsManagerClass ?? null;
+	}
+
 	private function shareRelationships()
 	{
-		if(isset($this->relationshipsManagerClass))
+		if($this->getRelationshipsManagerClass())
 			return $this->useRelationshipsManager();
 		else
 			echo "

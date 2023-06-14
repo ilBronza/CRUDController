@@ -10,10 +10,10 @@ class Media extends BaseMedia
 {
 	use SoftDeletes;
 
-	public function getDeleteUrl()
-	{
-		return $this->model->getDeleteMediaUrl($this);
-	}
+	// public function getDeleteUrl()
+	// {
+	// 	return $this->model->getDeleteMediaUrl($this);
+	// }
 
 	public function getTemporaryOrPermanentUrl()
 	{
@@ -30,6 +30,11 @@ class Media extends BaseMedia
 	public function isPublic()
 	{
 		return $this->getDiskDriverName() == 'public';
+	}
+
+	public function isImage() : bool
+	{
+		return $this->getTypeFromMime() == 'image';
 	}
 
 	public function getServeImageUrl()

@@ -2,10 +2,15 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
+use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
+
 trait CRUDTeaserTrait
 {
+	use CRUDFileParametersTrait;
+
 	//edit parameters
-	public $teaserView = 'crud::uikit.teaser';
+	public $teaserView = 'crud::uikit._teaser';
 
 	/**
 	 * get teaser view name
@@ -39,7 +44,7 @@ trait CRUDTeaserTrait
 
 	public function shareTeaserModels()
 	{
-		view()->share('modelInstance', $this->modelInstance);
+		view()->share('modelInstance', $this->getModel());
 	}
 
 	// public function getEditModelIsntanceUrl()
@@ -83,9 +88,22 @@ trait CRUDTeaserTrait
 	// 	return $this->useSingleRelationRelationshipsManager('show', $pluralModelType, $modelId);
 	// }
 
+
+	public function getTeaserFieldsets()
+	{
+		if($file = $this->getTeaserParametersClass())
+			return ShowFieldsetsProvider::getFieldsetsCollectionByParametersFile(
+				$file,
+				$this->getModel()
+			);
+
+		throw new \Exception('Set a teaser parameters class');
+	}
+
+
 	public function _teaser($modelInstance)
 	{
-		$this->modelInstance = $modelInstance;
+		$this->setModel($modelInstance);
 
 		$this->checkIfUserCanSeeTeaser();
 
@@ -93,6 +111,10 @@ trait CRUDTeaserTrait
 
 		$this->shareTeaserParameters();
 
-		return view($view);
+		//remove All old fieldsets modes
+		return view($view, [
+			'modelInstance' => $this->getModel(),
+			'fieldsets' => $this->getTeaserFieldsets()
+		]);
 	}
 }

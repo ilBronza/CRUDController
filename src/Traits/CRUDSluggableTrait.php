@@ -59,7 +59,7 @@ trait CRUDSluggableTrait
 				}
 				while($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
 				
-				$model->{$slugField} = $slug . '-' . $i;				
+				$model->{$slugField} = $slug . '-' . $i;
 			}
 		});
 	}

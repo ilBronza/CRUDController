@@ -2,11 +2,19 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 trait CRUDParentingTrait
 {
     public $parentingTrait = true;
+
+    public function replaceForeignRelationships()
+    {
+        throw new \Exception(
+            'Dichiara il metodo public replaceForeignRelationships() nel model ' . class_basename($this) . ' per far sì che quando sostituisci un elemento con un altro, tutti i riferimenti esterni necessari vengano puntati correttamente. Esempio i modelli azionamenti di sael devono spostare tutti gli azionamenti verso il nuovo modello'
+        );
+    }
 
     static function getParentKeyName()
     {
@@ -21,6 +29,12 @@ trait CRUDParentingTrait
     public function parent()
     {
         return $this->belongsTo(static::class, static::getParentKeyName());
+    }
+
+    public function associateParent(Model $parent)
+    {
+        $this->parent()->associate($parent);
+        $this->save();
     }
 
     public function children()

@@ -16,6 +16,28 @@ trait CRUDIndexTrait
 		return $this->selectRow ?? false;
 	}
 
+	public function getTableFieldsGroupsByFile(array $keys) : array|false
+	{
+		$groups = [];
+
+		foreach($keys as $key)
+		{
+			$getterMethod = "get" . ucfirst($key) . "FieldsArray";
+
+			if(! method_exists($this, $getterMethod))
+			{
+				if($this->debugMode())
+					throw new \Exception('Dichiara ' . $getterMethod . ' in ' . get_class($this));
+
+				return false;
+			}
+
+			$groups[$key] = $this->$getterMethod();
+		}
+
+		return $groups;
+	}
+
 	/**
 	 * takes all the necessary fieldsGroups by key
 	 *
@@ -24,10 +46,13 @@ trait CRUDIndexTrait
 	 *
 	 * @return array
 	 */
-	public function getTableFieldsGroups($keys)
+	public function getTableFieldsGroups(string|array $keys)
 	{
 		if(! is_array($keys))
 			$keys = [$keys];
+
+		if($groups = $this->getTableFieldsGroupsByFile($keys))
+			return $groups;
 
 		$groups = [];
 
@@ -50,12 +75,12 @@ trait CRUDIndexTrait
 		return $table;
 	}
 
-	public function userCanCreate()
+	public function userCanCreate(User $user = null)
 	{
 		if(! $this->methodIsAllowed('index'))
 			return false;
 
-		return $this->modelClass::userCanCreate(Auth::user());
+		return $this->getModelClass()::userCanCreate($user);
 	}
 
 	public function addCreateButton()
@@ -92,7 +117,7 @@ trait CRUDIndexTrait
 		}
 		catch(\Exception $e)
 		{
-			throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->modelClass . '. ' . $e->getMessage());
+			throw new \Exception('Associa il trait CRUDModelTrait al model ' . $this->getModelClass() . '. ' . $e->getMessage());
 		}
 
 		$createButton = $this->getCreateNewModelButton();
@@ -122,6 +147,11 @@ trait CRUDIndexTrait
 
 	public function beforeRenderIndex() { }
 
+	public function getRowSelectCheckboxes()
+	{
+		return $this->rowSelectCheckboxes;
+	}
+
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
 	{
 		if(! $tableName)
@@ -143,15 +173,15 @@ trait CRUDIndexTrait
 
 				return $this->getIndexElements();
 			},
-			$selectRow,
+			$selectRow ? : $this->getRowSelectCheckboxes(),
 			$tableVariables,
-			$baseModel ?? $this->modelClass
+			$baseModel ?? $this->getModelClass()
 		);
 
-		if(request()->ajax())
+        if((request()->ajax()) && (! request()->ibFetcher))
 			return $this->table->renderPage();
 
-		$this->table->addBaseModelClass($this->modelClass);
+		$this->table->addBaseModelClass($this->getModelClass());
 
 		$this->table->setPageLength($this->getPageLength());
 
@@ -187,7 +217,7 @@ trait CRUDIndexTrait
 			},
 			false,
 			[],
-			$this->modelClass
+			$this->getModelClass()
 		);
 
 		$this->table->setArrayTable();
@@ -206,4 +236,85 @@ trait CRUDIndexTrait
 	{
 		return $this->indexCacheKey;
 	}
+
+	public function getPlaceholderElement()
+	{
+		return $this->getModelClass()::make();
+	}
+
+
+	public function getIndexModelIds()
+	{
+        $placeholder = $this->getPlaceholderElement();
+
+        return \DB::table(
+            $placeholder->getTable()
+        )->select(
+            $placeholder->getKeyName()
+        )->get()->pluck(
+            $placeholder->getKeyName()
+        )->toArray();		
+	}
+
+	public function getCachedModelsByIds(array $ids)
+	{
+        $cacheKeys = [];
+
+        foreach($ids as $id)
+            $cacheKeys[] = $this->getModelClass()::staticCacheKey($id);
+
+        return cache()->many($cacheKeys);
+	}
+
+	public function getIndexMissingIds($totalElementIds, $cachedModels)
+	{
+        $cachedIds = array_column(
+        	$cachedModels,
+        	'id'
+        );
+
+        return array_diff(
+				$totalElementIds,
+				$cachedIds
+        	);
+	}
+
+	public function setExecutionLimitsByMissingIds($missingIds)
+	{
+        $maxExecutionSeconds = (int) (count($missingIds) / 10);
+
+        if($maxExecutionSeconds > 300)
+            $maxExecutionSeconds = 300;
+
+        if($maxExecutionSeconds < 30)
+            $maxExecutionSeconds = 30;
+
+        ini_set('max_execution_time', $maxExecutionSeconds);
+        ini_set('memory_limit', "-1");		
+	}
+
+    public function getCachedIndexElements()
+    {
+    	$totalElementIds = $this->getIndexModelIds();
+
+        $cachedModels = $this->getCachedModelsByIds(
+        	$totalElementIds
+        );
+
+        $missingIds = $this->getIndexMissingIds(
+        	$totalElementIds,
+        	$cachedModels
+        );
+
+        $this->setExecutionLimitsByMissingIds(
+        	$missingIds
+        );
+
+        $missingElements = $this->_getIndexElements($missingIds);
+
+        foreach($missingElements as $missingElement)
+            $missingElement->storeInCache();
+
+        return $missingElements->merge($cachedModels);
+    }
 }

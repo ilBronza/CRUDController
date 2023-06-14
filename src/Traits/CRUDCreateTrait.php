@@ -2,8 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use Illuminate\Http\Request;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelCreator;
 use IlBronza\Form\Facades\Form;
+use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
+use Illuminate\Http\Request;
 
 trait CRUDCreateTrait
 {
@@ -25,6 +27,32 @@ trait CRUDCreateTrait
 			return $this->createView;
 
 		return $this->standardCreateView;
+	}
+
+	public function addCreateExtraViews()
+	{
+		
+	}
+
+	public function loadCreateExtraViews()
+	{
+    	$this->addCreateExtraViews();
+
+    	//DEPRECATED 06/2022 - use form extraViews
+        // $this->shareExtraViews();		
+	}
+
+	public function getExtendedCreateButtons()
+	{
+
+	}
+
+	public function shareCreateButtons()
+	{
+		$this->getExtendedCreateButtons();
+
+		if((isset($this->createButtons))&&(count($this->createButtons)))
+			view()->share('buttons', $this->createButtons);
 	}
 
 	/**
@@ -52,9 +80,11 @@ trait CRUDCreateTrait
 	/**
 	 * overrideable method to manage modelInstance before view rendering
 	 **/
-	public function beforeRenderCreate() { }
-
-	public function userCanPerformCreate() { }
+	public function userCanPerformCreate() {}
+	public function manageBeforeCreate() {
+		$this->shareCreateButtons();
+		$this->loadCreateExtraViews();		
+	}
 
 	/**
 	 * get modelInstance create view
@@ -63,20 +93,22 @@ trait CRUDCreateTrait
 	 **/
 	public function create()
 	{
+		$this->setModel(
+			$this->makeModel()
+		);
+
 		$this->userCanPerformCreate();
 		$this->manageReturnBack();
 
-		$this->modelInstance = new $this->modelClass;
+		$this->modelFormHelper = CrudModelCreator::buildForm(
+			$this->getModel(),
+			$this->getCreateParametersClass(),
+			$this->getStoreModelAction(),
+			$this->provideFormDefaultSettings(),
+		);
 
-		$this->manageParentModelAssociation();
+		$this->manageBeforeCreate();
 
-		$view = $this->getCreateView();
-
-		if($view == $this->standardCreateView)
-			$this->shareDefaultCreateFormParameters();
-
-		$this->beforeRenderCreate();
-
-		return view($view);
+		return $this->modelFormHelper->render();
 	}
 }

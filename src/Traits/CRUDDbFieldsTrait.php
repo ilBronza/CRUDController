@@ -66,7 +66,7 @@ trait CRUDDbFieldsTrait
 	{
 		if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByGuarded($type))
 			if(! $validationArray = $this->getValidationArrayByTypeFromDBByTypeByAllowed($type))
-				throw new \Exception("non c'è validazione per " . $type);
+				throw new \Exception("non c'è validazione per " . $type . ' su ' . get_class($this));
 
 		return [
 			'default' => $validationArray
@@ -232,7 +232,7 @@ trait CRUDDbFieldsTrait
 	private function getDbFields($model = null)
 	{
 
-		$tableName = (($model)? new $model : new $this->modelClass)->getTable();
+		$tableName = (($model)? new $model : new ($this->getModelClass()))->getTable();
 
 		return DB::select('describe ' . $tableName);
 	}

@@ -6,7 +6,8 @@ return [
 	'backToRootElement' => 'Torna alla radice',
 	'expandAll' => 'Espandi tutto',
 	'collapseExpandAll' => 'Riducti tutto',
-	'reorderBy' => 'Riordina per',
+	'reorderBy' => 'Riordina figli',
+	'editElement' => 'Modifica elemento',
 	'nestableElementMovedTo' => 'spostato in ',
 ];
 
