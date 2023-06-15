@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use IlBronza\Ukn\Facades\Ukn;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -96,7 +96,6 @@ trait CRUDCacheTrait
             3600,
             function() use($id)
             {
-                Ukn::s('Loaded ' . static::staticCacheKey($id));
                 if($cachableRelations = static::getCachableRelations())
                     return static::with($cachableRelations)->find($id);
 

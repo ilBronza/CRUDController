@@ -274,7 +274,7 @@ class RelationshipParameters
 			return $this->elements = $this->relationshipsManager->model->{$elementGetterMethod}();
 
 		$relationMethod = $this->getRelationshipMethod();
-		
+
 		return $this->elements = $this->relationshipsManager->model->{$relationMethod};
 	}
 
@@ -361,7 +361,7 @@ class RelationshipParameters
 	public function getTableFieldsGroups() : array
 	{
 		if($this->fieldsGroups ?? false)
-			return $fieldsGroups;
+			return $this->fieldsGroups;
 
 		$fieldsGroupsNames = $this->getFieldsGroupsNames();
 
