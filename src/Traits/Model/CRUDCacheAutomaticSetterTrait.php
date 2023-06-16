@@ -6,12 +6,17 @@ trait CRUDCacheAutomaticSetterTrait
 {
     abstract static function getAutomaticCachingRelationships() : array;
 
+    public function getAutomaticCachingTime() : int
+    {
+        return $this->automaticCachingTime ?? 3600;
+    }
+
     public function storeInCache()
     {
         cache()->put(
             static::staticCacheKey($this->getKey()),
             $this,
-            3600
+            $this->getAutomaticCachingTime()
         );
     }
 

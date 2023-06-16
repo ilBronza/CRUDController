@@ -11,12 +11,30 @@ use Illuminate\Support\Facades\Log;
 abstract class CachingController extends Controller
 {
 	abstract public function getModelClass() : string;
-
 	abstract public function getScope() : string|null|array;
 
 	public function getModelRelations() : ? array
 	{
 		return $this->getModelClass()::getAutomaticCachingRelationships();
+	}
+
+	public function applicateScope($query)
+	{
+		if(! $scope = $this->getScope())
+			return $query;
+
+		if(is_string($scope))
+			return $query->$scope();
+
+		if(is_array($scope))
+		{
+			foreach($scope as $_scope)
+				$query->$_scope();
+
+			return $query->$scope();			
+		}
+
+		throw new \Exception('Scope type not valid ' . gettype($scope));
 	}
 
 	public function getElements(array $missingIds = null)
@@ -26,17 +44,7 @@ abstract class CachingController extends Controller
 		if($relations = $this->getModelRelations())
 			$query->with($relations);
 
-		$scope = $this->getScope();
-
-		if(isset($scope))
-		{
-			if(is_string($scope))
-				$query->$scope();
-			else if(is_array($scope))
-				foreach($scope as $s)
-					$query->$s();
-		}
-
+		$query = $this->applicateScope($query);
 
 		Log::info(json_encode($missingIds));
 
@@ -60,6 +68,8 @@ abstract class CachingController extends Controller
 	public function build()
 	{
 		$elements = $this->getElements();
+
+		dd($elements);
 
 		foreach($elements as $element)
 			$element->storeInCache();

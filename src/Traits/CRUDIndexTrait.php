@@ -289,32 +289,32 @@ trait CRUDIndexTrait
         if($maxExecutionSeconds < 30)
             $maxExecutionSeconds = 30;
 
-        ini_set('max_execution_time', $maxExecutionSeconds);
-        ini_set('memory_limit', "-1");		
+		ini_set('max_execution_time', $maxExecutionSeconds);
+		ini_set('memory_limit', "-1");
 	}
 
     public function getCachedIndexElements()
     {
-    	$totalElementIds = $this->getIndexModelIds();
+		$totalElementIds = $this->getIndexModelIds();
 
-        $cachedModels = $this->getCachedModelsByIds(
-        	$totalElementIds
-        );
+		$cachedModels = $this->getCachedModelsByIds(
+			$totalElementIds
+		);
 
-        $missingIds = $this->getIndexMissingIds(
-        	$totalElementIds,
-        	$cachedModels
-        );
+		$missingIds = $this->getIndexMissingIds(
+			$totalElementIds,
+			$cachedModels
+		);
 
-        $this->setExecutionLimitsByMissingIds(
-        	$missingIds
-        );
+		$this->setExecutionLimitsByMissingIds(
+			$missingIds
+		);
 
-        $missingElements = $this->_getIndexElements($missingIds);
+		$missingElements = $this->_getIndexElements($missingIds);
 
-        foreach($missingElements as $missingElement)
-            $missingElement->storeInCache();
+		foreach($missingElements as $missingElement)
+			$missingElement->storeInCache();
 
-        return $missingElements->merge($cachedModels);
+		return $missingElements->merge($cachedModels);
     }
 }
