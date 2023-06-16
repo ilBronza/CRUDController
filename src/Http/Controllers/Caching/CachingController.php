@@ -4,11 +4,15 @@ namespace IlBronza\CRUD\Http\Controllers\Caching;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 abstract class CachingController extends Controller
 {
 	abstract public function getModelClass() : string;
+
+	abstract public function getScope() : string|null|array;
 
 	public function getModelRelations() : ? array
 	{
@@ -21,6 +25,20 @@ abstract class CachingController extends Controller
 
 		if($relations = $this->getModelRelations())
 			$query->with($relations);
+
+		$scope = $this->getScope();
+
+		if(isset($scope))
+		{
+			if(is_string($scope))
+				$query->$scope();
+			else if(is_array($scope))
+				foreach($scope as $s)
+					$query->$s();
+		}
+
+
+		Log::info(json_encode($missingIds));
 
         if($missingIds)
         	$query->whereIn(
@@ -45,6 +63,8 @@ abstract class CachingController extends Controller
 
 		foreach($elements as $element)
 			$element->storeInCache();
+		
+		return view('test', compact('elements'));
 	}
 
 	public function getPlaceholderElement() : Model
@@ -58,7 +78,9 @@ abstract class CachingController extends Controller
 
         return DB::table(
             $placeholder->getTable()
-        )->select(
+        )
+		->whereNull('deleted_at')
+		->select(
             $placeholder->getKeyName()
         )->get()
         ->pluck(
@@ -68,10 +90,13 @@ abstract class CachingController extends Controller
 
 	public function getCachedModelsByIds(array $ids)
 	{
+
         $cacheKeys = [];
 
         foreach($ids as $id)
             $cacheKeys[] = $this->getModelClass()::staticCacheKey($id);
+
+
 
         return cache()->many($cacheKeys);
 	}
@@ -81,7 +106,8 @@ abstract class CachingController extends Controller
         $cachedIds = array_column(
         	$cachedModels,
         	'id'
-        );
+        ); //ritorna array vuoto perchè non ci sono chiavi "id", in cachedModels ci sono elementi così: "order-5421ef0b-b561-42fa-81c8-a6c7a129e534" => null
+
 
         return array_diff(
 				$totalElementIds,
@@ -99,7 +125,8 @@ abstract class CachingController extends Controller
         if($maxExecutionSeconds < 30)
             $maxExecutionSeconds = 30;
 
-        ini_set('max_execution_time', $maxExecutionSeconds);
+
+        ini_set('max_execution_time', '-1');
         ini_set('memory_limit', "-1");		
 	}
 
@@ -107,14 +134,17 @@ abstract class CachingController extends Controller
 	{
 		$totalElementIds = $this->getIndexModelIds();
 
+
 		$cachedModels = $this->getCachedModelsByIds(
 			$totalElementIds
 		);
+
 
 		$missingIds = $this->getIndexMissingIds(
 			$totalElementIds,
 			$cachedModels
 		);
+
 
 		$this->setExecutionLimitsByMissingIds(
 			$missingIds
@@ -124,5 +154,7 @@ abstract class CachingController extends Controller
 
 		foreach($missingElements as $missingElement)
 			$missingElement->storeInCache();
+
+		return view('test');
 	}
 }
