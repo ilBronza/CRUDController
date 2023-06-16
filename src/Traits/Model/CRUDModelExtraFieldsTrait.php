@@ -11,6 +11,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 trait CRUDModelExtraFieldsTrait
 {
+    public function update(array $attributes = [], array $options = [])
+    {
+        if (! $this->exists) {
+            return false;
+        }
+
+        foreach($attributes as $key => $value)
+        	$this->$key = $value;
+
+        return $this->save($options);
+    }
+
 	abstract function getExtraFieldsClass() : string;
 
 	public function extraFields()
