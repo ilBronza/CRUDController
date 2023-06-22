@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Models\Casts;
 
+use Carbon\Carbon;
+
 class ExtraFieldDate extends ExtraField
 {
     /**
@@ -13,11 +15,13 @@ class ExtraFieldDate extends ExtraField
      * @param  array  $attributes
      * @return mixed
      */
-    public function get($model, string $key, $value, array $attributes) : ? string
+    public function set($model, string $key, $value, array $attributes)
     {
-        if(! $this->extraModelClassname)
-            return $model->getExtraAttribute($key);
+        dd(__METHOD__);
+        if($value instanceof Carbon)
+            $value = $value->format('Y-m-d H:i:s');
 
-        return $model->getCustomExtraAttribute($this->extraModelClassname, $key);
+        return $this->_set($model, $key, $value, $attributes);
     }
+
 }

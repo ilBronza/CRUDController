@@ -6,6 +6,8 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
 class ExtraField implements CastsAttributes
 {
+    public $extraModelClassname;
+
     /**
      * Come usare ExtraField
      * 
@@ -86,6 +88,11 @@ class ExtraField implements CastsAttributes
      */
     public function set($model, string $key, $value, array $attributes)
     {
+        return $this->_set($model, $key, $value, $attributes);
+    }
+
+    public function _set($model, string $key, $value, array $attributes)
+    {
         if(! $this->extraModelClassname)
         {
             if(! isset($model->extraFields))
@@ -101,6 +108,6 @@ class ExtraField implements CastsAttributes
         if(! $model->$extraModelClassname)
             $model->$extraModelClassname = $model->provideExtraFieldCustomModel($extraModelClassname);
 
-        $model->$extraModelClassname->$key = $value;
+        $model->$extraModelClassname->$key = $value;       
     }
 }

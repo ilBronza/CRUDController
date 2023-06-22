@@ -39,6 +39,8 @@ trait CRUDModelExtraFieldsTrait
 
 		$extraFields = $this->extraFields()->make();
 
+		$this->setRelation('extraFields', $extraFields);
+
 		return $this->extraFields = $extraFields;
 	}
 
