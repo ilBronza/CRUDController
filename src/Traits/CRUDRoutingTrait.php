@@ -16,6 +16,9 @@ trait CRUDRoutingTrait
 
 	public function getIndexUrl()
 	{
+		if($model = $this->getModel())
+			return $model->getIndexUrl();
+
 		return $this->getRouteUrlByType('index');
 	}
 
