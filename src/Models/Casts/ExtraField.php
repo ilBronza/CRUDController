@@ -91,14 +91,28 @@ class ExtraField implements CastsAttributes
         return $this->_set($model, $key, $value, $attributes);
     }
 
-    public function _set($model, string $key, $value, array $attributes)
+    static function staticSet(string $type = null, $model, string $key, $value)
+    {
+        $caster = new static($type);
+
+        $caster->_set($model, $key, $value);
+    }
+
+    public function _set($model, string $key, $value, array $attributes = null)
     {
         if(! $this->extraModelClassname)
         {
-            if(! isset($model->extraFields))
-                $model->extraFields = $model->getCachedProjectExtraFieldsModel();
+            // if(! ($model->relationLoaded('extraFields')))
+            $extraFields = $model->getCachedProjectExtraFieldsModel();
 
-            $model->extraFields->$key = $value;
+            try
+            {
+                $extraFields->$key = $value;
+            }
+            catch(\Exception $e)
+            {
+                dddl($e);
+            }
 
             return ;
         }

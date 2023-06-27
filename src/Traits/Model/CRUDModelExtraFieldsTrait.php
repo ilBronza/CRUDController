@@ -37,11 +37,11 @@ trait CRUDModelExtraFieldsTrait
 		if($extraFields = $this->extraFields)
 			return $extraFields;
 
-		$extraFields = $this->extraFields()->make();
+		$extraFields = $this->extraFields()->create();
 
 		$this->setRelation('extraFields', $extraFields);
 
-		return $this->extraFields = $extraFields;
+		return $this->extraFields;
 	}
 
 	public function getCachedProjectExtraFieldsModel()
@@ -50,6 +50,7 @@ trait CRUDModelExtraFieldsTrait
 		// 	$this->getExtraFieldsClass()::staticCacheKey($this->getKey() . $this->updated_at),
 		// 	function ()
 		// 	{
+				// return $this->getProjectExtraFieldsModel();
 				return $this->getProjectExtraFieldsModel();
 		// 	}
 		// );
