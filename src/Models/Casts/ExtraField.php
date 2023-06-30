@@ -108,9 +108,12 @@ class ExtraField implements CastsAttributes
             try
             {
                 $extraFields->$key = $value;
+
+                unset($model->$key);
             }
             catch(\Exception $e)
             {
+
                 dddl($e);
             }
 

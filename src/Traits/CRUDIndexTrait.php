@@ -11,6 +11,11 @@ use Illuminate\Support\Str;
 
 trait CRUDIndexTrait
 {
+	public function getTable() : Datatables
+	{
+		return $this->table;
+	}
+
 	public function getSelectRow()
 	{
 		return $this->selectRow ?? false;

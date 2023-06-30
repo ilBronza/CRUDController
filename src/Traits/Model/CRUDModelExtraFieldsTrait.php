@@ -37,6 +37,9 @@ trait CRUDModelExtraFieldsTrait
 		if($extraFields = $this->extraFields)
 			return $extraFields;
 
+		if(! $this->exists)
+			throw new \Exception('Extra fields creato prima della persistenza del model base ' . class_basename($this));
+
 		$extraFields = $this->extraFields()->create();
 
 		$this->setRelation('extraFields', $extraFields);

@@ -17,7 +17,6 @@ class ExtraFieldDate extends ExtraField
      */
     public function set($model, string $key, $value, array $attributes)
     {
-        dd(__METHOD__);
         if($value instanceof Carbon)
             $value = $value->format('Y-m-d H:i:s');
 
