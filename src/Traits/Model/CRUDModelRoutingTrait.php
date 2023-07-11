@@ -108,6 +108,11 @@ trait CRUDModelRoutingTrait
 		return $this->getKeyedRoute('edit', $data);
 	}
 
+	public function getUpdateUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('update', $data);
+	}
+
 	public function getDestroyUrl(array $data = [])
 	{
 		return $this->getKeyedRoute('forceDelete', $data);

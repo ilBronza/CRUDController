@@ -48,7 +48,7 @@
                 @endif
             </div>
 
-            @if(($modelInstance->userCanUpdate(Auth::user())&&($canEditModelInstance)))
+            @if(($modelInstance->getEditURL())&&($modelInstance->userCanUpdate(Auth::user())&&($canEditModelInstance)))
                 <div class="uk-width-auto">
                     <a href="{{ $editModelInstanceUrl ?? $modelInstance->getEditURL() }}">@lang('crud.editElement', ['element' => $modelInstance->getName()])</a>
                 </div>

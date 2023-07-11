@@ -8,6 +8,8 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 trait CRUDUpdateTrait
 {
@@ -137,7 +139,18 @@ trait CRUDUpdateTrait
 		//this way I don't need to set fillable parameters
 		// $this->modelInstance->fill($parameters);
 		foreach($parameters as $property => $value)
-			$this->modelInstance->{$property} = $value;
+		{
+			$setterName = 'set' . Str::studly($property);
+
+			if(method_exists($this->modelInstance, $setterName))
+				$this->modelInstance->{$setterName}($value);
+
+			else
+			{
+				Log::critical('dichiara ' . $setterName . ' su ' . get_class($this->modelInstance));
+				$this->modelInstance->{$property} = $value;
+			}
+		}
 
 		$this->manageModelInstanceAfterUpdate($parameters);
 
