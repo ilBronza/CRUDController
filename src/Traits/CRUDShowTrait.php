@@ -2,9 +2,9 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelRenderer;
 use IlBronza\CRUD\Traits\CRUDRelationshipsManagerTrait;
 use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
-
 use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
 use Illuminate\Http\Request;
 
@@ -137,6 +137,11 @@ trait CRUDShowTrait
 			);
 	}
 
+	public function manageBeforeShow()
+	{
+
+	}
+
 	public function _show($modelInstance)
 	{
 		$this->setModel($modelInstance);
@@ -146,21 +151,35 @@ trait CRUDShowTrait
 		if(request()->ibeditor)
 			return $this->manageEditorRequest(request());
 
-		$view = $this->getShowView();
-		$_showView = $this->get_ShowView();
+		$this->modelFormHelper = CrudModelRenderer::buildRenderer(
+			$this->getModel(),
+			$this->getShowParametersClass(),
+			null, // $this->getUpdateModelAction(),
+			null //$this->provideFormDefaultSettings()
+		);
 
-		$showParameters = $this->shareShowParameters();
+		$this->manageBeforeShow();
 
-		if(request()->ajax())
-			return $showParameters;
+		return $this->modelFormHelper->render();
 
-		$this->shareShowButtons();
 
-		$this->shareExtraViews();
 
-		return view($view, [
-			'_showView' => $_showView,
-			'fieldsets' => $this->getShowFieldsets()
-		]);
+
+		// $view = $this->getShowView();
+		// $_showView = $this->get_ShowView();
+
+		// $showParameters = $this->shareShowParameters();
+
+		// if(request()->ajax())
+		// 	return $showParameters;
+
+		// $this->shareShowButtons();
+
+		// $this->shareExtraViews();
+
+		// return view($view, [
+		// 	'_showView' => $_showView,
+		// 	'fieldsets' => $this->getShowFieldsets()
+		// ]);
 	}
 }
