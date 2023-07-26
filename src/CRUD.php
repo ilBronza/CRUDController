@@ -23,6 +23,7 @@ class CRUD extends Controller
 	use CRUDMethodsTrait;
 
 	public $debug = false;
+	public $iframed;
 
 	public function debugMode() : bool
 	{
@@ -188,9 +189,14 @@ class CRUD extends Controller
 		return class_basename($this->getModelClass());
 	}
 
-    public function findModel(string $key) : ? Model
+    public function findModel(string $key, array $relations = []) : ? Model
     {
-        return $this->getModelClass()::find($key);
+    	$query = $this->getModelClass()::query();
+
+    	foreach($relations as $relation)
+    		$query->with($relation);
+
+        return $query->find($key);
     }
 	/**
 	 * get subject model class

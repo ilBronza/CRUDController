@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdaterEditor;
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Facades\Form;
 use Illuminate\Http\Request;
@@ -150,16 +152,27 @@ trait CRUDUpdateEditorTrait
 
 	private function manageUpdateGeneric(Request $request)
 	{
-		$updateParameters = $this->validateUpdateEditorRequest($request);
-
-		$formField = $this->getUpdatingFormFieldInstance($request);
-
-		$this->updateModelInstance($updateParameters, false);
+		$this->modelInstance = CrudModelUpdaterEditor::saveByRequest(
+			$this->getModel(),
+			$this->getUpdateParametersClass(),
+			$request
+		);
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;
-		$updateParameters['model-id'] = $this->modelInstance->getKey();
-		$updateParameters['value'] = $updateParameters[$request->field];
+		$updateParameters['model-id'] = $this->getModel()->getKey();
+		$updateParameters['value'] = $this->getModel()->{$request->field};
+
+		$formField = $this->getUpdatingFormFieldInstance($request);
+
+		// dd($formField);
+
+		// $this->updateModelInstance($updateParameters, false);
+
+		// $updateParameters['success'] = true;
+		// $updateParameters['update-editor'] = true;
+		// $updateParameters['model-id'] = $this->modelInstance->getKey();
+		// $updateParameters['value'] = $updateParameters[$request->field];
 
 		if($formFieldAction = $formField->getEditorAction())
 		{

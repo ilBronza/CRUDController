@@ -15,6 +15,9 @@ trait ModelManagersSettersAndGettersTraits
 
 	public function getFieldsetsProvider() : FieldsetsProvider
 	{
+		if(! $this->fieldsetsProvider)
+			$this->setFieldsetsProvider();
+
 		return $this->fieldsetsProvider;
 	}
 
@@ -33,6 +36,8 @@ trait ModelManagersSettersAndGettersTraits
 	public function setModel(Model $model)
 	{
 		$this->model = $model;
+
+		view()->share('modelInstance', $model);
 	}
 
 	public function getModel() : Model

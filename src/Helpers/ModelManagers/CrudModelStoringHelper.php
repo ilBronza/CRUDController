@@ -5,6 +5,8 @@ namespace IlBronza\CRUD\Helpers\ModelManagers;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
+use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
@@ -12,7 +14,23 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 
+	public $fieldsetsProvider;
 	public $model;
+	public Request $request;
+
+	static function create(
+		Model $model,
+		FieldsetParametersFile $parametersFile,
+		Request $request
+	) : static
+	{
+		$helper = new static();
+
+		$helper->setModel($model);
+		$helper->setFieldsetParametersFile($parametersFile);
+
+		return $helper;
+	}
 
 	static function saveByRequest(
 		Model $model,
@@ -20,6 +38,9 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		Request $request
 	) : Model
 	{
+		Ukn::w('sostituire questo con la create sia qua che su storing qua sotto');
+	// 	$helper = static::create($model, $parametersFile, $request);
+
 		$helper = new static();
 
 		$helper->setModel($model);
@@ -56,12 +77,17 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		return $parameters;
 	}
 
+	public function getValidationParameters() : array
+	{
+		return $this->getFieldsetsProvider()->getValidationParameters();
+	}
+
 	public function getValidatedRequestParameters() : array
 	{
 		$this->setFieldsetsProvider();
 
-		$parameters = $this->request->validate(
-			$this->getFieldsetsProvider()->getValidationParameters()
+		$parameters = $this->getRequest()->validate(
+			$this->getValidationParameters()
 		);
 
 		return $this->sanitizeParametersAndValues($parameters);
@@ -138,9 +164,19 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		return $model;
 	}
 
-	public function bindRequest(Request $request) : Model
+	public function setRequest(Request $request)
 	{
 		$this->request = $request;
+	}
+
+	public function getRequest() : Request
+	{
+		return $this->request ?? request();
+	}
+
+	public function bindRequest(Request $request) : Model
+	{
+		$this->setRequest($request);
 
 		$parameters = $this->getValidatedRequestParameters();
 

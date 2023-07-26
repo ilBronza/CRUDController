@@ -151,6 +151,13 @@ trait CRUDShowTrait
 		if(request()->ibeditor)
 			return $this->manageEditorRequest(request());
 
+		$showParameters = $this->shareShowParameters();
+
+		if(request()->ajax())
+			return $showParameters;
+
+		$this->shareShowButtons();
+
 		$this->modelFormHelper = CrudModelRenderer::buildRenderer(
 			$this->getModel(),
 			$this->getShowParametersClass(),
@@ -173,7 +180,6 @@ trait CRUDShowTrait
 		// if(request()->ajax())
 		// 	return $showParameters;
 
-		// $this->shareShowButtons();
 
 		// $this->shareExtraViews();
 

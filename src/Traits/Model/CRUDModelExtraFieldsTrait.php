@@ -8,6 +8,7 @@ use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
 
 trait CRUDModelExtraFieldsTrait
 {
@@ -38,7 +39,7 @@ trait CRUDModelExtraFieldsTrait
 			return $extraFields;
 
 		if(! $this->exists)
-			throw new \Exception('Extra fields creato prima della persistenza del model base ' . class_basename($this));
+			throw new \Exception('Extra fields creato prima della persistenza del model base ' . class_basename($this) . '. SALVA il modello base per prima cosa');
 
 		$extraFields = $this->extraFields()->create();
 
@@ -61,12 +62,19 @@ trait CRUDModelExtraFieldsTrait
 
 	public function getCachedProjectCustomExtraFieldsModel(string $customExtraAttributesModel)
 	{
+		if($this->relationLoaded($customExtraAttributesModel))
+			return $this->{$customExtraAttributesModel};
+
+		Log::critical('Rivedere assolutamente questo, settare nella query: ' . $customExtraAttributesModel);
+
 		return cache()->rememberForever(
 			$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
 			function () use($customExtraAttributesModel)
 			{
-				if($model = $this->$customExtraAttributesModel()->first())
-					return $model;
+				// if($model = $this->$customExtraAttributesModel()->first())
+				// {
+				// 	return $model;
+				// }
 
 				$providerMethod = ExtraFieldsProvider::getExtraFieldsProviderMethod($customExtraAttributesModel);
 

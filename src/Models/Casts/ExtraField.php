@@ -74,6 +74,9 @@ class ExtraField implements CastsAttributes
         if(! $this->extraModelClassname)
             return $model->getExtraAttribute($key);
 
+        // if($key == 'internal_length')
+        //     dd($model->getCustomExtraAttribute($this->extraModelClassname, $key));
+
         return $model->getCustomExtraAttribute($this->extraModelClassname, $key);
     }
 
