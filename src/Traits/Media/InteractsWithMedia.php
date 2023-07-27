@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Media;
 
+use IlBronza\CRUD\Models\Media;
 use IlBronza\FormField\FormField;
 use Spatie\MediaLibrary\InteractsWithMedia as SpatieInteractsWithMedia;
 
@@ -38,5 +39,15 @@ trait InteractsWithMedia
 			return $mediaDisk;
 
 		return config('media-library.disk_name');		
+	}
+
+	public function getLastMedia(string $collectionName = null) : ? Media
+	{
+		$query = $this->media();
+
+		if($collectionName)
+			$query->where('collection_name', $collectionName);
+
+		return $query->orderBy('created_at', 'DESC')->first();
 	}
 }
