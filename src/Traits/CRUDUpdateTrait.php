@@ -18,7 +18,7 @@ trait CRUDUpdateTrait
 
 	public function getAfterUpdateRoute()
 	{
-		return false;
+		return $this->getRouteUrlByType('show');
 	}
 
 	public function checkIfUserCanUpdate()

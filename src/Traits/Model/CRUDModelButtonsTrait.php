@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 trait CRUDModelButtonsTrait
 {
+    public static function getGoToListButton() : Button
+    {
+        return Button::create([
+                'href' => route(pluralClass(static::class) . '.index'),
+                'translatedText' => static::getTranslation('goToList'),
+                'icon' => 'list'
+            ]);
+    }
+
     static function getCreateButton(array $routeParameters = []) : Button
     {
         return Button::create([

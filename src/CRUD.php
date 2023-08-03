@@ -328,9 +328,12 @@ class CRUD extends Controller
 			$this->getModelDefaultParameters()
 		);
 
-		return $this->getModelClass()::make(
-			$parameters
-		);
+		$model = $this->getModelClass()::make();
+
+		foreach($parameters as $key => $value)
+			$model->$key = $value;
+
+		return $model;
 	}
 
 

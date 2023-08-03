@@ -65,6 +65,11 @@ trait CRUDModelTrait
         return Str::plural(static::getCamelcaseClassBasename());
     }
 
+    public static function pluralLowerClass()
+    {
+        return Str::plural(strtolower(class_basename(static::class)));
+    }
+
     public static function getCamelcaseClassBasename()
     {
         return lcfirst(class_basename(static::class));
@@ -82,9 +87,21 @@ trait CRUDModelTrait
         );
     }
 
+    public static function getTranslation(string $string, array $parameters = [])
+    {
+        $fileString = static::pluralLowerClass() . '.' . $string;
+
+        return trans($fileString, $parameters);
+    }
+
     public static function getNameFieldName()
     {
         return static::$nameField ?? 'name';
+    }
+
+    static function getByName(string $name)
+    {
+        return static::where('name', $name)->first();
     }
 
     public function getName()

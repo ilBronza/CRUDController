@@ -8,6 +8,32 @@ use Illuminate\Support\Str;
 
 trait CRUDRelationshipTrait
 {
+	public $disableRelationshipsManager;
+	public $teaserMode;
+
+	public function teaserMode(bool $value = true) : static
+	{
+		$this->disableRelationshipsManager();
+		$this->teaserMode = $value;
+
+		return $this;
+	}
+
+	public function isInTeaserMode() : bool
+	{
+		return !! $this->teaserMode;
+	}
+
+	public function disableRelationshipsManager(bool $value = true)
+	{
+		$this->disableRelationshipsManager = $value;
+	}
+
+	public function hasDisabledRelationshipsManager() : bool
+	{
+		return !! $this->disableRelationshipsManager;
+	}
+
 	public function filterRelationshipsFields(array $fields)
 	{
 		foreach($fields as $key => $field)

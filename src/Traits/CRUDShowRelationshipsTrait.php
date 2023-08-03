@@ -95,11 +95,17 @@ trait CRUDShowRelationshipsTrait
 
 	public function getRelationshipsManagerClass() : ? string
 	{
+		if($this->hasDisabledRelationshipsManager())
+			return null;
+
 		return $this->relationshipsManagerClass ?? null;
 	}
 
 	private function shareRelationships()
 	{
+		if($this->hasDisabledRelationshipsManager())
+			return null;
+
 		if($this->getRelationshipsManagerClass())
 			return $this->useRelationshipsManager();
 		else

@@ -371,7 +371,7 @@ class RelationshipParameters
 		}
 		catch(\Throwable $e)
 		{
-			dd(($this->controller));
+			dd('dichiara i fieldsgroups ' . json_encode($fieldsGroupsNames) . ' su ' . ($this->controller) . '->' . $e->getMessage());
 		}
 	}
 
@@ -517,6 +517,13 @@ class RelationshipParameters
 	{
 		if($this->controllerHasTeaserMethod())
 			return $this->renderControllerTeaser();
+
+		return app($this->getController())->teaserMode()->_show(
+			$this->getElement()
+		);
+
+
+		throw new \Exception('dichiara il controller teaser method? O facciamo un fetcher?');
 
 		if($this->hasStandardView())
 			return view(

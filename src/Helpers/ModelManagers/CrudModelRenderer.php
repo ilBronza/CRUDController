@@ -61,6 +61,24 @@ class CrudModelRenderer extends CrudModelFormHelper
 		]);
 	}
 
+	public function renderTeaser() : View
+	{
+		return $this->_renderTeaser();
+	}
+
+	public function _renderTeaser()
+	{
+		$this->getFieldsetsProvider()->assignModelToFields();
+
+		return view("crud::uikit._showTeaser", [
+			'_showView' => 'crud::uikit._show',
+			'modelInstance' => $this->getModel(),
+			'canEditModelInstance' => true,
+			'fieldsets' => $this->getFieldsetsProvider()->provideFieldsetsCollection()
+		]);
+	}
+
+
 	// public function loadRelationshipsValues()
 	// {
 	// 	$extraTablerelatedFields = $this->getFieldsetsProvider()->getExtraTableRelationshipsFields();

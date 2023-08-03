@@ -167,6 +167,9 @@ trait CRUDShowTrait
 
 		$this->manageBeforeShow();
 
+		if($this->isInTeaserMode())
+			return $this->modelFormHelper->renderTeaser();
+
 		return $this->modelFormHelper->render();
 
 
