@@ -142,8 +142,32 @@ trait CRUDShowTrait
 
 	}
 
+	public function _oldShow($modelInstance)
+	{
+		$this->modelInstance = $modelInstance;
+		$view = $this->getShowView();
+		$_showView = $this->get_ShowView();
+
+		$showParameters = $this->shareShowParameters();
+
+		if(request()->ajax())
+			return $showParameters;
+
+
+		$this->shareExtraViews();
+
+		return view($view, [
+			'_showView' => $_showView,
+			'fieldsets' => $this->getShowFieldsets()
+		]);
+
+	}
+
 	public function _show($modelInstance)
 	{
+		if(! $this->getShowParametersClass())
+			return $this->_oldShow($modelInstance);
+
 		$this->setModel($modelInstance);
 
 		$this->checkIfUserCanSee();
@@ -175,20 +199,5 @@ trait CRUDShowTrait
 
 
 
-		// $view = $this->getShowView();
-		// $_showView = $this->get_ShowView();
-
-		// $showParameters = $this->shareShowParameters();
-
-		// if(request()->ajax())
-		// 	return $showParameters;
-
-
-		// $this->shareExtraViews();
-
-		// return view($view, [
-		// 	'_showView' => $_showView,
-		// 	'fieldsets' => $this->getShowFieldsets()
-		// ]);
 	}
 }

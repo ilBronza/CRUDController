@@ -36,6 +36,7 @@ class RelationshipParameters
 
 	static $renderAsTypes = [
 		'BelongsToMany' => 'table',
+		'MorphToMany' => 'table',
 		'HasMany' => 'table',
 		'MorphMany' => 'table',
 		'BelongsTo' => 'view'
@@ -120,6 +121,9 @@ class RelationshipParameters
 	 **/
 	public function getRenderAsByRelationType(string $relationType) : string
 	{
+		if(! isset(static::$renderAsTypes[$relationType]))
+			throw new \Exception ('Crea lo script di caricamento relazione per ' . $relationType . ' in ' . __METHOD__);
+
 		return static::$renderAsTypes[$relationType];
 	}
 

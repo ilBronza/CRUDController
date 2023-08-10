@@ -82,6 +82,9 @@ trait CRUDIndexTrait
 
 	public function userCanCreate(User $user = null)
 	{
+		if(! $user)
+			$user = Auth::user();
+
 		if(! $this->methodIsAllowed('index'))
 			return false;
 

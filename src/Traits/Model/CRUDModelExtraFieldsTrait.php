@@ -65,8 +65,6 @@ trait CRUDModelExtraFieldsTrait
 		if($this->relationLoaded($customExtraAttributesModel))
 			return $this->{$customExtraAttributesModel};
 
-		Log::critical('Rivedere assolutamente questo, settare nella query: ' . $customExtraAttributesModel);
-
 		return cache()->rememberForever(
 			$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
 			function () use($customExtraAttributesModel)
