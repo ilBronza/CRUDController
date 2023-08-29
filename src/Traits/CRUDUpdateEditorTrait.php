@@ -159,6 +159,7 @@ trait CRUDUpdateEditorTrait
 		);
 
 		$updateParameters['success'] = true;
+		$updateParameters[$request->field] = $request->value;
 		$updateParameters['update-editor'] = true;
 		$updateParameters['model-id'] = $this->getModel()->getKey();
 		$updateParameters['value'] = $this->getModel()->{$request->field};
