@@ -9,6 +9,8 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 abstract class CrudModelStoringHelper implements CrudModelManager
 {
@@ -154,7 +156,18 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
 			if(array_key_exists($requestName, $parameters))
-				$model->$attributeName = $parameters[$requestName];
+			{
+				$setterName = 'set' . Str::studly($attributeName);
+
+				if(method_exists($model, $setterName))
+					$model->{$setterName}($parameters[$requestName]);
+
+				else
+				{
+					Log::critical('dichiara ' . $setterName . ' su ' . get_class($model));
+					$model->$attributeName = $parameters[$requestName];
+				}
+			}
 
 		$model->save();
 

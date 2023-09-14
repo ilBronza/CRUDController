@@ -38,6 +38,7 @@ class RelationshipParameters
 		'BelongsToMany' => 'table',
 		'MorphToMany' => 'table',
 		'HasMany' => 'table',
+		'HasManyThrough' => 'table',
 		'MorphMany' => 'table',
 		'BelongsTo' => 'view'
 	];

@@ -54,7 +54,7 @@ trait CRUDUpdateTrait
 			return $url;
 
 		if($this->isSaveAndNew())
-			return $this->getRouteUrlByType('create');
+			return $this->getCreateUrl();
 
 		if($this->isSaveAndRefresh())
 			return $this->getRouteUrlByType('edit');

@@ -51,8 +51,8 @@ class BaseModel extends Model
 		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 
-    public function _customSetter(string $fieldName, mixed $value, bool $save = false) : mixed
-    {
+	public function _customSetter(string $fieldName, mixed $value, bool $save = false) : mixed
+	{
 		if($this->casts[$fieldName] ?? null)
 		{
 			$caster = class_basename($this->getCastType($fieldName));
@@ -73,5 +73,5 @@ class BaseModel extends Model
 			$this->save();
 
 		return $this->$fieldName;
-    }
+	}
 }

@@ -165,6 +165,9 @@ trait CRUDShowTrait
 
 	public function _show($modelInstance)
 	{
+		if(! $modelInstance)
+			abort(404);
+
 		if(! $this->getShowParametersClass())
 			return $this->_oldShow($modelInstance);
 
