@@ -47,6 +47,11 @@ trait CRUDCreateTrait
 
 	}
 
+	public function addCreateSettings()
+	{
+		
+	}
+
 	public function shareCreateButtons()
 	{
 		$this->getExtendedCreateButtons();
@@ -83,7 +88,8 @@ trait CRUDCreateTrait
 	public function userCanPerformCreate() {}
 	public function manageBeforeCreate() {
 		$this->shareCreateButtons();
-		$this->loadCreateExtraViews();		
+		$this->loadCreateExtraViews();	
+		$this->addCreateSettings();	
 	}
 
 	/**

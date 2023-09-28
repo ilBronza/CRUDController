@@ -145,6 +145,11 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 			$customAssociationMethod = 'relate' . $relationType . 'Elements';
 
 			$this->$customAssociationMethod($relationshipField['relation'], $values);
+
+			$customEventMethodName = 'relation' . ucfirst($relationshipField['relation']) . 'Set';
+
+			if(method_exists($this->getModel(), $customEventMethodName))
+				$this->getModel()->$customEventMethodName($values);
 		}
 	}
 

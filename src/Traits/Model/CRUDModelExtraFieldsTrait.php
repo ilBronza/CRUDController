@@ -65,14 +65,14 @@ trait CRUDModelExtraFieldsTrait
 		if($this->relationLoaded($customExtraAttributesModel))
 			return $this->{$customExtraAttributesModel};
 
-		return cache()->rememberForever(
-			$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
-			function () use($customExtraAttributesModel)
-			{
-				// if($model = $this->$customExtraAttributesModel()->first())
-				// {
-				// 	return $model;
-				// }
+		// return cache()->rememberForever(
+		// 	$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
+		// 	function () use($customExtraAttributesModel)
+		// 	{
+		// 		// if($model = $this->$customExtraAttributesModel()->first())
+		// 		// {
+		// 		// 	return $model;
+		// 		// }
 
 				$providerMethod = ExtraFieldsProvider::getExtraFieldsProviderMethod($customExtraAttributesModel);
 
@@ -80,8 +80,8 @@ trait CRUDModelExtraFieldsTrait
 					return $this->$providerMethod();
 
 				throw new \Exception('Please declare ' . $providerMethod . ' inside ' . class_basename($this) . ' to provide custom extra fields');
-			}
-		);
+		// 	}
+		// );
 	}
 
 	public function getCustomExtraAttribute(string $customExtraAttributesModel, string $attribute)
