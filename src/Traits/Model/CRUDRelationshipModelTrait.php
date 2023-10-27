@@ -5,6 +5,8 @@ namespace IlBronza\CRUD\Traits\Model;
 use App\Models\Referent;
 use App\Models\User;
 use Auth;
+use IlBronza\Buttons\Button;
+use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +15,77 @@ use Illuminate\Support\Str;
 trait CRUDRelationshipModelTrait
 {
     use CRUDDeleterTrait;
+
+    public function getCreateByPolimorphicRelatedUrl(Model $related) : string
+    {
+        $relatedRoutePrefix = $this->pluralLowerClass();
+        $routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
+
+        if(Route::has($routeName))
+            return route($routeName, [$related]);
+
+        $routeData = [
+            'model' => $related->getMorphClass(),
+            'key' => $related->getKey()
+        ];
+
+        try
+        {
+            return $this->getKeyedRoute("createBy", $routeData, false);
+        }
+        catch(\Exception $e)
+        {
+            Ukn::e($e->getMessage() . ' Crea la route per ' . get_class($this) . ' o vieta l\'aggiunta automatica del puslante tramite il relationshipManager o il controller');
+            return $e->getMessage();
+        }
+    }
+
+    public function getCreateByRelatedUrl(Model $related) : string
+    {
+        $relatedRoutePrefix = $this->pluralLowerClass();
+        $routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
+
+        if(Route::has($routeName))
+            return route($routeName, [$related]);
+
+        $routeData = [
+            'model' => $related->pluralLowerClass(),
+            'key' => $related->getKey()
+        ];
+
+        try
+        {
+            return $this->getKeyedRoute("createBy", $routeData, false);
+        }
+        catch(\Exception $e)
+        {
+            Ukn::e($e->getMessage() . ' Crea la route per ' . get_class($this) . ' o vieta l\'aggiunta automatica del puslante tramite il relationshipManager o il controller');
+            return $e->getMessage();
+        }
+    }
+
+    public function _getCreateByRelatedButton(Model $related, string $url) : Button
+    {
+        return Button::create([
+            'href' => $url,
+            'text' => trans('crud::crud.createBy', ['by' => $related->getName()]),
+            'icon' => 'plus'
+        ]);
+    }
+
+    public function getCreateByPolimorphicRelatedButton(Model $related) : Button
+    {
+        $url = $this->getCreateByPolimorphicRelatedUrl($related);
+
+        return $this->_getCreateByRelatedButton($related, $url);
+    }
+
+    public function getCreateByRelatedButton(Model $related) : Button
+    {
+        $url = $this->getCreateByRelatedUrl($related);
+
+        return $this->_getCreateByRelatedButton($related, $url);
+    }
 
     public function getRelatedClassByRelationshipName(string $relationship) : string
     {

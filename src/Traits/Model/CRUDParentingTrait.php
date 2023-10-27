@@ -52,6 +52,22 @@ trait CRUDParentingTrait
         return $this->parent()->with('recursiveParents');
     }
 
+    public function getRootAncestor() : ? static
+    {
+        if($this->isRoot())
+            return $this;
+
+        $this->recursiveParents()->get();
+
+        $element = $this;
+
+        while($element = $element->parent)
+            if($element->isRoot())
+                return $element;
+
+        return null;
+    }
+
     public function getTree()
     {
         return cache()->remember(
@@ -150,12 +166,12 @@ trait CRUDParentingTrait
 
     public function isChild()
     {
-        return !! $this->parent_id;
+        return !! $this->{static::getParentKeyName()};
     }
 
     public function isRoot()
     {
-        return empty($this->parent_id);
+        return empty($this->{static::getParentKeyName()});
     }
 
     public function getParentPossibleValuesArray() : array
@@ -167,10 +183,10 @@ trait CRUDParentingTrait
 
     public function getBrothers() : Collection
     {
-        if(! $this->parent_id)
+        if(! $this->{static::getParentKeyName()})
             return collect();
 
-        return static::where(static::getParentKeyName(), $this->parent_id)
+        return static::where(static::getParentKeyName(), $this->{static::getParentKeyName()})
                 ->where($this->getKeyName(), '!=', $this->getKey())
                 ->get();
     }
