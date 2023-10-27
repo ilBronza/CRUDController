@@ -185,7 +185,7 @@ trait CRUDNestableTrait
 
     public function storeReorder(Request $request)
     {
-        return "undici";
+        // return "undici";
         $elementId = $this->removeLeadingControlCharacter($request->element_id);
         $parentId = $this->removeLeadingControlCharacter($request->parent_id);
 
@@ -209,8 +209,6 @@ trait CRUDNestableTrait
                 $item->save();
             }
         }
-
-        dd('asd');
 
         return response()->json([
             'success' => true,

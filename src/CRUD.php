@@ -324,11 +324,11 @@ class CRUD extends Controller
 
 	public function makeModel() : Model
 	{
+		$model = $this->getModelClass()::make();
+
 		$parameters = $this->addParentModelAssociationParameter(
 			$this->getModelDefaultParameters()
 		);
-
-		$model = $this->getModelClass()::make();
 
 		foreach($parameters as $key => $value)
 			$model->$key = $value;

@@ -2,6 +2,7 @@
 
 
 return [
+	'createBy' => 'Crea da :by',
 	'add' => 'Aggiungi :what',
 	'backToList' => 'Vai alla lista',
 	'showElementPage' => 'Mostra elemento :element',

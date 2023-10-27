@@ -35,7 +35,7 @@ trait PackagedModelsTrait
 	 **/
 	static function getPackageConfigPrefix()
 	{
-		return static::$packageConfigPrefix;		
+		return static::$packageConfigPrefix;
 	}
 
 	static function getProjectClassName() : string
@@ -57,7 +57,7 @@ trait PackagedModelsTrait
 		return config(static::getPackageConfigPrefix() . '.routePrefix');
 	}
 
-	protected static function getConfigParameterKey(string $key) : string
+	public static function getConfigParameterKey(string $key) : string
 	{
 		return implode(".", [
 			static::getPackageConfigPrefix(),
