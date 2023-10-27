@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 
 trait CRUDIndexTrait
 {
+	public string $caption;
+
 	public function getTable() : Datatables
 	{
 		return $this->table;
@@ -155,6 +157,17 @@ trait CRUDIndexTrait
 
 	public function beforeRenderIndex() { }
 
+	public function getCaption() : ? string
+	{
+		return $this->caption ?? null;
+	}
+
+	public function manageTableCaption()
+	{
+		if($caption = $this->getCaption())
+			$this->getTable()->setCaption($caption);
+	}
+
 	public function getRowSelectCheckboxes()
 	{
 		return $this->rowSelectCheckboxes;
@@ -197,6 +210,8 @@ trait CRUDIndexTrait
 			$this->table->addParentModel($this->parentModel);
 
 		$this->addIndexButtonsToTable();
+
+		$this->manageTableCaption();
 
 		$this->beforeRenderIndex();
 
