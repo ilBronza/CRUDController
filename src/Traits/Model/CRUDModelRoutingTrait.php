@@ -50,17 +50,29 @@ trait CRUDModelRoutingTrait
 		$this->routeBasenamePrefix = $prefix;
 	}
 
-	public function getKeyedRoute(string $action, array $data = [], bool $element = true)
+	public function getKeyedRouteName(string $action) : string
 	{
 		$routeBasename = $this->getRouteBasename();
+
+		return $routeBasename . '.' . $action;
+	}
+
+	public function getKeyedRoute(string $action, array $data = [], bool $element = true)
+	{
 		$routeClassname = $this->getRouteClassname();
+
+		$routeName = $this->getKeyedRouteName($action);
 
 		$_data = [];
 
 		if($element)
 			$_data[$routeClassname] = $this->getKey();
 
-		return route($routeBasename . '.' . $action, $_data, $data);
+		return route($routeName, array_merge(
+				$_data,
+				$data
+			)
+		);
 	}
 
 	public function getDeleteMediaUrlByKey($fileId, array $data = []) : string
