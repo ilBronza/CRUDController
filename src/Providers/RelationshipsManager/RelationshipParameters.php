@@ -1,14 +1,17 @@
 <?php
 
-namespace IlBronza\CRUD\Providers;
+namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
-use IlBronza\CRUD\Providers\RelationshipsManager;
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParametersGettersTrait;
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 
 class RelationshipParameters
 {
+	use RelationshipParametersGettersTrait;
+
 	public $name;
 	public $relation;
 	public $relationType;
@@ -387,6 +390,19 @@ class RelationshipParameters
 
 	public function manageTableButtons()
 	{
+		if($this->isPolimorphicParentingRelationship())
+			$this->table->addButton(
+				$this->relatedModel->getCreateByPolimorphicRelatedButton(
+					$this->getParentModel()
+				)
+			);
+		else if($this->isParentingRelationship())
+			$this->table->addButton(
+				$this->relatedModel->getCreateByRelatedButton(
+					$this->getParentModel()
+				)
+			);
+
 		foreach($this->buttonsMethods as $buttonsMethod)
 			$this->table->addButton(
 				$this->relatedModel->{$buttonsMethod}(

@@ -1,8 +1,8 @@
 <?php
 
-namespace IlBronza\CRUD\Providers;
+namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
-use IlBronza\CRUD\Providers\RelationshipParameters;
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParameters;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ abstract class RelationshipsManager
 	public $relationships;
 	public $displayType = 'Switcher';
 
-	abstract function getAllRelationsParameters();
+	abstract function getAllRelationsParameters() : array;
 
 	public function getModelClass()
 	{
