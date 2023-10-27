@@ -23,4 +23,32 @@ class ExtraFieldDate extends ExtraField
         return $this->_set($model, $key, $value, $attributes);
     }
 
+    static function staticSet(string $type = null, $model, string $key, $value)
+    {
+        if($value instanceof Carbon)
+            $value = $value->format('Y-m-d H:i:s');
+
+        $caster = new static($type);
+
+        $caster->_set($model, $key, $value);
+    }
+
+    public function get($model, string $key, $value, array $attributes)
+    {
+        if(! $value = $this->_get($model, $key, $value, $attributes))
+            return $value;
+
+        if($value instanceof Carbon)
+            return $value;
+
+        try
+        {
+            return Carbon::createFromFormat('Y-m-d H:i:s', $value);
+        }
+        catch(\Exception $e)
+        {
+            return $value;
+        }
+    }
+
 }

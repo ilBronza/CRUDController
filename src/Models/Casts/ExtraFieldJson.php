@@ -6,6 +6,22 @@ use IlBronza\FormField\Casts\JsonFieldCast;
 
 class ExtraFieldJson extends JsonFieldCast
 {
+    public $extraModelClassname;
+
+    /**
+     * Come usare ExtraField
+     * 
+     * vedere ExtraField.php
+     * 
+     **/
+
+
+
+    public function __construct(string $extraModelClassname = null)
+    {
+        $this->extraModelClassname = $extraModelClassname;
+    }
+
     /**
      * Cast the given value.
      *
@@ -17,8 +33,13 @@ class ExtraFieldJson extends JsonFieldCast
      */
     public function get($model, string $key, $value, array $attributes)
     {
+        if(! $this->extraModelClassname)
+            return $this->jsonField(
+                $model->getExtraAttribute($key)
+            );
+
         return $this->jsonField(
-            $model->getExtraAttribute($key)
+            $model->getCustomExtraAttribute($this->extraModelClassname, $key)
         );
     }
 
@@ -33,6 +54,36 @@ class ExtraFieldJson extends JsonFieldCast
      */
     public function set($model, string $key, $value, array $attributes)
     {
-        $model->extraFields->$key = $value;
+        return $this->_set($model, $key, $value, $attributes);
+    }
+
+    public function _set($model, string $key, $value, array $attributes = null)
+    {
+        if(! $this->extraModelClassname)
+        {
+            // if(! ($model->relationLoaded('extraFields')))
+            $extraFields = $model->getCachedProjectExtraFieldsModel();
+
+            try
+            {
+                $extraFields->$key = $value;
+
+                unset($model->$key);
+            }
+            catch(\Exception $e)
+            {
+
+                dddl($e);
+            }
+
+            return ;
+        }
+
+        $extraModelClassname = $this->extraModelClassname;
+
+        if(! $model->$extraModelClassname)
+            $model->$extraModelClassname = $model->provideExtraFieldCustomModel($extraModelClassname);
+
+        $model->$extraModelClassname->$key = $value;       
     }
 }

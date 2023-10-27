@@ -71,11 +71,13 @@ class ExtraField implements CastsAttributes
      */
     public function get($model, string $key, $value, array $attributes)
     {
+        return $this->_get($model, $key, $value, $attributes);
+    }
+
+    public function _get($model, string $key, $value, array $attributes)
+    {
         if(! $this->extraModelClassname)
             return $model->getExtraAttribute($key);
-
-        // if($key == 'internal_length')
-        //     dd($model->getCustomExtraAttribute($this->extraModelClassname, $key));
 
         return $model->getCustomExtraAttribute($this->extraModelClassname, $key);
     }
