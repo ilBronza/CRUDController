@@ -69,7 +69,7 @@ abstract class CachingController extends Controller
 	{
 		$elements = $this->getElements();
 
-		dd($elements);
+		dddl($elements);
 
 		foreach($elements as $element)
 			$element->storeInCache();
