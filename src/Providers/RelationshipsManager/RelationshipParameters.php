@@ -24,9 +24,6 @@ class RelationshipParameters
 	public $buttonsMethods = [];
 	public $elementGetterMethod;
 
-
-
-
 	//relation-specific custom view name
 	public $view;
 
@@ -297,7 +294,6 @@ class RelationshipParameters
 	 **/
 	public function getElements()
 	{
-
 		if(! $this->elements)
 			$this->setElements();
 
@@ -390,18 +386,21 @@ class RelationshipParameters
 
 	public function manageTableButtons()
 	{
-		if($this->isPolimorphicParentingRelationship())
-			$this->table->addButton(
-				$this->relatedModel->getCreateByPolimorphicRelatedButton(
-					$this->getParentModel()
-				)
-			);
-		else if($this->isParentingRelationship())
-			$this->table->addButton(
-				$this->relatedModel->getCreateByRelatedButton(
-					$this->getParentModel()
-				)
-			);
+		if(config('crud.createRelatedEntitiesInShow'))
+		{
+			if($this->isPolimorphicParentingRelationship())
+				$this->table->addButton(
+					$this->relatedModel->getCreateByPolimorphicRelatedButton(
+						$this->getParentModel()
+					)
+				);
+			else if($this->isParentingRelationship())
+				$this->table->addButton(
+					$this->relatedModel->getCreateByRelatedButton(
+						$this->getParentModel()
+					)
+				);			
+		}
 
 		foreach($this->buttonsMethods as $buttonsMethod)
 			$this->table->addButton(
@@ -443,6 +442,7 @@ class RelationshipParameters
 			return $this->table->renderPage();
 
 		$this->table->setAjaxTable();
+		$this->table->setCaption(false);
 
 		$this->manageTableButtons();
 	}

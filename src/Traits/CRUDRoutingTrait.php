@@ -27,6 +27,14 @@ trait CRUDRoutingTrait
 		return $this->getRouteUrlByType('index');
 	}
 
+	public function getShowUrl() : ? string
+	{
+		if($model = $this->getModel())
+			return $model->getShowUrl();
+
+		return null;
+	}
+
 	public function getRouteNameByType(string $type)
 	{
 		$pieces = $this->getRouteBaseNamePieces();

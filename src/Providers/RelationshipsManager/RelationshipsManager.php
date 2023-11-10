@@ -14,7 +14,7 @@ abstract class RelationshipsManager
 	public $relationships;
 	public $displayType = 'Switcher';
 
-	abstract function getAllRelationsParameters() : array;
+	abstract  function getAllRelationsParameters() : array;
 
 	public function getModelClass()
 	{

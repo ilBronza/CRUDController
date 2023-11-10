@@ -56,7 +56,7 @@
 
         </div>
     </div>
-    <div class="uk-card-body">
+    <div class="uk-card-body {{ $htmlClasses ?? '' }}">
 	    @include($_showView)
     </div>
 

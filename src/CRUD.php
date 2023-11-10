@@ -11,6 +11,7 @@ use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
@@ -40,6 +41,7 @@ class CRUD extends Controller
 
     public $returnBack = false;
     public $avoidBackToList = false;
+    public $avoidShowButton = false;
     public $showFormIntro = true;
 
     public $rowSelectCheckboxes = false;
@@ -189,14 +191,28 @@ class CRUD extends Controller
 		return class_basename($this->getModelClass());
 	}
 
+	public function getFindModelQuery(string $key, array $relations = []) : Builder
+	{
+		$query = $this->getModelClass()::query();
+
+		foreach($relations as $relation)
+			$query->with($relation);
+
+		return $query;
+	}
+
     public function findModel(string $key, array $relations = []) : ? Model
     {
-    	$query = $this->getModelClass()::query();
+		$query = $this->getFindModelQuery($key, $relations);
 
-    	foreach($relations as $relation)
-    		$query->with($relation);
+		return $query->find($key);
+    }
 
-        return $query->find($key);
+    public function findModelWithTrashed(string $key, array $relations = []) : ? Model
+    {
+		$query = $this->getFindModelQuery($key)->onlyTrashed();
+
+		return $query->find($key);
     }
 	/**
 	 * get subject model class
@@ -281,6 +297,11 @@ class CRUD extends Controller
 		return $this->avoidBackToList;
 	}
 
+	public function avoidShowButton() : bool
+	{
+		return $this->avoidShowButton;
+	}
+
 
 
 
@@ -295,6 +316,9 @@ class CRUD extends Controller
 
 		if(in_array('index', $this->allowedMethods)&&(! $this->avoidBackToList()))
 			$defaults['backToListUrl'] = $this->getIndexUrl();
+
+		if(in_array('show', $this->allowedMethods)&&(! $this->avoidShowButton())&&($this->getModel()?->exists))
+			$defaults['showElement'] = $this->getShowUrl();
 
 		$defaults['saveAndNew'] = $this->hasSaveAndNew();
 		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();

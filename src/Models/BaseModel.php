@@ -6,6 +6,7 @@ use IlBronza\CRUD\Models\Casts\ExtraField;
 use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
+use IlBronza\CRUD\Traits\Model\CRUDRestoreTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
@@ -13,6 +14,8 @@ use Spatie\Activitylog\LogOptions;
 class BaseModel extends Model 
 {
 	use SoftDeletes;
+
+	use CRUDRestoreTrait;
 
 	use CRUDCacheTrait;
 	use CRUDModelTrait;

@@ -53,8 +53,14 @@ class CrudModelRenderer extends CrudModelFormHelper
 	{
 		$this->getFieldsetsProvider()->assignModelToFields();
 
+		$htmlClasses = [];
+
+		if($this->getForm())
+			$htmlClasses[] = $this->getForm()->getFormOrientationClass();
+
 		return view("crud::uikit.show", [
 			'_showView' => 'crud::uikit._show',
+			'htmlClasses' => implode(" ", $htmlClasses),
 			'modelInstance' => $this->getModel(),
 			'canEditModelInstance' => true,
 			'fieldsets' => $this->getFieldsetsProvider()->provideFieldsetsCollection()

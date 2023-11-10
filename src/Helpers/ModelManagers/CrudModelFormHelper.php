@@ -111,6 +111,11 @@ abstract class CrudModelFormHelper implements CrudModelManager
 				$formOptions['backToListUrl']
 			);
 
+		if($formOptions['showElement'] ?? false)
+			$this->form->setShowElementUrl(
+				$formOptions['showElement']
+			);
+
 		if($formOptions['submitButtonText'] ?? false)
 			$this->form->setSubmitButtonText(
 				$formOptions['submitButtonText']

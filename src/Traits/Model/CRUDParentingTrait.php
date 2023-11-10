@@ -31,6 +31,11 @@ trait CRUDParentingTrait
         return $this->belongsTo(static::class, static::getParentKeyName());
     }
 
+    public function getParent() : ? Model
+    {
+        return $this->parent;
+    }
+
     public function associateParent(Model $parent)
     {
         $this->parent()->associate($parent);
@@ -40,6 +45,11 @@ trait CRUDParentingTrait
     public function children()
     {
         return $this->hasMany(static::class, static::getParentKeyName());
+    }
+
+    public function getChildren() : Collection
+    {
+        return $this->children;
     }
 
     public function recursiveChildren()
