@@ -198,9 +198,5 @@ trait CRUDShowTrait
 			return $this->modelFormHelper->renderTeaser();
 
 		return $this->modelFormHelper->render();
-
-
-
-
 	}
 }

@@ -2,8 +2,17 @@
 
 namespace IlBronza\CRUD\Traits\IlBronzaPackages;
 
+use IlBronza\CRUD\Providers\RouterProvider\IbRouter;
+
 trait IlBronzaPackagesTrait
 {
+    abstract function manageMenuButtons();
+
+    public function route(string $routeName, array $parameters = [])
+    {
+        return IbRouter::route($this, $routeName, $parameters);
+    }
+
     static function getPackageConfigPrefix()
     {
         return static::$packageConfigPrefix;

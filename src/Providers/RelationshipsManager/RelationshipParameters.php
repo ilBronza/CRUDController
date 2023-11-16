@@ -369,14 +369,14 @@ class RelationshipParameters
 
 		$fieldsGroupsNames = $this->getFieldsGroupsNames();
 
-		try
-		{
-			return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);			
-		}
-		catch(\Throwable $e)
-		{
-			dd('dichiara i fieldsgroups ' . json_encode($fieldsGroupsNames) . ' su ' . ($this->controller) . '->' . $e->getMessage());
-		}
+		// try
+		// {
+			return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);
+		// }
+		// catch(\Throwable $e)
+		// {
+		// 	dd('dichiara i fieldsgroups ' . json_encode($fieldsGroupsNames) . ' su ' . ($this->controller) . '->' . $e->getMessage());
+		// }
 	}
 
 	public function getParentModel()
