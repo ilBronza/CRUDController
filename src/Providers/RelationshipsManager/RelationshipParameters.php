@@ -54,10 +54,10 @@ class RelationshipParameters
 
 	public function getCardTitle()
 	{
-		if($this->translatedTitle)
-			return $this->translatedTitle;
+		if($this->isPlural())
+			return $this->getRelatedModel()->getPluralTranslatedClassname();
 
-		return __('relationships.' . $this->getRelationshipMethod());
+		return $this->getRelatedModel()->getTranslatedClassname();
 	}
 
 	public function getToggleId()
@@ -208,6 +208,11 @@ class RelationshipParameters
 	public function renderAsTable() : bool
 	{
 		return $this->renderAs == 'table';
+	}
+
+	public function isPlural() : bool
+	{
+		return $this->renderAsTable();
 	}
 
 	/**

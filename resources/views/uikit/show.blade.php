@@ -9,14 +9,14 @@
     <div class="uk-card-header">
         <div uk-grid>
             <div class="uk-width-expand">
+                @if($indexUrl = $modelInstance->getIndexUrl())
+                <a class="uk-display-inline-block" href="{{ $indexUrl }}">
+                    <i class="fa-solid fa-list"></i>
+                    Torna alla lista {{ $modelInstance->getPluralTranslatedClassname() }}
+                </a>
+                @endif
+
                 <span class="uk-h3 uk-display-block">
-                    @if($indexUrl = $modelInstance->getIndexUrl())
-                    <a href="{{ $indexUrl }}">
-                        <i class="fa-solid fa-list"></i>
-                        Torna alla lista @lang('crudModels.' . Str::plural(strtolower(class_basename($modelInstance))))
-                    </a> - 
-                    @endif
-                    
                     {{ $modelInstance->getName() }}
                 </span>
 

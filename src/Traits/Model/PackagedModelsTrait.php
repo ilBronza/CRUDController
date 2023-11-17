@@ -48,7 +48,7 @@ trait PackagedModelsTrait
 		}
 		catch(\Throwable $e)
 		{
-			dd($e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
+			dd("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
 		}
 	}
 
@@ -73,4 +73,22 @@ trait PackagedModelsTrait
 			static::getConfigParameterKey('table')
 		);
 	}
+
+	public function getTranslationFilePrefix(string $file = null)
+	{
+		if(! $file)
+			$file = static::getPackageConfigPrefix();
+
+		return static::getPackageConfigPrefix() . "::{$file}.";
+	}
+
+    public function getPluralTranslatedClassname()
+    {
+		return trans($this->getTranslationFilePrefix() . $this->getPluralCamelcaseClassBasename());
+    }
+
+    public function getTranslatedClassname()
+    {
+    	return trans($this->getTranslationFilePrefix() . $this->getCamelcaseClassBasename());
+    }
 }

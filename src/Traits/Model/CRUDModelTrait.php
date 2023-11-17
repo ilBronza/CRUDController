@@ -111,6 +111,11 @@ trait CRUDModelTrait
         return $this->{$nameField};
     }
 
+    public function getPluralTranslatedClassname()
+    {
+        return trans('crudModels.plural' . ucfirst($this->getCamelcaseClassBasename()));
+    }
+
     public function getTranslatedClassname()
     {
         return trans('crudModels.' . $this->getCamelcaseClassBasename());
