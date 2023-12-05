@@ -1,6 +1,6 @@
 <div class="uk-card-footer">
 
-    <ul class="uk-subnav uk-subnav-pill" uk-switcher>
+    <ul class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
     @foreach($relationshipManager->getRelationships() as $relationship)
         <li><a href="#">{!! $relationship->getCardTitle() !!}</a></li>
     @endforeach

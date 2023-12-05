@@ -11,13 +11,36 @@ use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
+use IlBronza\Form\Traits\ExtraViewsTrait;
+use IlBronza\UikitTemplate\Fetcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use \App\Http\Controllers\Controller;
 
 class CRUD extends Controller
 {
+	use ExtraViewsTrait;
+
+    public Collection $fetchers;
+
+	static $availableExtraViewsPositions = [
+		'outherTop',
+		'outherBottom',
+		'innerTop',
+		'innerBottom',
+		'left',
+		'right',
+		'outherLeft',
+		'outherRight'
+	];
+
+    public function getValidExtraViewsPositions() : array
+    {
+        return static::$availableExtraViewsPositions;
+    }
+
 	use CRUDFileParametersTrait;
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
@@ -92,6 +115,8 @@ class CRUD extends Controller
 		$this->middleware('CRUDParseAjaxBooleansAndNull');
 		$this->middleware(CRUDParseComasAndDots::class);
 		$this->checkIfModelUsesTrait();
+
+        $this->setFetchers();
 	}
 
 	public function isIframed()
@@ -280,18 +305,6 @@ class CRUD extends Controller
 		return $this->modelFormHelper;
 	}
 
-	/**
-	 * share extraViews parameter to view
-	 **/
-	public function shareExtraViews()
-	{
-		if(count($this->extraViews))
-		{
-			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
-			view()->share('extraViews', $this->extraViews);	
-		}
-	}
-
 	public function avoidBackToList()
 	{
 		return $this->avoidBackToList;
@@ -302,8 +315,10 @@ class CRUD extends Controller
 		return $this->avoidShowButton;
 	}
 
-
-
+	public function addFormFetcher(string $position, Fetcher $fetcher)
+	{
+		return $this->getModelFormHelper()->getForm()->addFetcher($position, $fetcher);
+	}
 
 	public function overrideWithCustomSettingsToDefaults(array $settings) : array
 	{
@@ -369,7 +384,14 @@ class CRUD extends Controller
         );
     }
 
-
+	public function shareExtraViews()
+	{
+		if(count($this->extraViews))
+		{
+			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
+			view()->share('extraViews', $this->extraViews);	
+		}
+	}
 
 
 }

@@ -13,6 +13,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 trait CRUDModelTrait
 {
+    public ? string $translationFolderPrefix = null;
+
     static $teaserFields = [];
 
     use CRUDModelRoutingTrait;
@@ -75,16 +77,22 @@ trait CRUDModelTrait
         return lcfirst(class_basename(static::class));
     }
 
+    public function getTranslationsFolderPrefix() : ? string
+    {
+        return $this->translationFolderPrefix;
+    }
+
     public function getTranslationsFileName()
     {
         if($this->translationsFilename ?? false)
             return $this->translationsFilename;
 
-        return Str::plural(
-            Str::camel(
-                class_basename($this)
-            )
-        );
+        $plural = $this->getPluralCamelcaseClassBasename();
+
+        if($prefix = ($this->getTranslationsFolderPrefix()))
+            return $prefix . '::' . $plural;
+
+        return $plural;
     }
 
     public static function getTranslation(string $string, array $parameters = [])
@@ -113,7 +121,9 @@ trait CRUDModelTrait
 
     public function getPluralTranslatedClassname()
     {
-        return trans('crudModels.plural' . ucfirst($this->getCamelcaseClassBasename()));
+        $plural = $this->getPluralCamelcaseClassBasename();
+
+        return trans($this->getTranslationsFileName() . '.' . $plural);
     }
 
     public function getTranslatedClassname()

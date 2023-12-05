@@ -28,7 +28,7 @@ trait CRUDSluggableTrait
 		return $this->{$this->getSlugField()};
 	}
 
-	protected static function boot()
+	public static function boot()
 	{
 		parent::boot();
 

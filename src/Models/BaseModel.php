@@ -10,9 +10,11 @@ use IlBronza\CRUD\Traits\Model\CRUDRestoreTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BaseModel extends Model 
 {
+	use LogsActivity;
 	use SoftDeletes;
 
 	use CRUDRestoreTrait;
@@ -75,6 +77,6 @@ class BaseModel extends Model
 		if($save)
 			$this->save();
 
-		return $this->$fieldName;
+		return $this;
 	}
 }

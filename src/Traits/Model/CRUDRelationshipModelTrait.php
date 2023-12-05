@@ -68,7 +68,7 @@ trait CRUDRelationshipModelTrait
     {
         return Button::create([
             'href' => $url,
-            'text' => trans('crud::crud.createBy', ['by' => $related->getName()]),
+            'translatedText' => trans('crud::crud.createBy', ['by' => $related->getName()]),
             'icon' => 'plus'
         ]);
     }

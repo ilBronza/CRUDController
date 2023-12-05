@@ -27,6 +27,9 @@ trait CRUDModelUserRightsTrait
         if(! is_null($result = $this->getBaseUserRightsResult()))
             return $result;
 
+        if(is_null($user))
+            $user = Auth::user();
+
         return $this->user_id == $user->getKey();
     }
 
