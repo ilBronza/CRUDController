@@ -104,6 +104,18 @@ trait CRUDCacheTrait
         );
     }
 
+    static function findCachedAttribute($id, $attribute)
+    {
+        return cache()->remember(
+            static::staticCacheKey($id . '_property' . $attribute),
+            3600,
+            function() use($id, $attribute)
+            {
+                return static::find($id)?->$attribute;
+            }
+        );
+    }
+
     static function findCachedField(string $fieldname, $value)
     {
         return cache()->remember(

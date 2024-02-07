@@ -79,7 +79,8 @@ $(document).ready(function()
                 success : function(response, message, jqXhr)
                 {
                     if(response.success == true)
-                        window.addSuccessNotification(element_id + " {{ __('crud::nestableElementMovedTo') }} " + parent_id);
+                        window.addSuccessNotification(response.message);
+                        // window.addSuccessNotification(element_id + " {{ __('crud::nestable.nestableElementMovedTo') }} " + parent_id);
                     else
                         this.error(response, message, jqXhr);
 

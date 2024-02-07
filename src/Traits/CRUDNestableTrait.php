@@ -212,7 +212,7 @@ trait CRUDNestableTrait
 
         return response()->json([
             'success' => true,
-            'message' => 'Elemento spostato correttamente'
+            'message' => 'Elemento ' . $item->getName() . ' spostato correttamente'
         ]);
     }
 

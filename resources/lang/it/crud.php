@@ -2,6 +2,7 @@
 
 
 return [
+	'viewElementsTree' => 'Albero degli elementi',
 	'createBy' => 'Crea da :by',
 	'add' => 'Aggiungi :what',
 	'showElement' => 'Mostra :element',

@@ -54,6 +54,9 @@ class RelationshipParameters
 
 	public function getCardTitle()
 	{
+		if($this->translatedTitle)
+			return $this->translatedTitle;
+
 		if($this->isPlural())
 			return $this->getRelatedModel()->getPluralTranslatedClassname();
 

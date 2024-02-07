@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 trait CRUDModelUserRightsTrait
 {
-    public static function getBaseUserRightsResult() : ? bool
+    public static function getBaseUserRightsResult(User $user = null) : ? bool
     {
         if(! $user = Auth::user())
             return false;
@@ -24,18 +24,18 @@ trait CRUDModelUserRightsTrait
 
     public function userCanUpdate(User $user = null)
     {
-        if(! is_null($result = $this->getBaseUserRightsResult()))
-            return $result;
-
         if(is_null($user))
             $user = Auth::user();
+
+        if(! is_null($result = $this->getBaseUserRightsResult($user)))
+            return $result;
 
         return $this->user_id == $user->getKey();
     }
 
     static function userCanCreate(User $user = null)
     {
-        if(! is_null($result = static::getBaseUserRightsResult()))
+        if(! is_null($result = static::getBaseUserRightsResult($user)))
             return $result;
 
         return false;

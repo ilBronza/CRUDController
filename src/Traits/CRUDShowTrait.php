@@ -96,7 +96,6 @@ trait CRUDShowTrait
 
 		if((in_array('index', $this->allowedMethods))&&(! $this->avoidBackToList))
 			view()->share('backToListUrl', $this->getIndexUrl());
-
 	}
 
 	public function setShowButtons()

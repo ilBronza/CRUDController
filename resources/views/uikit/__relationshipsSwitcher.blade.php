@@ -1,6 +1,25 @@
+<script type="text/javascript">
+
+UIkit.util.ready(function () {
+    // add all URL parts you need to this array in the same order as the switcher items are
+    var switcherItems = [
+        @foreach($relationshipManager->getRelationships() as $relationship)
+            '{{ Str::slug($relationship->getCardTitle()) }}',
+        @endforeach
+    ];
+
+    var itemIndex = switcherItems.indexOf(window.location.href.split('#')[1]);
+
+    if (itemIndex > 0)
+    {
+        UIkit.switcher('#relationswitcher{{ $relationshipManager->getModel()->getKey() }}').show(itemIndex);
+    }
+});
+</script>
+
 <div class="uk-card-footer">
 
-    <ul class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
+    <ul id="relationswitcher{{ $relationshipManager->getModel()->getKey() }}" class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
     @foreach($relationshipManager->getRelationships() as $relationship)
         <li><a href="#">{!! $relationship->getCardTitle() !!}</a></li>
     @endforeach

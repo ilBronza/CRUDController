@@ -28,7 +28,8 @@ trait CRUDModelButtonsTrait
     static function getReorderButton(array $routeParameters = []) : Button
     {
         return Button::create([
-            'href' => route(static::getModelRoutesPrefix() . static::getPluralCamelcaseClassBasename() . '.reorder', $routeParameters), 
+            'href' => static::make()->getReorderUrl(),
+            // 'href' => route(static::getModelRoutesPrefix() . static::getPluralCamelcaseClassBasename() . '.reorder', $routeParameters), 
             'text' => 'generals.reorder' . class_basename(static::class),
             'icon' => 'bars-staggered'
         ]);        
