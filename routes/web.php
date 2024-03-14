@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('cache-clear', function()
+	{
+		cache()->flush();
+
+		return back();
+	})
+->name('cache.clear');
+
 Route::group([
 		'middleware' => ['web'],
 		'prefix' => 'concurrent-uri',

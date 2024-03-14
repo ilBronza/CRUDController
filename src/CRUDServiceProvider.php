@@ -30,6 +30,8 @@ class CRUDServiceProvider extends ServiceProvider
     public function boot()
     {
         $router = $this->app->make(Router::class);
+
+        $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 

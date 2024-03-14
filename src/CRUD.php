@@ -337,6 +337,7 @@ class CRUD extends Controller
 
 		$defaults['saveAndNew'] = $this->hasSaveAndNew();
 		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
+		$defaults['saveAndCopy'] = $this->hasSaveAndCopy();
 
 		return $this->overrideWithCustomSettingsToDefaults($defaults);
 	}

@@ -127,6 +127,9 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		if($formOptions['saveAndRefresh'] ?? false)
 			$this->form->addSaveAndRefreshButton();
 
+		if($formOptions['saveAndCopy'] ?? false)
+			$this->form->addSaveAndCopyButton();
+
 		$this->form->setIntro(
 			$this->getIntro()
 		);

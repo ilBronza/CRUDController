@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
+use IlBronza\CRUD\Helpers\CrudRequestHelper;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelAssociatorHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
@@ -94,10 +96,10 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		return $this->sanitizeParametersAndValues($parameters);
 	}
 
-	public function getRelationType(string $relationshipName) : string
-	{
-		return class_basename($this->getModel()->{$relationshipName}());
-	}
+	// public function getRelationType(string $relationshipName) : string
+	// {
+	// 	return class_basename($this->getModel()->{$relationshipName}());
+	// }
 
 	private function relateHasOneElements(string $relationshipMethod, $related)
 	{
@@ -138,9 +140,14 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 			$values = $parameters[$relationshipField['name']];
 
-			$relationType = $this->getRelationType(
-				$relationshipField['relation']
-			);
+			// $relationType = $this->getRelationType(
+			// 	$relationshipField['relation']
+			// );
+
+			$relationType = CrudModelAssociatorHelper::getRelationTypeName(
+					$this->getModel(),
+					$relationshipField['relation']
+				);
 
 			$customAssociationMethod = 'relate' . $relationType . 'Elements';
 
@@ -197,7 +204,12 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		$parameters = $this->getValidatedRequestParameters();
 
-		return $this->bindParameters($parameters);
+		$result = $this->bindParameters($parameters);
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return CrudModelClonerHelper::clone($result);
+
+		return $result;
 	}
 
 }

@@ -36,7 +36,7 @@ trait CRUDDeleteTrait
 	private function returnDeletionResponse($element)
 	{
 		$name = $element->getName();
-		$message = __('messages.elementSuccesfullyDeleted', ['element' => $name]);
+		$message = __('crud::crud.elementSuccesfullyDeleted', ['element' => $name]);
 
 		if(request()->ajax())
 		{

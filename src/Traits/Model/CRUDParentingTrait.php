@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 trait CRUDParentingTrait
 {
@@ -62,7 +63,7 @@ trait CRUDParentingTrait
         return $this->parent()->with('recursiveParents');
     }
 
-    public function getRootAncestor() : ? static
+    public function getRoot() : ? static
     {
         if($this->isRoot())
             return $this;
@@ -76,6 +77,23 @@ trait CRUDParentingTrait
                 return $element;
 
         return null;
+    }
+
+    public function getRootAncestor() : ? static
+    {
+        return $this->getRoot();
+        // if($this->isRoot())
+        //     return $this;
+
+        // $this->recursiveParents()->get();
+
+        // $element = $this;
+
+        // while($element = $element->parent)
+        //     if($element->isRoot())
+        //         return $element;
+
+        // return null;
     }
 
     public function getTree()
@@ -93,7 +111,7 @@ trait CRUDParentingTrait
 
     static function staticGetTree(string $node = null)
     {
-        $cacheKey = str_slug(static::class) . 'Tree' . $node;
+        $cacheKey = Str::slug(static::class) . 'Tree' . $node;
 
         return cache()->remember(
             $cacheKey,
@@ -111,15 +129,7 @@ trait CRUDParentingTrait
     {
         $result = collect();
 
-        if($name)
-            $name .= ' || ';
-
-        $name = $name . $this->name;
-
-        $result->push([
-            'id' => $this->getKey(),
-            'name' => $name
-        ]);
+        $result->push($this);
 
         foreach($this->recursiveChildren as $child)
             $result = $result->merge(
@@ -127,11 +137,32 @@ trait CRUDParentingTrait
             );
 
         return $result;
+
+
+
+        // $result = collect();
+
+        // if($name)
+        //     $name .= ' || ';
+
+        // $name = $name . $this->name;
+
+        // $result->push([
+        //     'id' => $this->getKey(),
+        //     'name' => $name
+        // ]);
+
+        // foreach($this->recursiveChildren as $child)
+        //     $result = $result->merge(
+        //         $child->getElementsFlatTree($level + 1, $name)
+        //     );
+
+        // return $result;
     }
 
     static function getFlatTree(string $node = null, bool $noCache = false)
     {
-        $cacheKey = str_slug(static::class) . 'FlatTree' . $node;
+        $cacheKey = Str::slug(static::class) . 'FlatTree' . $node;
 
         if($noCache)
             cache()->forget($cacheKey);
@@ -206,5 +237,16 @@ trait CRUDParentingTrait
         return static::where($field, $this->{$field})
                 ->where($this->getKeyName(), '!=', $this->getKey())
                 ->get();        
+    }
+
+    public function getInheritedAttribute(string $attributeName)
+    {
+        if($this->{$attributeName} !== null)
+            return $this->{$attributeName};
+
+        if($this->parent)
+            return $this->parent->getInheritedAttribute($attributeName);
+
+        return null;
     }
 }

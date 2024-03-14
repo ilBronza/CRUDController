@@ -18,11 +18,16 @@ trait CRUDModelButtonsTrait
 
     static function getCreateButton(array $routeParameters = []) : Button
     {
-        return Button::create([
+        $button = Button::create([
             'href' => route(static::getStaticRouteBasename() . '.create', $routeParameters), 
             'text' => 'generals.create' . class_basename(static::class),
             'icon' => 'plus'
         ]);
+
+        $button->setHtmlClass('uk-margin-large-left');
+        $button->setPrimary();
+
+        return $button;
     }
 
     static function getReorderButton(array $routeParameters = []) : Button
