@@ -144,6 +144,10 @@ class CRUDServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 
         // Register the service the package provides.
+        $this->app->singleton('CRUDMenuUtilities', function ($app) {
+            return new CRUDMenuUtilities;
+        });
+
         $this->app->singleton('crud', function ($app) {
             return new CRUD;
         });

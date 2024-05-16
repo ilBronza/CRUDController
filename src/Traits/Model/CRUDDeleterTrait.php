@@ -21,6 +21,9 @@ trait CRUDDeleterTrait
 
     public function deleterDelete()
     {
+        if(method_exists($this, 'userCanDelete'))
+            $this->userCanDelete();
+
         foreach($this->getDeletingRelationshipsField() as $relationship)
         {
             $elements = $this->$relationship();

@@ -28,10 +28,8 @@ trait CRUDSluggableTrait
 		return $this->{$this->getSlugField()};
 	}
 
-	public static function boot()
+	public static function bootCRUDSluggableTrait()
 	{
-		parent::boot();
-
 		static::saving(function ($model) {
 			$slugField = static::getSlugField();
 

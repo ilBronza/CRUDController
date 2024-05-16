@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelStorer;
 use IlBronza\Form\Facades\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\StoreFieldsetsProvider;
@@ -72,6 +73,9 @@ trait CRUDStoreTrait
 		);
 
 		$this->sendStoreSuccessMessage();
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return redirect()->to($this->modelInstance->getEditUrl());
 
 		return redirect()->to(
 			$this->getAfterStoredRedirectUrl()

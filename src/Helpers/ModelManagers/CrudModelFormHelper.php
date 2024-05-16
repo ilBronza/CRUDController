@@ -7,6 +7,7 @@ use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 abstract class CrudModelFormHelper implements CrudModelManager
@@ -89,6 +90,8 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			'action' => $action,
 			'method' => $this->getFormMethod()
 		]);
+
+		$this->form->addHtmlClass(Str::slug(request()->route()->getName()));
 
 		$this->form->setDivider(
 			$formOptions['divider'] ?? config('form.divider')

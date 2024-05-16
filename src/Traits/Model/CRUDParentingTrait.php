@@ -53,10 +53,15 @@ trait CRUDParentingTrait
         return $this->children;
     }
 
+    public function getRecursiveChildren() : Collection
+    {
+        return $this->recursiveChildren;
+    }
+
     public function recursiveChildren()
     {
         return $this->children()->with('recursiveChildren');
-    }    
+    }
 
     public function recursiveParents()
     {
@@ -77,6 +82,11 @@ trait CRUDParentingTrait
                 return $element;
 
         return null;
+    }
+
+    static public function getRoots() : Collection
+    {
+        return static::root()->get();
     }
 
     public function getRootAncestor() : ? static
@@ -107,6 +117,32 @@ trait CRUDParentingTrait
 
                 return $this;
             });
+    }
+
+    static function getFullTreeWithRelatedElements(string $key, array $related) : static
+    {
+        $baseElement = static::findOrFail($key);
+
+        $rootElement = $baseElement->getRootAncestor();
+
+        return static::getChildTreeWithRelatedElements($rootElement->getKey(), $related);
+    }
+
+    static function getChildTreeWithRelatedElements(string $key, array $related) : static
+    {
+        return static::with($related)
+                ->withRecursiveChildrenRelated($related)
+                ->findOrFail($key);
+    }
+
+    public function scopeWithRecursiveChildrenRelated($query, array $relatedTypes)
+    {
+        $query->with(['recursiveChildren' => function($_query) use ($relatedTypes)
+        {
+            $_query->with($relatedTypes);
+
+            $_query->getQuery()->withRecursiveChildrenRelated($relatedTypes);
+        }]);
     }
 
     static function staticGetTree(string $node = null)

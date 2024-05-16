@@ -48,11 +48,7 @@
                 @endif
             </div>
 
-            @if(($modelInstance->getEditURL())&&($modelInstance->userCanUpdate(Auth::user())&&($canEditModelInstance)))
-                <div class="uk-width-auto">
-                    <a href="{{ $editModelInstanceUrl ?? $modelInstance->getEditURL() }}">@lang('crud::crud.editElement', ['element' => $modelInstance->getName()])</a>
-                </div>
-            @endif
+            @include('crud::utilities.editLink', ['element' => $modelInstance])
 
         </div>
     </div>

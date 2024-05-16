@@ -31,6 +31,8 @@ class CrudModelClonerHelper
 
 		foreach($notClonableFields as $field)
 			$this->getClonedModel()->$field = null;
+
+		$this->clonedModel->save();
 	}
 
 	protected function associateRelations()
@@ -42,7 +44,7 @@ class CrudModelClonerHelper
 			$values = $this->getModel()->$relation()->get();
 
 			CrudModelAssociatorHelper::associateRelation(
-				$this->getModel(),
+				$this->getClonedModel(),
 				$relation,
 				$values,
 				$duplicateDirectRelations = true
@@ -58,8 +60,6 @@ class CrudModelClonerHelper
 
 		$this->associateRelations();
 
-		dd('maranzo');
-
 		return $this->getClonedModel();
 	}
 
@@ -68,8 +68,18 @@ class CrudModelClonerHelper
 		$helper = new static();
 
 		$helper->setModel($model);
-		$helper->_clone();
 
-		return $this->getClonedModel();
+		return $helper->_clone();
+	}
+
+	static function cloneIfClonable(Model $model) : Model
+	{
+		if ($model instanceof ClonableModelInterface)
+			return static::clone($model);
+
+		$clonedModel = $model->replicate();
+		$clonedModel->save();
+
+		return $clonedModel;
 	}
 }

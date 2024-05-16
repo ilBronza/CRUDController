@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 class CrudModelAssociatorHelper
 {
 	public Model $model;
+	public string $relation;
 
 	protected function setModel(Model $model)
 	{
@@ -20,6 +21,26 @@ class CrudModelAssociatorHelper
 		return $this->model;
 	}
 
+	protected function setRelation(string $relation)
+	{
+		$this->relation = $relation;
+	}
+
+	protected function getRelation() : string
+	{
+		return $this->relation;
+	}
+
+	protected function setValues(array|Collection $values)
+	{
+		$this->values = $values;
+	}
+
+	protected function getValues() : array|Collection
+	{
+		return $this->values;
+	}
+
 	static function getRelationTypeName(Model $model, string $relation) : string
 	{
 		return class_basename(
@@ -27,12 +48,59 @@ class CrudModelAssociatorHelper
 		);		
 	}
 
-	protected function _getRelationTypeName(string $relation) : string
+	protected function _getRelationTypeName() : string
 	{
 		return static::getRelationTypeName(
 			$this->getModel(),
-			$relation
+			$this->getRelation()
 		);
+	}
+
+	protected function sendAssociationEvent() : Model
+	{
+		$customEventMethodName = $this->getRelation() . 'Related';
+
+		if(method_exists($this->getModel(), $customEventMethodName))
+			$this->getModel()->$customEventMethodName(
+				$this->getValues()
+			);
+
+		return $this->getModel();
+	}
+
+	protected function processAssociation(bool $duplicateDirectRelations = false)
+	{
+		$relationTypeName = $this->_getRelationTypeName();
+
+		if($relationTypeName == 'HasMany')
+		{
+			foreach($this->getValues() as $value)
+			{
+				if($duplicateDirectRelations)
+					$value = CrudModelClonerHelper::cloneIfClonable($value);
+
+				$this->getModel()
+					->{$this->getRelation()}()
+					->save(
+						$value
+					);
+			}
+
+			return $this->sendAssociationEvent();
+		}
+
+		if($relationTypeName == 'BelongsToMany')
+		{
+			$this->getModel()
+				->{$this->getRelation()}()
+				->sync(
+					$this->getValues()
+				);
+
+			return $this->sendAssociationEvent();
+		}
+
+		throw new \Exception($relationTypeName . ' Errore manca questo tipo da associare in ' . get_class($this));
 	}
 
 	static function associateRelation(Model $model, string $relation, array|Collection $values, bool $duplicateDirectRelations = false)
@@ -43,36 +111,11 @@ class CrudModelAssociatorHelper
 		$helper = new static();
 
 		$helper->setModel($model);
+		$helper->setRelation($relation);
+		$helper->setValues($values);
 
-		$relationTypeName = $helper->_getRelationTypeName($relation);
+		$helper->processAssociation($duplicateDirectRelations);
 
-		if($relationTypeName == 'HasMany')
-		{
-			foreach($values as $value)
-			{
-				if($duplicateDirectRelations)
-					$value = CrudModelClonerHelper::clone($value);
-
-				$this->getModel()
-					->{$relation}()
-					->save(
-						$value
-					);
-			}
-
-			return $this->getModel();
-		}
-
-		dd($relationType);
-
-		$this->$customAssociationMethod($relationshipField['relation'], $values);
-
-		$customEventMethodName = 'relation' . ucfirst($relationshipField['relation']) . 'Set';
-
-		if(method_exists($this->getModel(), $customEventMethodName))
-			$this->getModel()->$customEventMethodName($values);
-
-		dd($relationTypeName);
 	}
 
 }

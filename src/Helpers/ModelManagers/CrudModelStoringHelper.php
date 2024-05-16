@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
+use Carbon\Carbon;
 use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelAssociatorHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
@@ -11,6 +12,7 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -39,7 +41,9 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 	static function saveByRequest(
 		Model $model,
 		FieldsetParametersFile $parametersFile,
-		Request $request
+		Request $request,
+		array $events = [],
+		callable $callback = null
 	) : Model
 	{
 		$helper = static::create($model, $parametersFile, $request);
@@ -49,7 +53,17 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		// $helper->setModel($model);
 		// $helper->setFieldsetParametersFile($parametersFile);
 
-		return $helper->bindRequest($request);
+		$result = $helper->bindRequest($request);
+
+		$helper->fireEvents($events);
+
+		if($callback)
+			$callback();
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return CrudModelClonerHelper::clone($result);
+
+		return $result;
 	}
 
 	public function sanitizeParametersAndValues(array $parameters) : array
@@ -89,8 +103,10 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 	{
 		$this->setFieldsetsProvider();
 
+		$validationParamters = $this->getValidationParameters();
+
 		$parameters = $this->getRequest()->validate(
-			$this->getValidationParameters()
+			$validationParamters
 		);
 
 		return $this->sanitizeParametersAndValues($parameters);
@@ -101,32 +117,105 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 	// 	return class_basename($this->getModel()->{$relationshipName}());
 	// }
 
-	private function relateHasOneElements(string $relationshipMethod, $related)
+	private function relateHasOneElements(string $relationshipMethod, $toRelate)
 	{
-		if(! $related)
+		if(! $toRelate)
 			return ;
 
 		$foreign = $this->getModel()->{$relationshipMethod}()->getForeignKeyName();
 
-		$this->getModel()->{$foreign} = $related;
+		$this->getModel()->{$foreign} = $toRelate;
 	}
 
-	private function relateBelongsToManyElements(string $relationshipMethod, $related)
+	private function relateBelongsToManyElements(string $relationshipMethod, $toRelate)
 	{
-		$this->getModel()->{$relationshipMethod}()->sync($related);
+		if((is_string($toRelate))||(is_null($toRelate)))
+			$toRelate = [$toRelate];
+
+		$relation = $this->getModel()->{$relationshipMethod}();
+
+		if($pivotClass = $relation->getPivotClass())
+		{
+			if(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($pivotClass)))
+			{
+				$alreadyRelated = $relation->withPivot(['id'])->get();
+
+				$pivotToRemove = $alreadyRelated->map(function($item) use($toRelate)
+				{
+					if(! in_array($item->getKey(), $toRelate))
+					{
+						return $item->pivot->getKey();
+					}
+				});
+
+				$pivotClass::whereIn($pivotClass::make()->getKeyName(), $pivotToRemove)->update(
+					[
+						'deleted_at' => Carbon::now()
+					]
+				);
+			}
+		}
+
+		if((count($toRelate) == 1)&&($toRelate[0] == null))
+			return ;
+
+		$this->getModel()->{$relationshipMethod}()->sync($toRelate);
 	}
 
-	private function relateBelongsToElements(string $relationshipMethod, $related)
+	private function relateBelongsToElements(string $relationshipMethod, $toRelate)
 	{
-		if((is_array($related))&&(count($related) == 0))
-			$related = null;
+		if((is_array($toRelate))&&(count($toRelate) == 0))
+			$toRelate = null;
 
-		$this->getModel()->{$relationshipMethod}()->associate($related);
+		$this->getModel()->{$relationshipMethod}()->associate($toRelate);
 	}
 
-	private function relateMorphToManyElements(string $relationshipMethod, $related)
+	private function relateMorphToManyElements(string $relationshipMethod, $toRelate)
 	{
-		$this->getModel()->{$relationshipMethod}()->sync($related);
+		$this->getModel()->{$relationshipMethod}()->sync($toRelate);
+	}
+
+	private function getMorphManeElementsToRelate(string $relationshipMethod, $toRelate) : Collection
+	{
+		if((is_null($toRelate))||(count($toRelate) == 0))
+			return collect();
+
+		$placeholderModel = $this->getModel()->{$relationshipMethod}()->make();
+
+		$keyName = $placeholderModel->getKeyName();
+
+		return $placeholderModel->query()->whereIn($keyName, $toRelate)->get();		
+	}
+
+	private function relateMorphManyElements(string $relationshipMethod, $toRelate)
+	{
+		$relation = $this->getModel()->{$relationshipMethod}();
+
+		$currentRelatedModels = $relation->get();
+
+		$toRelatedModels = $this->getMorphManeElementsToRelate($relationshipMethod, $toRelate);
+
+		if(count($toRelatedModels) > 0)
+			$this->getModel()->{$relationshipMethod}()->saveMany($toRelatedModels);
+
+		if(is_null($toRelate))
+			$toRelate = [];
+
+		$toRemoveRelatedModels = $currentRelatedModels->filter(function($value) use($toRelate)
+		{
+			return ! in_array($value->getKey(), $toRelate);
+		});
+
+		$typeField = $relation->getMorphType();
+		$idField = $relation->getForeignKeyName();
+
+		foreach($toRemoveRelatedModels as $toRemoveRelatedModel)
+		{
+			$toRemoveRelatedModel->$typeField = null;
+			$toRemoveRelatedModel->$idField = null;
+
+			$toRemoveRelatedModel->save();
+		}
 	}
 
 	public function associateRelationshipsByType(array $parameters)
@@ -140,6 +229,15 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 			$values = $parameters[$relationshipField['name']];
 
+			$customAssociationMethodName = 'relate' . ucfirst($relationshipField['relation']);
+
+			if(method_exists($this->getModel(), $customAssociationMethodName))
+			{
+				$this->getModel()->$customAssociationMethodName($values);
+
+				continue;
+			}
+
 			// $relationType = $this->getRelationType(
 			// 	$relationshipField['relation']
 			// );
@@ -149,9 +247,9 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 					$relationshipField['relation']
 				);
 
-			$customAssociationMethod = 'relate' . $relationType . 'Elements';
+			$standardAssociationMethod = 'relate' . $relationType . 'Elements';
 
-			$this->$customAssociationMethod($relationshipField['relation'], $values);
+			$this->$standardAssociationMethod($relationshipField['relation'], $values);
 
 			$customEventMethodName = 'relation' . ucfirst($relationshipField['relation']) . 'Set';
 
@@ -204,12 +302,13 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		$parameters = $this->getValidatedRequestParameters();
 
-		$result = $this->bindParameters($parameters);
+		return $this->bindParameters($parameters);
+	}
 
-		if(CrudRequestHelper::isSaveAndCopy($request))
-			return CrudModelClonerHelper::clone($result);
-
-		return $result;
+	public function fireEvents(array $events)
+	{
+		foreach($events as $event)
+			$event::dispatch($this->getModel());
 	}
 
 }

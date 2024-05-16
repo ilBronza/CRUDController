@@ -21,6 +21,11 @@ return [
 	'youOwnThisUri' => 'Hai la precedenza su questa finestra',
 	'aDifferentUserIsWatchingThisPage' => 'Un altro utente ha la precedenza su questa finestra',
 	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'L\'altra finestra è stata chiusa, questa ha guadagnato la precedenza',
-	'sortElements' => 'Riordina elementi'
+	'sortElements' => 'Riordina elementi',
+
+
+	'cache' => 'Gestione cache',
+	'clearCache' => 'Pulisci cache',
+	'serverClearCache' => 'Pulisci server Cache'
 ];
 

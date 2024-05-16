@@ -22,12 +22,17 @@ class CrudModelEditor extends CrudModelFormHelper
 	{
 		$extraTablerelatedFields = $this->getFieldsetsProvider()->getExtraTableRelationshipsFields();
 
-        foreach($extraTablerelatedFields as $relation => $fieldParameters)
-        {
-            $elements = $this->getModel()->{$fieldParameters['relation']}()->allRelatedIds()->toArray();
+		foreach($extraTablerelatedFields as $relation => $fieldParameters)
+		{
+			// $elements = $this->getModel()->{$fieldParameters['relation']}()->allRelatedIds()->toArray();
 
-            $this->getModel()->{$relation} = $elements;
-        }
+			$key = $this->getModel()->{$fieldParameters['relation']}()->make()->getKeyName();
+			$table = $this->getModel()->{$fieldParameters['relation']}()->make()->getTable();
+
+			$elements = $this->getModel()->{$fieldParameters['relation']}()->select($table . '.' . $key)->pluck($key)->toArray();
+
+			$this->getModel()->{$relation} = $elements;
+		}
 	}
 
 	public function getCardClasses() : array

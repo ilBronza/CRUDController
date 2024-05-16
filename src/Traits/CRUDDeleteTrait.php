@@ -23,8 +23,8 @@ trait CRUDDeleteTrait
 		if($url = $this->getReturnUrl())
 			return $url;
 
-		if($url = $this->getAfterDeleteRoute())
-			return $url;
+		// if($url = $this->getAfterDeleteRoute())
+		// 	return $url;
 
 		if(in_array('index', $this->allowedMethods))
 			return $this->getRouteUrlByType('index');

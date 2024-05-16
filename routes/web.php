@@ -10,6 +10,17 @@ Route::get('cache-clear', function()
 	})
 ->name('cache.clear');
 
+Route::get('/server-cache-clear', function() {
+
+    $exitCode = Artisan::call('cache:clear');
+    echo $exitCode;
+
+    $exitCode = Artisan::call('config:cache');
+    echo $exitCode;
+
+    return ;
+})->name('servercache.clear');
+
 Route::group([
 		'middleware' => ['web'],
 		'prefix' => 'concurrent-uri',

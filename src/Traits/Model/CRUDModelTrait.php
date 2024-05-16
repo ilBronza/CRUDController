@@ -112,7 +112,7 @@ trait CRUDModelTrait
         return static::where('name', $name)->first();
     }
 
-    public function getName()
+    public function getName() : ? string
     {
         $nameField = $this->getNameFieldName();
 

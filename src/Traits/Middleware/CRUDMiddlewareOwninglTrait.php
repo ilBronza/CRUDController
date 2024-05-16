@@ -2,9 +2,9 @@
 
 namespace IlBronza\CRUD\Traits\Middleware;
 
-use App\Permission;
-use Closure;
 use Auth;
+use Closure;
+use Illuminate\Database\Eloquent\Model;
 
 trait CRUDMiddlewareOwninglTrait
 {
@@ -17,7 +17,7 @@ trait CRUDMiddlewareOwninglTrait
     public function checkSpecificPermission(string $modelVariableName, string $permission)
     {
         $specificPermissionName = $permission . ' ' . $modelVariableName;
-        $permission = Permission::where('name', $specificPermissionName)->first();
+        $permission = config('permission.models.permission')::where('name', $specificPermissionName)->first();
 
         if(($permission)&&(! $this->user->can($permission)))
             abort(403, "user doesnt have the rights to {$permission} elements like {$modelVariableName}");
@@ -49,9 +49,6 @@ trait CRUDMiddlewareOwninglTrait
         if($this->user->hasRole('administrator'))
             return $next($request);
 
-        if(! $this->user->can($permissionName))
-            abort(403, "You don't have permssions to {$permissionName} this element");
-
         foreach($args as $modelClass)
         {
             $modelVariableName = $this->getModelVariableName($modelClass);
@@ -64,9 +61,12 @@ trait CRUDMiddlewareOwninglTrait
             if($this->checkSpecificOwningMethod($element, $modelClass, $modelVariableName, $permissionName))
                 continue;
 
-            if($element->user_id != $this->user->id)
+            if(($element instanceof Model)&&($element->user_id != $this->user->id))
                 abort(403, "You don't own this element");
         }
+
+        if(($element instanceof Model)&&(! $this->user->can($permissionName)))
+            abort(403, "You don't have permssions to {$permissionName} this element");
 
         return $next($request);
 

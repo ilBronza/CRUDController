@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
@@ -64,6 +65,9 @@ trait CRUDUpdateTrait
 
 		if(in_array('show', $this->allowedMethods))
 			return $this->getRouteUrlByType('show');
+
+		if(url()->previous() == $this->getModel()->getEditUrl())
+			return $this->getModel()->getIndexUrl();
 
 		return url()->previous();
 	}
@@ -212,6 +216,16 @@ trait CRUDUpdateTrait
 		);
 	}
 
+	public function getUpdateCallback() : ? callable
+	{
+		return null;
+	}
+
+	public function getUpdateEvents() : array
+	{
+		return $this->updateEvents ?? [];
+	}
+
 	/**
 	 * validate request and update model
 	 *
@@ -233,10 +247,15 @@ trait CRUDUpdateTrait
 		$this->modelInstance = CrudModelUpdater::saveByRequest(
 			$this->getModel(),
 			$this->getUpdateParametersClass(),
-			$request
+			$request,
+			$this->getUpdateEvents(),
+			$this->getUpdateCallback()
 		);
 
 		$this->sendUpdateSuccessMessage();
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return redirect()->to($this->modelInstance->getEditUrl());
 
 		return redirect()->to(
 			$this->getAfterUpdatedRedirectUrl()

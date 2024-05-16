@@ -109,6 +109,6 @@ class CrudModelRenderer extends CrudModelFormHelper
 
 	public function getIntro() : string
 	{
-		return $this->getTranslationByKey('cardIntroShow');
+		return $this->getTranslationByKey('cardIntroShow' . get_class($this->getModel()));
 	}
 }

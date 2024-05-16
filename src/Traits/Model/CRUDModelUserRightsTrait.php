@@ -33,6 +33,17 @@ trait CRUDModelUserRightsTrait
         return $this->user_id == $user->getKey();
     }
 
+    public function userCanDelete(User $user = null)
+    {
+        if(is_null($user))
+            $user = Auth::user();
+
+        if(! is_null($result = $this->getBaseUserRightsResult($user)))
+            return $result;
+
+        return $this->user_id == $user->getKey();
+    }
+
     static function userCanCreate(User $user = null)
     {
         if(! is_null($result = static::getBaseUserRightsResult($user)))
