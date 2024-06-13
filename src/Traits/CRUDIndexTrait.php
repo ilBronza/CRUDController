@@ -6,6 +6,7 @@ use Auth;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 // use \newdatatable;
 
@@ -142,7 +143,15 @@ trait CRUDIndexTrait
 
 	private function addIndexButtonsToTable()
 	{
-		$this->manageCreateButton();
+		try
+		{
+			$this->manageCreateButton();			
+		}
+		catch(\Exception $e)
+		{
+			Log::critical('Usa avoid create button per evitare l\'eccezione: ' . $e->getMessage());
+		}
+		
 		$this->manageReorderButton();
 
 		$this->addIndexButtons();

@@ -2,7 +2,9 @@
 <script src="/js/ilbronza.crud.nestable.min.js"></script>
 
 <div class="uk-card uk-card-default uk-card-default">
-    <div class="uk-card-header">@lang('crud::sortElements')</div>
+    <div class="uk-card-header">
+        @lang('crud::crud.sortElements')
+    </div>
     <div class="uk-card-header">
         <menu id="nestable-menu">
             <button class="uk-button uk-button-primary" data-action="expand-all">@lang('crud::nestable.expandAll')</button>
@@ -179,7 +181,7 @@ $(document).ready(function()
         //             parent_id: parent_id,
         //             siblings: JSON.stringify(siblings),
         //         }, function (data) {
-        //             window.addSuccessNotification(id+ "{{ __('crud::nestableElementMovedTo') }} " + parentText);
+        //             window.addSuccessNotification(id+ "{{ __('crud::crud.nestableElementMovedTo') }} " + parentText);
         //         });
     
 

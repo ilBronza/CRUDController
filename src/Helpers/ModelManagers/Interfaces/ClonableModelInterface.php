@@ -13,6 +13,14 @@ interface ClonableModelInterface
 	 **/
 	public function getClonableRelations() : array;
 
+	/**
+	 * return the url to clone the model
+	 * 
+	 * @return string
+	 * 
+	 **/
+	public function getCloneUrl() : string;
+
 
 	/**
 	 * return the list of the fields to be avoided

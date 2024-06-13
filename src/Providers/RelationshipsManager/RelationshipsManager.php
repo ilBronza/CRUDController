@@ -88,7 +88,13 @@ abstract class RelationshipsManager
 	{
 		$relationshipsNames = $this->getRelationshipsMethodsArray();
 
-		$this->model->loadMissing($relationshipsNames);
+		foreach($relationshipsNames as $relationshipsName)
+		{
+
+			// $this->model->{$relationshipsName}()->get();
+
+			$this->model->$relationshipsName;
+		}
 	}
 
 	public function getModel()

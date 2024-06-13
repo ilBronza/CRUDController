@@ -98,7 +98,17 @@ trait CRUDShowRelationshipsTrait
 		if($this->hasDisabledRelationshipsManager())
 			return null;
 
-		return $this->relationshipsManagerClass ?? null;
+		if($this->relationshipsManagerClass ?? null)
+			return $this->relationshipsManagerClass;
+
+		try
+		{
+			return config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.relationshipsManagerClasses.{$this->getAction()}");			
+		}
+		catch(\Exception $e)
+		{
+			return null;
+		}
 	}
 
 	private function shareRelationships()

@@ -2,15 +2,32 @@
 
 namespace IlBronza\CRUD\Http\Controllers;
 
-use IlBronza\CRUD\CRUD;
-use Illuminate\Database\Eloquent\Model;
-
-class BasePackageController extends CRUD
+trait BasePackageTrait
 {
+    public function calculateActionFromName()
+    {
+        $classname = class_basename($this);
+
+        if(strpos($classname, "Show"))
+            return 'show';
+
+        if(strpos($classname, "Edit"))
+            return 'edit';
+
+        if(strpos($classname, "Update"))
+            return 'edit';
+
+        return 'create';
+    }
+
+    public function getAction()
+    {
+        return $this->action ?? $this->calculateActionFromName();
+    }
+
     public function getBaseConfigName() : string
     {
         return static::$packageConfigPrefix;
-        // return static::$configFileName;
     }
 
     public function getModelInstance(string $id) : Model
@@ -21,7 +38,6 @@ class BasePackageController extends CRUD
     public function getPackageConfigName()
     {
         return static::$packageConfigPrefix;
-        // return static::$configFileName;
     }
 
     static function getModelConfigPrefix()
@@ -37,5 +53,10 @@ class BasePackageController extends CRUD
     public function setModelClass()
     {
         $this->modelClass = config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.class");
-    }	
+    }
+
+    public function getGenericParametersFile() : ? string
+    {
+        return config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.parametersFiles.{$this->getAction()}");
+    }
 }

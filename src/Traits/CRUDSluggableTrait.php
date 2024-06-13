@@ -30,13 +30,15 @@ trait CRUDSluggableTrait
 
 	public static function bootCRUDSluggableTrait()
 	{
-		static::saving(function ($model) {
+		static::saving(function ($model)
+		{
 			$slugField = static::getSlugField();
 
 			if(! $slug = $model->{$slugField})
+			{
 				$slug = $model->getNameForSlug();
-
-			$slug = Str::slug($slug);
+				$slug = Str::slug($slug);
+			}
 
 			$existingsSlugs = DB::table((new static)->getTable())
 					->select($slugField)
