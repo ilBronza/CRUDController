@@ -18,20 +18,20 @@ class CRUDMenuUtilities
 
         $cacheButton = $menu->createButton([
             'name' => 'cacheButton',
-            'icon' => 'user-gear',
+            'icon' => 'rotate-left',
             'text' => 'crud::crud.cache',
         ]);
 
         $cacheButton->addChild($menu->createButton([
             'name' => 'cacheClear',
-            'icon' => 'user-gear',
+            'icon' => 'rotate-left',
             'text' => 'crud::crud.clearCache',
             'href' => route('cache.clear')
         ]));
 
         $cacheButton->addChild($menu->createButton([
             'name' => 'serverCacheClear',
-            'icon' => 'user-gear',
+            'icon' => 'rotate-left',
             'text' => 'crud::crud.serverClearCache',
             'href' => route('servercache.clear')
         ]));

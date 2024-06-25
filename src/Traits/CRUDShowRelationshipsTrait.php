@@ -103,7 +103,7 @@ trait CRUDShowRelationshipsTrait
 
 		try
 		{
-			return config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.relationshipsManagerClasses.{$this->getAction()}");			
+			return config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.relationshipsManagerClasses.{$this->getAction()}");
 		}
 		catch(\Exception $e)
 		{

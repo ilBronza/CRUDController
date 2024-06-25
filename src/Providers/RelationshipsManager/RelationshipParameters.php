@@ -40,6 +40,8 @@ class RelationshipParameters
 		'HasMany' => 'table',
 		'HasManyThrough' => 'table',
 		'MorphMany' => 'table',
+		'HasOne' => 'view',
+		'MorphOne' => 'view',
 		'MorphTo' => 'view',
 		'BelongsTo' => 'view'
 	];

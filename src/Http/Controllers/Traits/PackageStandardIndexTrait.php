@@ -24,8 +24,11 @@ trait PackageStandardIndexTrait
 
     public function getIndexElements()
     {
-        return $this->getModelClass()::all();
+        $query = $this->getModelClass()::query();
+
+        if($with = $this->getIndexElementsRelationsArray())
+            $query->with($with);
+
+        return $query->get();
     }
-
-
 }

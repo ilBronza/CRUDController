@@ -86,15 +86,16 @@ abstract class RelationshipsManager
 
 	private function loadModelRelatedElements()
 	{
-		$relationshipsNames = $this->getRelationshipsMethodsArray();
+		return ;
+		// $relationshipsNames = $this->getRelationshipsMethodsArray();
 
-		foreach($relationshipsNames as $relationshipsName)
-		{
+		// foreach($relationshipsNames as $relationshipsName)
+		// {
 
-			// $this->model->{$relationshipsName}()->get();
+		// 	// $this->model->{$relationshipsName}()->get();
 
-			$this->model->$relationshipsName;
-		}
+		// 	$this->model->$relationshipsName;
+		// }
 	}
 
 	public function getModel()

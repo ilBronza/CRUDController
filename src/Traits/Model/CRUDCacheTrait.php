@@ -116,14 +116,19 @@ trait CRUDCacheTrait
         );
     }
 
-    static function findCachedField(string $fieldname, $value)
+    static function findCachedField(string $fieldname, $value, array $with = [])
     {
         return cache()->remember(
-            static::staticCacheKey($fieldname . $value),
+            static::staticCacheKey($fieldname . $value . Str::slug(json_encode($with))),
             3600,
-            function() use($fieldname, $value)
+            function() use($fieldname, $value, $with)
             {
-                return static::where($fieldname, $value)->first();
+                $query = static::where($fieldname, $value);
+
+                if($with)
+                    $query->with($with);
+
+                return $query->first();
             }
         );
     }

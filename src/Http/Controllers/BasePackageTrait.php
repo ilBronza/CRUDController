@@ -40,9 +40,12 @@ trait BasePackageTrait
         return static::$packageConfigPrefix;
     }
 
-    static function getModelConfigPrefix()
+    public function getModelConfigPrefix()
     {
-        return static::$modelConfigPrefix;
+        if(isset(static::$modelConfigPrefix))
+            return static::$modelConfigPrefix;
+
+        return $this->configModelClassName;
     }
 
     public function getRouteBaseNamePrefix() : ? string

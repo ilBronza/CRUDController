@@ -56,7 +56,6 @@ class CRUD extends Controller
 
 	//general parameters
 	public $modelClass;
-	public $allowedMethods;
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 

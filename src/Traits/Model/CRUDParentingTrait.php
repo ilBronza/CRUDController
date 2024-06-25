@@ -86,7 +86,14 @@ trait CRUDParentingTrait
 
     static public function getRoots() : Collection
     {
-        return static::root()->get();
+        return cache()->remember(
+            static::staticCacheKey('getRoots'),
+            3600,
+            function()
+            {
+                return static::root()->get();                
+            }
+        );
     }
 
     public function getRootAncestor() : ? static
@@ -142,6 +149,24 @@ trait CRUDParentingTrait
             $_query->with($relatedTypes);
 
             $_query->getQuery()->withRecursiveChildrenRelated($relatedTypes);
+        }]);
+    }
+
+    public function scopeWithRecursiveParentRelated($query, array $relatedTypes)
+    {
+        $query->with(['recursiveParents' => function($_query) use ($relatedTypes)
+        {
+            $_query->with($relatedTypes);
+
+            $_query->getQuery()->withRecursiveParentRelated($relatedTypes);
+        }]);
+    }
+
+    public function scopeWithRecursiveParents($query)
+    {
+        $query->with(['parent' => function($_query)
+        {
+            $_query->getQuery()->withRecursiveParents();
         }]);
     }
 
