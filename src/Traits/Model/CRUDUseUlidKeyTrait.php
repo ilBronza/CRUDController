@@ -24,9 +24,4 @@ trait CRUDUseUlidKeyTrait
             }
         });
     }
-
-    public function initializeUuidForKey()
-    {
-        $this->keyType = 'string';
-    }
 }

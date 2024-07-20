@@ -22,6 +22,11 @@ trait CRUDParentingTrait
         return static::$parentKeyName ?? 'parent_id';
     }
 
+    public function getParentId() : ? string
+    {
+        return $this->{$this->getParentKeyName()};
+    }
+
     public function scopeRoot($query)
     {
         return $query->whereNull(static::getParentKeyName());
@@ -124,6 +129,17 @@ trait CRUDParentingTrait
 
                 return $this;
             });
+    }
+
+    public function brothers()
+    {
+        return $this->hasMany(
+            static::class,
+            $this->getParentKeyName(),
+            $this->getParentKeyName()
+        )->where(
+            $this->getKeyName(), '!=', $this->getKey()
+        );
     }
 
     static function getFullTreeWithRelatedElements(string $key, array $related) : static

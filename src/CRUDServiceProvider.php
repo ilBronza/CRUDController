@@ -2,11 +2,15 @@
 
 namespace IlBronza\CRUD;
 
+use IlBronza\CRUD\CRUDMenuUtilities;
+use IlBronza\CRUD\CRUDRoutingHelper;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
+use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
+use IlBronza\CRUD\Middleware\CRUDCheckForcedUrlMiddleware;
 use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
@@ -27,13 +31,16 @@ class CRUDServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(Router $router)
     {
-        $router = $this->app->make(Router::class);
+        // $router = $this->app->make(Router::class);
 
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
+
+
+        $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
 
         if(config('crud.useConcurrentRequestsAlert'))
             $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);
@@ -148,8 +155,8 @@ class CRUDServiceProvider extends ServiceProvider
             return new CRUDMenuUtilities;
         });
 
-        $this->app->singleton('crud', function ($app) {
-            return new CRUD;
+        $this->app->singleton('crudRouting', function ($app) {
+            return new CRUDRoutingHelper;
         });
 
         $this->app->singleton('MetaManager', function ($app) {

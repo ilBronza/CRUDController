@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
 use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParameters;
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 

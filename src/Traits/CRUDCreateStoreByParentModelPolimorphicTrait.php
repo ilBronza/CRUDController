@@ -16,14 +16,16 @@ trait CRUDCreateStoreByParentModelPolimorphicTrait
         $this->polimorphicParentModel = $this->relatedModel::findOrFail($this->relatedKey);
     }
 
-    public function getDatabaseFields() : array
-    {
-    	return Schema::getColumnListing($this->getModelClass()::make()->getTable());
-    }
+    // public function getDatabaseFields() : array
+    // {
+    // 	return Schema::getColumnListing($this->getModelClass()::make()->getTable());
+    // }
 
     public function getModelPolimorphicTypeField() : string
     {
-        $this->databaseFields = $this->getDatabaseFields();
+        $this->databaseFields = ModelSchemaHelper::getModelDatabaseFieldsByClass(
+            $this->getModelClass()
+        );
 
         $result = [];
 
