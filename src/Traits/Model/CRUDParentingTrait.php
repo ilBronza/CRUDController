@@ -142,6 +142,11 @@ trait CRUDParentingTrait
         );
     }
 
+    public function getSortingIndex() : ? int
+    {
+        return $this->sorting_index;
+    }
+
     static function getFullTreeWithRelatedElements(string $key, array $related) : static
     {
         $baseElement = static::findOrFail($key);
