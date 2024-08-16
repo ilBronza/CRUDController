@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 
 trait CRUDUploadFileTrait
 {
-	public function hasFileUploadRequest(Request $request)
-	{
-		return $request->input('ib-fileupload', false);		
-	}
+	//TODO deprecated
+	//sostituire con CrudRequestHelper::isFileUploadRequest($request);
+//	public function hasFileUploadRequest(Request $request)
+//	{
+//
+//		return $request->input('ib-fileupload', false);
+//	}
 
-	public function _uploadFile(Request $request, string $type = 'update')
+	public function _uploadFile(Request $request, string $type = 'update', string $attributeName = null)
 	{
 		$request->validate([
 			'file' => 'required|file',
@@ -60,7 +63,10 @@ trait CRUDUploadFileTrait
 
 		if(! $field->isMultiple())
 		{
-			$this->getModel()->{$fieldName} = $file->getKey();
+			if(! $attributeName)
+				$attributeName = $fieldName;
+
+			$this->getModel()->{$attributeName} = $file->getKey();
 			$this->getModel()->save();			
 		}
 

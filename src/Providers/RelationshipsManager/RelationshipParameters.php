@@ -320,7 +320,8 @@ class RelationshipParameters
 	 **/
 	public function getElement() : Model
 	{
-		$elements = $this->getElements();
+		if(! $elements = $this->getElements())
+			dd([$this, 'non trovl elementi RelationshipParameters 324']);
 
 		if(is_countable($elements))
 			throw new \Exception('problema con numero di associazioni ad un belongsTo');

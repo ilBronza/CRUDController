@@ -238,10 +238,12 @@ trait CRUDUpdateTrait
 
 		$this->checkIfUserCanUpdate();
 
-		if($this->hasEditorUpdateRequest($request))
+//		if($this->hasEditorUpdateRequest($request))
+		if(CrudRequestHelper::isEditorUpdateRequest($request))
 			return $this->_updateEditor($request);
 
-		if($this->hasFileUploadRequest($request))
+//		if($this->hasFileUploadRequest($request))
+		if(CrudRequestHelper::isFileUploadRequest($request))
 			return $this->_uploadFile($request, 'update');
 
 		$this->modelInstance = CrudModelUpdater::saveByRequest(

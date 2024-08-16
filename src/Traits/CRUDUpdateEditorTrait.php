@@ -182,10 +182,12 @@ trait CRUDUpdateEditorTrait
 		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
-	public function hasEditorUpdateRequest(Request $request) : bool
-	{
-		return $request->input('ib-editor', false);
-	}
+//	public function hasEditorUpdateRequest(Request $request) : bool
+//	{
+//		replaced by hasEditorUpdateRequest in CRUDRequestHelper
+//
+	//return $request->input('ib-editor', false);
+//	}
 
 	/**
 	 * validate request and update model

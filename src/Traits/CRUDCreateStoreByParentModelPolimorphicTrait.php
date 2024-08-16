@@ -2,18 +2,36 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\AccountManager\Models\User;
+use IlBronza\CRUD\Helpers\ModelHelpers\ModelSchemaHelper;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 
 trait CRUDCreateStoreByParentModelPolimorphicTrait
 {
+	public function hasPolimorphicRelationship() : bool
+	{
+		if(isset($this->hasPolimorphicRelationship))
+			return $this->hasPolimorphicRelationship;
+
+		return false;
+	}
     public function hasCreatingPolimorphicRelationship() : bool
     {
+		if($this->hasPolimorphicRelationship())
+			return true;
+
         return strpos($this->relatedModel, "\\") !== false;
     }
 
+	public function getRelatedModelFullQualifiedClassName() : string
+	{
+		return Relation::getMorphedModel($this->relatedModel);
+	}
+
     public function setPolimorphicParentModel()
     {
-        $this->polimorphicParentModel = $this->relatedModel::findOrFail($this->relatedKey);
+        $this->polimorphicParentModel = $this->getRelatedModelFullQualifiedClassName()::findOrFail($this->relatedKey);
     }
 
     // public function getDatabaseFields() : array

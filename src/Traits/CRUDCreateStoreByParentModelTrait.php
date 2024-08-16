@@ -40,7 +40,7 @@ trait CRUDCreateStoreByParentModelTrait
         if($this->hasCreatingPolimorphicRelationship())
             return $this->getModelDefaultPolimorphicParameters();
 
-        abort('GESTISCI QUESTO DAI');
+        abort(500, 'GESTISCI QUESTO DAI');
 
         // $result = [
         //     'registered_at' => Carbon::now()

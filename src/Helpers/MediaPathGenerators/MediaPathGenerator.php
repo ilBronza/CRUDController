@@ -1,6 +1,6 @@
 <?php
 
-namespace IlBronza\CRUD\Helpers;
+namespace IlBronza\CRUD\Helpers\MediaPathGenerators;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\DefaultPathGenerator;
