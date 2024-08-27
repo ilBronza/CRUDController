@@ -20,4 +20,9 @@ class CrudRequestHelper
 	{
 		return $request->input('ib-editor', false);
 	}
+
+	static function isEditorReadRequest(Request $request) : bool
+	{
+		return $request->input('ib-editor-read', false);
+	}
 }

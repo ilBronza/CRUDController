@@ -27,6 +27,7 @@ trait CRUDUseUuidTrait
 
     public function initializeUuidForKey()
     {
+		//TODO questo non viene più invocato controllare
         $this->keyType = 'string';
     }
 }

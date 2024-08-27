@@ -95,6 +95,7 @@ trait CRUDUpdateEditorTrait
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;
+		$updateParameters['field'] = $request->field;
 		$updateParameters['toggle'] = true;
 		$updateParameters['model-id'] = $this->modelInstance->getKey();
 
@@ -109,6 +110,7 @@ trait CRUDUpdateEditorTrait
 
 		$updateParameters['success'] = true;
 		$updateParameters['update-editor'] = true;
+		$updateParameters['field'] = $request->field;
 		$updateParameters['ibaction'] = true;
 
 		return $this->returnUpdateParameters($request, $updateParameters);
@@ -161,6 +163,7 @@ trait CRUDUpdateEditorTrait
 		$updateParameters['success'] = true;
 		$updateParameters[$request->field] = $request->value;
 		$updateParameters['update-editor'] = true;
+		$updateParameters['field'] = $request->field;
 		$updateParameters['model-id'] = $this->getModel()->getKey();
 		$updateParameters['value'] = $this->getModel()->{$request->field};
 
@@ -204,5 +207,19 @@ trait CRUDUpdateEditorTrait
 			return $this->manageAction($request);
 
 		return $this->manageUpdateGeneric($request);
+	}
+
+	public function returnFieldFromEditor(Request $request)
+	{
+		$field = $request->field;
+
+		$updateParameters['success'] = true;
+		$updateParameters[$request->field] = $this->getModel()->$field;
+		$updateParameters['value'] = $this->getModel()->$field;
+		$updateParameters['fetch-field'] = true;
+		$updateParameters['field'] = $request->field;
+		$updateParameters['model-id'] = $this->getModel()->getKey();
+
+		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 }

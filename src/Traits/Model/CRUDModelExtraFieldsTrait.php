@@ -8,11 +8,35 @@ use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\Log;
+
+use Illuminate\Support\Str;
+
+use function array_filter;
+use function class_basename;
+use function dd;
+use function get_class;
+use function stripos;
+use function strpos;
 
 trait CRUDModelExtraFieldsTrait
 {
-    public function update(array $attributes = [], array $options = [])
+	public function getExtraFieldsCasts() : array
+	{
+		return array_filter($this->getCasts(), function ($item)
+		{
+			if (strpos($item, 'ExtraField') !== false)
+				return true;
+
+			if (strpos($item, 'CastFieldPrice') !== false)
+				return true;
+
+			return false;
+		});
+	}
+
+	public function update(array $attributes = [], array $options = [])
     {
         if (! $this->exists) {
             return false;
@@ -28,6 +52,18 @@ trait CRUDModelExtraFieldsTrait
 
 	public function extraFields()
 	{
+		if($this instanceof Pivot)
+		{
+			$foreign = Str::snake(
+					class_basename($this)
+				) . '_id';
+
+			return $this->hasOne(
+				$this->getExtraFieldsClass(),
+				$foreign
+			);
+		}
+
 		return $this->hasOne(
 			$this->getExtraFieldsClass()
 		);
@@ -35,8 +71,15 @@ trait CRUDModelExtraFieldsTrait
 
 	public function getProjectExtraFieldsModel()
 	{
-		if($extraFields = $this->extraFields)
-			return $extraFields;
+		try
+		{
+			if($extraFields = $this->extraFields)
+				return $extraFields;
+		}
+		catch(\Exception $e)
+		{
+			dd($this->extraFields);
+		}
 
 		if(! $this->exists)
 			throw new \Exception('Extra fields creato prima della persistenza del model base ' . class_basename($this) . '. SALVA il modello base per prima cosa');
@@ -104,9 +147,8 @@ trait CRUDModelExtraFieldsTrait
 
 			$model->updated_at = Carbon::now();
 
-			foreach($model->casts as $attribute => $casting)
-				if(strpos($casting, "ExtraField") !== null)
-					unset($model->$attribute);
+			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
+				unset($model->$attribute);
 		});
 
 		static::saved(function ($model) {
@@ -117,10 +159,18 @@ trait CRUDModelExtraFieldsTrait
 				$model->extraFields;				
 			}
 
+			return ;
+
 			$relationsToSave = ['extraFields'];
 
-			foreach($model->casts as $attribute => $casting)
+			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
 			{
+				if (strpos($casting, 'CastFieldPrice') !== false)
+				{
+					if(! $model->relationLoaded($attribute))
+						continue;
+				}
+
 				$pieces = explode(":", $casting);
 
 				if(! ($castingParameters = ($pieces[1] ?? null)))

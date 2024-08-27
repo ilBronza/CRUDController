@@ -242,7 +242,10 @@ trait CRUDUpdateTrait
 		if(CrudRequestHelper::isEditorUpdateRequest($request))
 			return $this->_updateEditor($request);
 
-//		if($this->hasFileUploadRequest($request))
+		if(CrudRequestHelper::isEditorReadRequest($request))
+			return $this->returnFieldFromEditor($request);
+
+		//		if($this->hasFileUploadRequest($request))
 		if(CrudRequestHelper::isFileUploadRequest($request))
 			return $this->_uploadFile($request, 'update');
 

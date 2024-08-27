@@ -8,6 +8,8 @@ use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 
+use function json_encode;
+
 class RelationshipParameters
 {
 	use RelationshipParametersGettersTrait;
@@ -23,6 +25,7 @@ class RelationshipParameters
 	public $translatedTitle;
 	public $buttonsMethods = [];
 	public $elementGetterMethod;
+	public ? string $fieldsGroupsParametersFile;
 
 	//relation-specific custom view name
 	public $view;
@@ -318,10 +321,13 @@ class RelationshipParameters
 	 *
 	 * @return Model
 	 **/
-	public function getElement() : Model
+	public function getElement() : ? Model
 	{
 		if(! $elements = $this->getElements())
-			dd([$this, 'non trovl elementi RelationshipParameters 324']);
+		{
+			return null;
+//			throw new \Exception(json_encode(['non trovl elementi RelationshipParameters 324']));
+		}
 
 		if(is_countable($elements))
 			throw new \Exception('problema con numero di associazioni ad un belongsTo');
@@ -378,6 +384,15 @@ class RelationshipParameters
 	{
 		if($this->fieldsGroups ?? false)
 			return $this->fieldsGroups;
+
+		if($this->fieldsGroupsParametersFile ?? false)
+		{
+			$helper = new $this->fieldsGroupsParametersFile();
+
+			return [
+				'base' => $helper->getFieldsGroup()
+			];
+		}
 
 		$fieldsGroupsNames = $this->getFieldsGroupsNames();
 
@@ -502,13 +517,16 @@ class RelationshipParameters
 	 *
 	 * @return string
 	 **/
-	public function getView() : string
+	public function getView() : ? string
 	{
 		if($this->currentView)
 			return $this->currentView;
 
 		if($this->hasOwnView())
 			return $this->view;
+
+		if(! $this->getElement())
+			return null;
 
 		$modelFolderName = $this->getElement()->getRouteBasename();
 		$view = $modelFolderName . '._teaser';
@@ -524,7 +542,7 @@ class RelationshipParameters
 	 **/
 	public function setCurrentView()
 	{
-		$element = $this->getElement();
+//		$element = $this->getElement()
 		$this->currentView = $this->getView();
 	}
 
@@ -550,6 +568,9 @@ class RelationshipParameters
 	{
 		if($this->controllerHasTeaserMethod())
 			return $this->renderControllerTeaser();
+
+		if(! $this->getElement())
+			return view('crud::utilities.messages._modelMissingOrNotSet');
 
 		return app($this->getController())->teaserMode()->_show(
 			$this->getElement()

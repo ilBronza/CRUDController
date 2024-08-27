@@ -6,8 +6,13 @@ use IlBronza\CRUD\Helpers\ModelManagers\CrudModelEditor;
 use IlBronza\Form\Helpers\FieldsetsProvider\EditFieldsetsProvider;
 use Illuminate\Http\Request;
 
+use function config;
+use function method_exists;
+use function request;
+use function view;
 trait CRUDEditTrait
 {
+	use CRUDRelationshipsManagerTrait;
 
 	//edit parameters
 	public $editView;
@@ -98,6 +103,25 @@ trait CRUDEditTrait
 		$this->loadEditExtraViews();
     }
 
+	public function shareModels()
+	{
+		//TODO accorpare sta roba presente anche in show in un unico helper (creare show helper e edit helper e che sia finita)
+		view()->share('modelInstance', $this->getModel());
+
+		if(isset($this->parentModel))
+			view()->share('parentModelInstance', $this->parentModel);
+	}
+
+	public function shareExtraParameters()
+	{
+		//TODO accorpare sta roba presente anche in show in un unico helper (creare show helper e edit helper e che sia finita)
+		$this->shareModels();
+
+		if(method_exists($this, 'getRelationshipsManagerClass'))
+			if($this->getRelationshipsManagerClass())
+				return $this->useRelationshipsManager();
+	}
+
 	/**
 	 * get modelInstance edit form
 	 *
@@ -110,6 +134,16 @@ trait CRUDEditTrait
 		);
 
 		$this->checkIfUserCanUpdate();
+
+		/**
+		 * creare qua un trait per gestire i parametri extra in generale
+		 * e usare le extraViews positions in modo univoco dappertutto
+		 */
+		$editParameters = $this->shareExtraParameters();
+
+		if(request()->ajax())
+			return $editParameters;
+
 		$this->manageReturnBack();
 
 		$this->modelFormHelper = CrudModelEditor::buildForm(

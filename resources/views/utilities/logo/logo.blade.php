@@ -1,0 +1,1 @@
+{!! $modelInstance->getLogoImageFetcher()->render() !!}

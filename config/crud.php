@@ -17,6 +17,7 @@ return [
     'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000),
 
     'nestableLeadingId' => 'nest',
+	'missingImageUrl' => '/img/no_user.png',
 
     'meta' => [
     	'mandatoryNames' => [
