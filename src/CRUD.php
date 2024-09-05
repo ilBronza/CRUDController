@@ -19,9 +19,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
+use function config;
+
 class CRUD extends Controller
 {
 	use ExtraViewsTrait;
+
+	public $relationshipsElements;
+	public $relationshipsTableNames;
+	public ? Model $modelInstance;
+
+	public ? bool $updateEditor = null;
+	public $modelFormHelper;
 
 	static $availableExtraViewsPositions = [
 		'outherTop',
@@ -289,6 +298,14 @@ class CRUD extends Controller
 		return $this->getModelFormHelper()->getForm()->addFetcher($position, $fetcher);
 	}
 
+	public function hasUpdateEditor()
+	{
+		if(is_null($this->updateEditor))
+			return config('form.updateEditor', false);
+
+		return $this->updateEditor;
+	}
+
 	public function provideFormDefaultSettings() : array
 	{
 		$defaults = [];
@@ -302,6 +319,8 @@ class CRUD extends Controller
 		$defaults['saveAndNew'] = $this->hasSaveAndNew();
 		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
 		$defaults['saveAndCopy'] = $this->hasSaveAndCopy();
+
+		$defaults['updateEditor'] = $this->hasUpdateEditor();
 
 		return $this->overrideWithCustomSettingsToDefaults($defaults);
 	}

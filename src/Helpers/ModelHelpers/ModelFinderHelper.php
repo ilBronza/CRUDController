@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class ModelFinderHelper
 {
-	public static function getByClassKey(string $modelClass, string $key) : ? Model
+	public static function getByClassKey(string $modelClass, string $key) : ?Model
 	{
 		$classname = Relation::getMorphedModel($modelClass);
 
-		return $classname::getProjectClassname()::find($key);
+		return $classname::getProjectClassName()::find($key);
 	}
 
-	public static function getByClassSlug(string $modelClass, string $slug) : ? Model
+	public static function getByClassSlug(string $modelClass, string $slug) : ?Model
 	{
 		$classname = Relation::getMorphedModel($modelClass);
 
-		return $classname::getProjectClassname()::where('slug', $slug)->first();
+		return $classname::getProjectClassName()::where('slug', $slug)->first();
 	}
 }

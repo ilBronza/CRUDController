@@ -13,6 +13,8 @@ abstract class RelationshipsManager
 	public $type;
 	public $model;
 	public $relationships;
+	public $modelKey;
+
 	public $displayType = 'Switcher';
 
 	abstract  function getAllRelationsParameters() : array;

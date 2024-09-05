@@ -16,6 +16,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+use function array_key_exists;
+use function class_uses_recursive;
+use function dd;
+use function get_class;
+use function in_array;
+use function method_exists;
+
 abstract class CrudModelStoringHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
@@ -184,7 +191,7 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		$keyName = $placeholderModel->getKeyName();
 
-		return $placeholderModel->query()->whereIn($keyName, $toRelate)->get();		
+		return $placeholderModel->query()->whereIn($keyName, $toRelate)->get();
 	}
 
 	private function relateMorphManyElements(string $relationshipMethod, $toRelate)
@@ -249,12 +256,61 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 			$standardAssociationMethod = 'relate' . $relationType . 'Elements';
 
-			$this->$standardAssociationMethod($relationshipField['relation'], $values);
+			try
+			{
+				$this->$standardAssociationMethod($relationshipField['relation'], $values);
+			}
+			catch(\Throwable $e)
+			{
+				dd($relationshipField['relation']);
+				throw ($e);
+				dd($relationshipField);
+			}
 
 			$customEventMethodName = 'relation' . ucfirst($relationshipField['relation']) . 'Set';
 
 			if(method_exists($this->getModel(), $customEventMethodName))
 				$this->getModel()->$customEventMethodName($values);
+		}
+	}
+
+	public function modelUsesExtrafields() : bool
+	{
+		return in_array(
+			'IlBronza\CRUD\Traits\Model\CRUDModelExtraFieldsTrait',
+			class_uses_recursive(
+				$this->getModel()
+			)
+		);
+	}
+
+	public function mustBeSetAfterStoring(string $attributeName) : bool
+	{
+		if(($model = $this->getModel())->exists)
+			return false;
+
+		if(! $this->modelUsesExtraFields())
+			return false;
+
+		$extraFields = $model->getExtraFieldsCasts();
+
+		return array_key_exists($attributeName, $extraFields);
+	}
+
+	public function bindParameter($requestName, $attributeName, $parameters)
+	{
+		if(array_key_exists($requestName, $parameters))
+		{
+			$setterName = 'set' . Str::studly($attributeName);
+
+			if(method_exists($this->getModel(), $setterName))
+				$this->getModel()->{$setterName}($parameters[$requestName]);
+
+			else
+			{
+				Log::critical('dichiara ' . $setterName . ' su ' . get_class($this->getModel()));
+				$this->getModel()->$attributeName = $parameters[$requestName];
+			}
 		}
 	}
 
@@ -265,19 +321,20 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		$model = $this->getModel();
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
-			if(array_key_exists($requestName, $parameters))
-			{
-				$setterName = 'set' . Str::studly($attributeName);
+		{
+			if($this->mustBeSetAfterStoring($attributeName))
+				continue;
 
-				if(method_exists($model, $setterName))
-					$model->{$setterName}($parameters[$requestName]);
+			$this->bindParameter($requestName, $attributeName, $parameters);
+			unset($bindableFieldsNames[$requestName]);
+		}
 
-				else
-				{
-					Log::critical('dichiara ' . $setterName . ' su ' . get_class($model));
-					$model->$attributeName = $parameters[$requestName];
-				}
-			}
+		if(! $model->exists)
+			$model->save();
+
+
+		foreach($bindableFieldsNames as $requestName => $attributeName)
+			$this->bindParameter($requestName, $attributeName, $parameters);
 
 		$model->save();
 

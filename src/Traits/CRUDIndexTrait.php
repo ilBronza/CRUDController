@@ -145,7 +145,7 @@ trait CRUDIndexTrait
 	{
 		try
 		{
-			$this->manageCreateButton();			
+			$this->manageCreateButton();
 		}
 		catch(\Exception $e)
 		{
@@ -168,7 +168,11 @@ trait CRUDIndexTrait
 
 	public function getCaption() : ? string
 	{
-		return $this->caption ?? null;
+		if(isset($this->caption))
+			return $this->caption;
+
+		return
+			$this->getTable()?->getPlaceholderElement()?->getPluralTranslatedClassname();
 	}
 
 	public function manageTableCaption()

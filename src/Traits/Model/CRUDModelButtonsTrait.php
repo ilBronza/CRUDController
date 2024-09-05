@@ -5,6 +5,12 @@ namespace IlBronza\CRUD\Traits\Model;
 use IlBronza\Buttons\Button;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Log;
+
+use function class_basename;
+use function dd;
+use function route;
+
 trait CRUDModelButtonsTrait
 {
     public static function getGoToListButton() : Button
@@ -18,11 +24,26 @@ trait CRUDModelButtonsTrait
 
     static function getCreateButton(array $routeParameters = []) : Button
     {
-        $button = Button::create([
-            'href' => route(static::getStaticRouteBasename() . '.create', $routeParameters), 
-            'text' => 'generals.create' . class_basename(static::class),
-            'icon' => 'plus'
-        ]);
+		try
+		{
+			$placeholder = static::make();
+
+			$href = $placeholder->getCreateUrl();
+			$text = __('crud::crud.createNew', ['model' => $placeholder->getTranslatedClassname()]);
+		}
+		catch(\Exception $e)
+		{
+			Log::critical($e->getMessage() . ' - ' . $e->getTraceAsString());
+
+			$href = route(static::getStaticRouteBasename() . '.create', $routeParameters);
+			$text = 'generals.create' . class_basename(static::class);
+		}
+
+		$button = Button::create([
+			'href' => $href,
+			'text' => $text,
+			'icon' => 'plus'
+		]);
 
         $button->setHtmlClass('uk-margin-large-left');
         $button->setPrimary();

@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use function config;
+
 trait PackagedModelsTrait
 {
 	/**

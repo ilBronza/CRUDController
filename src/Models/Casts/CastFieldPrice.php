@@ -5,8 +5,13 @@ namespace IlBronza\CRUD\Models\Casts;
 use IlBronza\Prices\Models\Price;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
+use function explode;
+
 class CastFieldPrice implements CastsAttributes
 {
+	public string $collectionId;
+	public string $measurementUnit;
+
 	/**
 	 * Cast the given value.
 	 *
@@ -16,9 +21,15 @@ class CastFieldPrice implements CastsAttributes
 	 * @param  array  $attributes
 	 * @return mixed
 	 */
-	public function __construct(string $collectionId)
+	public function __construct(string $collectionId, string $measurementUnit)
 	{
 		$this->collectionId = $collectionId;
+		$this->measurementUnit = $measurementUnit;
+	}
+
+	public function getMeasurementUnit() : string
+	{
+		return $this->measurementUnit;
 	}
 
 	public function getCollectionId() : string
@@ -36,9 +47,9 @@ class CastFieldPrice implements CastsAttributes
 
 	public function set($model, string $key, $value, array $attributes)
 	{
-//		$price = $model->providePriceByCollectionId($this->getCollectionId());
-//		$price->price = $value;
-//		$price->save();
+		$price = $model->providePriceByCollectionId($this->getCollectionId());
+		$price->setMeasurementUnit($this->getMeasurementUnit(), false);
+		$price->price = $value;
 	}
 
 	static function staticSet(string $type = null, $model, string $key, $value)
@@ -54,10 +65,10 @@ class CastFieldPrice implements CastsAttributes
 
 	public function get($model, string $key, $value, array $attributes)
 	{
-//		if(! $this->collectionId)
-//			return $model->getExtraAttribute('price');
-//
-		return $model->getCustomExtraAttribute($this->collectionId, 'price');
+		if($model->relationLoaded($this->getCollectionId()))
+			return $model->{$this->getCollectionId()}->price;
+
+		return $model->providePriceByCollectionId($this->getCollectionId())?->price;
 	}
 
 }

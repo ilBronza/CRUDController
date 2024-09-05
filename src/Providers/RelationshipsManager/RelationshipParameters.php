@@ -2,41 +2,16 @@
 
 namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParametersGettersTrait;
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
+use Exception;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
-
-use function json_encode;
 
 class RelationshipParameters
 {
 	use RelationshipParametersGettersTrait;
 
-	public $name;
-	public $relation;
-	public $relationType;
-	public $elements;
-	public $controller;
-	public $buttons;
-	public $currentView;
-	public $extraVariables;
-	public $translatedTitle;
-	public $buttonsMethods = [];
-	public $elementGetterMethod;
-	public ? string $fieldsGroupsParametersFile;
-
-	//relation-specific custom view name
-	public $view;
-
-	public $fieldsGroupsNames = ['related'];
-	public $selectRowCheckboxes = true;
-
-	public $relationshipsManager;
-
 	static $standardView = 'crud::uikit._teaser';
-
 	static $renderAsTypes = [
 		'BelongsToMany' => 'table',
 		'MorphToMany' => 'table',
@@ -48,6 +23,24 @@ class RelationshipParameters
 		'MorphTo' => 'view',
 		'BelongsTo' => 'view'
 	];
+	public $name;
+	public $relation;
+	public $relationType;
+	public $elements;
+	public $controller;
+	public $buttons;
+	public $currentView;
+	public $extraVariables;
+	public $translatedTitle;
+	public $buttonsMethods = [];
+
+	//relation-specific custom view name
+	public $elementGetterMethod;
+	public ?string $fieldsGroupsParametersFile;
+	public $view;
+	public $fieldsGroupsNames = ['related'];
+	public $selectRowCheckboxes = true;
+	public $relationshipsManager;
 
 	public function __construct(string $name, array $parameters, RelationshipsManager $relationshipsManager)
 	{
@@ -58,51 +51,25 @@ class RelationshipParameters
 		$this->setRenderingType();
 	}
 
-	public function getCardTitle()
-	{
-		if($this->translatedTitle)
-			return $this->translatedTitle;
-
-		if($this->isPlural())
-			return $this->getRelatedModel()->getPluralTranslatedClassname();
-
-		return $this->getRelatedModel()->getTranslatedClassname();
-	}
-
-	public function getToggleId()
-	{
-		return str_replace('.', '-', $this->getCardTitle());
-	}
-
 	/**
 	 * set parameters and build default relation parameters
 	 **/
 	private function manageParameters(array $parameters)
 	{
-		foreach($parameters as $name => $value)
+		foreach ($parameters as $name => $value)
 			$this->{$name} = $value;
 
 		$this->manageRelation($parameters);
 	}
 
 	/**
-	 * set relation property
-	 *
-	 * @param $relation | string
-	 **/
-	public function setRelation(string $relation)
-	{
-		$this->relation = $relation;
-	}
-
-	/** 
 	 * set relation name if given, otherwise set name as relation
 	 *
-	 * @param $parameters | array
+	 * @param $parameters  | array
 	 **/
 	private function manageRelation(array $parameters)
 	{
-		if(isset($parameters['relation']))
+		if (isset($parameters['relation']))
 			$this->setRelation($parameters['relation']);
 
 		else
@@ -110,43 +77,25 @@ class RelationshipParameters
 	}
 
 	/**
-	 * get relationship method name. 
-	 * Ex. posts() relation returns "posts"
+	 * set relation property
 	 *
-	 * @return string
+	 * @param $relation  | string
 	 **/
-	public function getRelationshipMethod() : string
+	public function setRelation(string $relation)
 	{
-		return $this->relation;
-	}
-
-	/**
-	 * get default render method by relation type
-	 *
-	 * a many relation returns 'table', a single relation returns 'view'
-	 *
-	 * @param $relationType | string
-	 *
-	 * @return string
-	 **/
-	public function getRenderAsByRelationType(string $relationType) : string
-	{
-		if(! isset(static::$renderAsTypes[$relationType]))
-			throw new \Exception ('Crea lo script di caricamento relazione per ' . $relationType . ' in ' . __METHOD__);
-
-		return static::$renderAsTypes[$relationType];
+		$this->relation = $relation;
 	}
 
 	/**
 	 * set rendering type by given or default
 	 *
-	 * @param $type | string 
+	 * @param $type  | string
 	 *
 	 * @return string
-	**/
+	 **/
 	public function setRenderingType(string $type = null) : string
 	{
-		if($type)
+		if ($type)
 			return $this->renderAs = $type;
 
 		$relationType = $this->getRelationType();
@@ -154,30 +103,20 @@ class RelationshipParameters
 		return $this->renderAs = $this->getRenderAsByRelationType($relationType);
 	}
 
-	/** 
-	 * set related model classname by related model instance
+	/**
+	 * get eloquent relation type
+	 *
+	 * @return string
 	 **/
-	private function setRelatedModelClass()
+	public function getRelationType() : string
 	{
-		$this->relatedModelClass = get_class($this->relatedModel);
+		if (! $this->relationType)
+			$this->setRelationType();
+
+		return $this->relationType;
 	}
 
 	/**
-	 * set related model instance By eloquent relationship, and call set model class
-	 **/
-	private function setRelatedModel()
-	{
-		$this->relatedModel = $this->eloquentRelationship->getRelated();
-
-		$this->setRelatedModelClass();
-	}
-
-	public function getRelatedModel() : Model
-	{
-		return $this->relatedModel;
-	}
-
-	/** 
 	 * set all relation properties by relation type
 	 *
 	 * set $relationType => as BelongsToMane, BelongsTo, etc.
@@ -197,16 +136,52 @@ class RelationshipParameters
 	}
 
 	/**
-	 * get eloquent relation type 
+	 * get default render method by relation type
+	 *
+	 * a many relation returns 'table', a single relation returns 'view'
+	 *
+	 * @param $relationType  | string
 	 *
 	 * @return string
 	 **/
-	public function getRelationType() : string
+	public function getRenderAsByRelationType(string $relationType) : string
 	{
-		if(! $this->relationType)
-			$this->setRelationType();
+		if (! isset(static::$renderAsTypes[$relationType]))
+			throw new Exception ('Crea lo script di caricamento relazione per ' . $relationType . ' in ' . __METHOD__);
 
-		return $this->relationType;
+		return static::$renderAsTypes[$relationType];
+	}
+
+	/**
+	 * get relationship method name.
+	 * Ex. posts() relation returns "posts"
+	 *
+	 * @return string
+	 **/
+	public function getRelationshipMethod() : string
+	{
+		return $this->relation;
+	}
+
+	public function getToggleId()
+	{
+		return str_replace('.', '-', $this->getCardTitle());
+	}
+
+	public function getCardTitle()
+	{
+		if ($this->translatedTitle)
+			return $this->translatedTitle;
+
+		if ($this->isPlural())
+			return $this->getRelatedModel()->getPluralTranslatedClassname();
+
+		return $this->getRelatedModel()->getTranslatedClassname();
+	}
+
+	public function isPlural() : bool
+	{
+		return $this->renderAsTable();
 	}
 
 	/**
@@ -219,44 +194,101 @@ class RelationshipParameters
 		return $this->renderAs == 'table';
 	}
 
-	public function isPlural() : bool
+	public function getRelatedModel() : Model
 	{
-		return $this->renderAsTable();
+		return $this->relatedModel;
+	}
+
+	public function getElementGetterMethod()
+	{
+		return $this->elementGetterMethod;
 	}
 
 	/**
-	 * check if relation must be rendered as a view
+	 * set relation rendering type and parameters based on relation type
 	 *
-	 * @return bool
+	 * if more elements render as table, otherwise render as view
 	 **/
-	public function renderAsView() : bool
+	public function setShowParameters()
 	{
-		return $this->renderAs == 'view';
+		if ($this->renderAsTable())
+			return $this->setTable();
+
+		return $this->setCurrentView();
 	}
 
 	/**
-	 * return model's management controller full qualified className
-	 *
-	 * return string
+	 * set elements table by class properties
 	 **/
-	public function getController() : string
+	public function setTable()
 	{
-		return $this->controller;
+		if (request()->rowId)
+			if ($this->name != 'quantities')
+				return;
+
+		$parameters = [
+			'name' => $this->getTableName(),
+			'fieldsGroups' => $this->getTableFieldsGroups(),
+			'elements' => $this->getElements(),
+			'selectRowCheckboxes' => $this->hasSelectRowCheckboxes(),
+			'extraVariables' => $this->getExtraVariables(),
+			'modelClass' => $this->getRelatedModelClass()
+		];
+
+		$this->table = Datatables::createStandAloneTable($parameters);
+
+		$this->manageDomTable();
+
+		if (request()->ajax())
+			return $this->table->renderPage();
+
+		$this->table->setAjaxTable();
+		$this->table->setCaption(false);
+
+		$this->manageTableButtons();
 	}
 
-	public function controllerHasTeaserMethod() : bool
+	/**
+	 * get relation's table name
+	 *
+	 * @return string
+	 **/
+	public function getTableName() : string
 	{
-		if(! $controller = $this->getController())
-			return false;
-
-		return method_exists($controller, 'teaser');
+		return $this->name;
 	}
 
-	public function renderControllerTeaser()
+	/**
+	 * return fieldsGroups controller's declared array
+	 *
+	 * get fieldsgroups names array, get the dedicated controller and ask for fields's array
+	 *
+	 * @return array
+	 **/
+	public function getTableFieldsGroups() : array
 	{
-		return app($this->getController())->teaser(
-			$this->getElement()
-		);
+		if ($this->fieldsGroups ?? false)
+			return $this->fieldsGroups;
+
+		if ($this->fieldsGroupsParametersFile ?? false)
+		{
+			$helper = new $this->fieldsGroupsParametersFile();
+
+			return [
+				'base' => $helper->getFieldsGroup()
+			];
+		}
+
+		$fieldsGroupsNames = $this->getFieldsGroupsNames();
+
+		// try
+		// {
+		return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);
+		// }
+		// catch(\Throwable $e)
+		// {
+		// 	dd('dichiara i fieldsgroups ' . json_encode($fieldsGroupsNames) . ' su ' . ($this->controller) . '->' . $e->getMessage());
+		// }
 	}
 
 	/**
@@ -271,32 +303,6 @@ class RelationshipParameters
 		return $this->fieldsGroupsNames;
 	}
 
-	public function getElementGetterMethod()
-	{
-		return $this->elementGetterMethod;
-	}
-
-	/**
-	 * set relation's elements by given or load defaults
-	 *
-	 * if given, set elements collection
-	 * if missing, get the relation method and lazy load elements
-	 *
-	 * @param $elements | Collection
-	 **/
-	public function setElements(Collection $elements = null)
-	{
-		if($elements)
-			return $this->elements = $elements;
-
-		if($elementGetterMethod = $this->getElementGetterMethod())
-			return $this->elements = $this->relationshipsManager->model->{$elementGetterMethod}();
-
-		$relationMethod = $this->getRelationshipMethod();
-
-		return $this->elements = $this->relationshipsManager->model->{$relationMethod};
-	}
-
 	/**
 	 * return relation's elements
 	 *
@@ -308,41 +314,31 @@ class RelationshipParameters
 	 **/
 	public function getElements()
 	{
-		if(! $this->elements)
+		if (! $this->elements)
 			$this->setElements();
 
 		return $this->elements;
 	}
 
 	/**
-	 * return single model relations instance
+	 * set relation's elements by given or load defaults
 	 *
-	 * get $elements property, if countable throw error because something went wrong, being this called on a single model relation 
+	 * if given, set elements collection
+	 * if missing, get the relation method and lazy load elements
 	 *
-	 * @return Model
+	 * @param $elements  | Collection
 	 **/
-	public function getElement() : ? Model
+	public function setElements(Collection $elements = null)
 	{
-		if(! $elements = $this->getElements())
-		{
-			return null;
-//			throw new \Exception(json_encode(['non trovl elementi RelationshipParameters 324']));
-		}
+		if ($elements)
+			return $this->elements = $elements;
 
-		if(is_countable($elements))
-			throw new \Exception('problema con numero di associazioni ad un belongsTo');
+		if ($elementGetterMethod = $this->getElementGetterMethod())
+			return $this->elements = $this->relationshipsManager->model->{$elementGetterMethod}();
 
-		return $elements;
-	}
+		$relationMethod = $this->getRelationshipMethod();
 
-	/**
-	 * get relation's table name
-	 *
-	 * @return string
-	 **/
-	public function getTableName() : string
-	{
-		return $this->name;
+		return $this->elements = $this->relationshipsManager->model->{$relationMethod};
 	}
 
 	/**
@@ -373,63 +369,31 @@ class RelationshipParameters
 		return $this->relatedModelClass;
 	}
 
-	/** 
-	 * return fieldsGroups controller's declared array
-	 *
-	 * get fieldsgroups names array, get the dedicated controller and ask for fields's array
-	 *
-	 * @return array
-	 **/
-	public function getTableFieldsGroups() : array
+	public function manageDomTable()
 	{
-		if($this->fieldsGroups ?? false)
-			return $this->fieldsGroups;
-
-		if($this->fieldsGroupsParametersFile ?? false)
-		{
-			$helper = new $this->fieldsGroupsParametersFile();
-
-			return [
-				'base' => $helper->getFieldsGroup()
-			];
-		}
-
-		$fieldsGroupsNames = $this->getFieldsGroupsNames();
-
-		// try
-		// {
-			return app($this->controller)->getTableFieldsGroups($fieldsGroupsNames);
-		// }
-		// catch(\Throwable $e)
-		// {
-		// 	dd('dichiara i fieldsgroups ' . json_encode($fieldsGroupsNames) . ' su ' . ($this->controller) . '->' . $e->getMessage());
-		// }
-	}
-
-	public function getParentModel()
-	{
-		return $this->relationshipsManager->getModel();
+		if ($this->domMode ?? false)
+			$this->table->setDomMode($this->domMode);
 	}
 
 	public function manageTableButtons()
 	{
-		if(config('crud.createRelatedEntitiesInShow'))
+		if (config('crud.createRelatedEntitiesInShow'))
 		{
-			if($this->isPolimorphicParentingRelationship())
+			if ($this->isPolimorphicParentingRelationship())
 				$this->table->addButton(
 					$this->relatedModel->getCreateByPolimorphicRelatedButton(
 						$this->getParentModel()
 					)
 				);
-			else if($this->isParentingRelationship())
+			else if ($this->isParentingRelationship())
 				$this->table->addButton(
 					$this->relatedModel->getCreateByRelatedButton(
 						$this->getParentModel()
 					)
-				);			
+				);
 		}
 
-		foreach($this->buttonsMethods as $buttonsMethod)
+		foreach ($this->buttonsMethods as $buttonsMethod)
 			$this->table->addButton(
 				$this->relatedModel->{$buttonsMethod}(
 					$this->getParentModel()
@@ -437,71 +401,18 @@ class RelationshipParameters
 			);
 	}
 
-	public function manageDomTable()
+	public function getParentModel()
 	{
-		if($this->domMode ??false)
-			$this->table->setDomMode($this->domMode);
+		return $this->relationshipsManager->getModel();
 	}
 
 	/**
-	 * set elements table by class properties
+	 * set currentView by element property
 	 **/
-	public function setTable()
+	public function setCurrentView()
 	{
-		if(request()->rowId)
-			if($this->name != 'quantities')
-				return ;
-
-		$parameters = [
-			'name' => $this->getTableName(),
-			'fieldsGroups' => $this->getTableFieldsGroups(),
-			'elements' => $this->getElements(),
-			'selectRowCheckboxes' => $this->hasSelectRowCheckboxes(),
-			'extraVariables' => $this->getExtraVariables(),
-			'modelClass' => $this->getRelatedModelClass()
-		];
-
-		$this->table = Datatables::createStandAloneTable($parameters);
-
-		$this->manageDomTable();
-
-		if(request()->ajax())
-			return $this->table->renderPage();
-
-		$this->table->setAjaxTable();
-		$this->table->setCaption(false);
-
-		$this->manageTableButtons();
-	}
-
-	/**
-	 * check if class has its own view
-	 *
-	 * @return mixed
-	 **/
-	public function hasOwnView()
-	{
-		return $this->view;
-	}
-
-	/**
-	 * check if class must render standard view
-	 *
-	 * @return bool
-	 **/
-	public function hasStandardView() : bool
-	{
-		return $this->getView() == $this->getStandardView();
-	}
-
-	/**
-	 * get standard view name
-	 *
-	 * @return string
-	 **/
-	public function getStandardView() : string
-	{
-		return static::$standardView;
+		//		$element = $this->getElement()
+		$this->currentView = $this->getView();
 	}
 
 	/**
@@ -517,100 +428,74 @@ class RelationshipParameters
 	 *
 	 * @return string
 	 **/
-	public function getView() : ? string
+	public function getView() : ?string
 	{
-		if($this->currentView)
+		if ($this->currentView)
 			return $this->currentView;
 
-		if($this->hasOwnView())
+		if ($this->hasOwnView())
 			return $this->view;
 
-		if(! $this->getElement())
+		if (! $this->getElement())
 			return null;
 
 		$modelFolderName = $this->getElement()->getRouteBasename();
 		$view = $modelFolderName . '._teaser';
 
-		if(View::exists($view))
+		if (View::exists($view))
 			return $view;
 
 		return $this->getStandardView();
 	}
 
 	/**
-	 * set currentView by element property
-	 **/
-	public function setCurrentView()
-	{
-//		$element = $this->getElement()
-		$this->currentView = $this->getView();
-	}
-
-	/** 
-	 * set relation rendering type and parameters based on relation type
+	 * check if class has its own view
 	 *
-	 * if more elements render as table, otherwise render as view
+	 * @return mixed
 	 **/
-	public function setShowParameters()
+	public function hasOwnView()
 	{
-		if($this->renderAsTable())
-			return $this->setTable();
-
-		return $this->setCurrentView();
+		return $this->view;
 	}
 
-	private function renderTable()
+	/**
+	 * return single model relations instance
+	 *
+	 * get $elements property, if countable throw error because something went wrong, being this called on a single model relation
+	 *
+	 * @return Model
+	 **/
+	public function getElement() : ?Model
 	{
-		return $this->table->renderPortion();
+		if (! $elements = $this->getElements())
+		{
+			return null;
+			//			throw new \Exception(json_encode(['non trovl elementi RelationshipParameters 324']));
+		}
+
+		if (is_countable($elements))
+			throw new Exception('problema con numero di associazioni ad un belongsTo');
+
+		return $elements;
 	}
 
-	private function renderView()
+	/**
+	 * get standard view name
+	 *
+	 * @return string
+	 **/
+	public function getStandardView() : string
 	{
-		if($this->controllerHasTeaserMethod())
-			return $this->renderControllerTeaser();
-
-		if(! $this->getElement())
-			return view('crud::utilities.messages._modelMissingOrNotSet');
-
-		return app($this->getController())->teaserMode()->_show(
-			$this->getElement()
-		);
-
-
-		throw new \Exception('dichiara il controller teaser method? O facciamo un fetcher?');
-
-		if($this->hasStandardView())
-			return view(
-				$this->getView(),
-				['teaserModel' => $this->getElement()]
-			);
-
-		$modelClassName = $this->getElement()->getRouteClassname();
-
-		return view(
-			$this->getView(),
-			[
-				$modelClassName => $this->getElement()
-			]
-		);
+		return static::$standardView;
 	}
 
 	public function renderTableRowsArray()
 	{
-        $this->table = Datatables::create(
-            $this->getTableName(),
-            $this->getTableFieldsGroups(),
-            $this->elementsGetter,
-            $this->hasSelectRowCheckboxes(),
-            $this->getExtraVariables(),
-            $this->getRelatedModelClass()
-        );
+		$this->table = Datatables::create(
+			$this->getTableName(), $this->getTableFieldsGroups(), $this->elementsGetter, $this->hasSelectRowCheckboxes(), $this->getExtraVariables(), $this->getRelatedModelClass()
+		);
 
 		return $this->table->renderPage();
-
-
-
-
 
 		// $parameters = [
 		// 	'name' => $this->getTableName(),
@@ -623,18 +508,113 @@ class RelationshipParameters
 
 		// $this->table = Datatables::createStandAloneTable($parameters);
 
-
 		// return $this->table->returnSingleElement($this->elementsGetter);
 	}
 
 	public function render()
 	{
-		if($this->renderAsView())
+		if ($this->renderAsView())
 			return $this->renderView();
 
-		if($this->renderAsTable())
+		if ($this->renderAsTable())
 			return $this->renderTable();
 
-		throw new \Exception ('No render method set on ' . class_basename($this));
+		throw new Exception ('No render method set on ' . class_basename($this));
+	}
+
+	/**
+	 * check if relation must be rendered as a view
+	 *
+	 * @return bool
+	 **/
+	public function renderAsView() : bool
+	{
+		return $this->renderAs == 'view';
+	}
+
+	private function renderView()
+	{
+		if ($this->controllerHasTeaserMethod())
+			return $this->renderControllerTeaser();
+
+		if (! $this->getElement())
+			return view('crud::utilities.messages._modelMissingOrNotSet');
+
+		return app($this->getController())->teaserMode()->_show(
+			$this->getElement()
+		);
+
+		throw new Exception('dichiara il controller teaser method? O facciamo un fetcher?');
+
+		if ($this->hasStandardView())
+			return view(
+				$this->getView(), ['teaserModel' => $this->getElement()]
+			);
+
+		$modelClassName = $this->getElement()->getRouteClassname();
+
+		return view(
+			$this->getView(), [
+				$modelClassName => $this->getElement()
+			]
+		);
+	}
+
+	public function controllerHasTeaserMethod() : bool
+	{
+		if (! $controller = $this->getController())
+			return false;
+
+		return method_exists($controller, 'teaser');
+	}
+
+	/**
+	 * return model's management controller full qualified className
+	 *
+	 * return string
+	 **/
+	public function getController() : string
+	{
+		return $this->controller;
+	}
+
+	public function renderControllerTeaser()
+	{
+		return app($this->getController())->teaser(
+			$this->getElement()
+		);
+	}
+
+	/**
+	 * check if class must render standard view
+	 *
+	 * @return bool
+	 **/
+	public function hasStandardView() : bool
+	{
+		return $this->getView() == $this->getStandardView();
+	}
+
+	private function renderTable()
+	{
+		return $this->table->renderPortion();
+	}
+
+	/**
+	 * set related model instance By eloquent relationship, and call set model class
+	 **/
+	private function setRelatedModel()
+	{
+		$this->relatedModel = $this->eloquentRelationship->getRelated();
+
+		$this->setRelatedModelClass();
+	}
+
+	/**
+	 * set related model classname by related model instance
+	 **/
+	private function setRelatedModelClass()
+	{
+		$this->relatedModelClass = get_class($this->relatedModel);
 	}
 }

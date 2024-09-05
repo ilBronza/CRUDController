@@ -7,6 +7,12 @@ use Ramsey\Uuid\Uuid;
 
 trait CRUDUseUuidTrait
 {
+    public function crudModelSetId()
+    {
+        //TODO verificare se esiste un metodo di sistema
+        $this->{$this->getKeyName()} = (string) Uuid::uuid4();
+    }
+
     /**
      * The "booting" method of the model.
      */
@@ -20,7 +26,7 @@ trait CRUDUseUuidTrait
             $model->incrementing = false; // this is used for new instances
 
             if (empty($model->{$model->getKeyName()})) { // if it's not empty, then we want to use a specific id
-                $model->{$model->getKeyName()} = (string) Uuid::uuid4();
+                $model->crudModelSetId();
             }
         });
     }

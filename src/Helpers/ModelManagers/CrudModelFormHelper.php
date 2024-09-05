@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
+use function config;
+
 abstract class CrudModelFormHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 
 	public $model;
+	public $fieldsetsProvider;
 
 	abstract function getCardClasses() : array;
 
@@ -90,6 +93,10 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			'action' => $action,
 			'method' => $this->getFormMethod()
 		]);
+
+		$this->form->setUpdateEditor(
+			$formOptions['updateEditor'] ?? null
+		);
 
 		$this->form->addHtmlClass(Str::slug(request()->route()->getName()));
 

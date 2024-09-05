@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
+use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 class CrudModelRenderer extends CrudModelFormHelper
 {
 	public $method = 'GET';
+	public Form $form;
+	public $parametersFile;
 
 	static function buildRenderer(
 		Model $model,

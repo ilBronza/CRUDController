@@ -9,16 +9,29 @@ use IlBronza\Form\Facades\Form;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use function request;
+
 trait CRUDUpdateEditorTrait
 {
 	use CRUDValidateTrait;
+
+	public function getInputRequestExtraData(string $dataName, $default = null)
+	{
+		return request()->input('fieldExtraData.' . $dataName, $default);
+	}
 
 	private function getToggleValue(array $parameters, string $fieldName)
 	{
 		if(isset($parameters['value']))
 			return $parameters['value'];
 
-		return  ! $this->modelInstance->$fieldName;
+		if(! $nullable = $this->getInputRequestExtraData('nullable'))
+			return  ! $this->modelInstance->$fieldName;
+
+		if((($value = $this->modelInstance->$fieldName) === 0)||($value === false))
+			return null;
+
+		return ! $this->modelInstance->$fieldName;
 	}
 
 	private function validateUpdateEditorRequest(Request $request)
@@ -71,18 +84,31 @@ trait CRUDUpdateEditorTrait
 		return $request->input('ibaction', false);		
 	}
 
-	private function returnUpdateParameters(Request $request, array $updateParameters)
+	public function addFieldExtraDataParameters(array $updateParameters)
 	{
-		$fieldExtraData = $request->input('fieldExtraData', []);
+		$fieldExtraData = request()->input('fieldExtraData', []);
 
-		if($fieldExtraData['refreshrow'] ?? null)
+		if(($fieldExtraData['refreshrow'] ?? null)||($fieldExtraData['ajaxextradata']['refreshRow'] ?? null))
 		{
 			$updateParameters['ibaction'] = true;
 			$updateParameters['action'] = 'refreshRow';
 		}
 
+		elseif(($fieldExtraData['reloadtable'] ?? null)||($fieldExtraData['ajaxextradata']['reloadTable'] ?? null))
+		{
+			$updateParameters['ibaction'] = true;
+			$updateParameters['action'] = 'reloadTable';
+		}
+
 		if($fieldExtraData['ibaction'] ?? null)
 			$updateParameters['ibaction'] = $fieldExtraData['ibaction'];
+
+		return $updateParameters;
+	}
+
+	private function returnUpdateParameters(Request $request, array $updateParameters)
+	{
+		$updateParameters = $this->addFieldExtraDataParameters($updateParameters);
 
 		return $updateParameters;
 	}

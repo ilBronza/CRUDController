@@ -115,6 +115,11 @@ trait CRUDModelRoutingTrait
 		return $this->getKeyedRoute('show', $data);
 	}
 
+	public function getCreateUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('create', $data);
+	}
+
 	public function getReorderUrl(array $data = [])
 	{
 		return $this->getKeyedRoute('reorder', $data, false);
