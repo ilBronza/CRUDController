@@ -6,6 +6,7 @@ use IlBronza\CRUD\Providers\RouterProvider\IbRouter;
 
 use function config;
 use function dd;
+use function get_class;
 
 trait IlBronzaPackagesTrait
 {
@@ -29,7 +30,7 @@ trait IlBronzaPackagesTrait
 	static function _getController(string $configKey) : string
 	{
 		if(! $result = config($configKey))
-			dd("dichiara {$configKey}");
+			dd("manca {$configKey} nella configurazione di " . static::class);
 
 		return $result;
 	}

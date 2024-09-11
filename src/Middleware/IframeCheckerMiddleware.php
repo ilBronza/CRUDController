@@ -18,8 +18,8 @@ class IframeCheckerMiddleware
      */
     public function handle($request, Closure $next, ... $allowedMethods)
     {
-		if((( isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe'))||($request->has('iframe')))
-			define("__ib_IFRAMED__", true);
+		if((( isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe'))||($request->has('iframe'))||($request->has('iframed')))
+			define('__ib_IFRAMED__', true);
 
 		else
 			define("__ib_IFRAMED__", false);

@@ -119,7 +119,26 @@ trait CRUDModelTrait
         return $this->{$nameField};
     }
 
-    public function getPluralTranslatedClassname()
+	static function getSelfPossibleValuesArray(string $keyField = null, string $nameField = null) : array
+	{
+		$placeholder = static::make();
+
+		if(! $keyField)
+			$keyField = $placeholder->getKeyName();
+
+		if(! $nameField)
+			$nameField = $placeholder->getKeyName();
+
+		return self::select(
+			$nameField,
+			$keyField
+		)->pluck(
+			$nameField,
+			$keyField
+		)->toArray();
+	}
+
+	public function getPluralTranslatedClassname()
     {
         $plural = $this->getPluralCamelcaseClassBasename();
 
