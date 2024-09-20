@@ -40,6 +40,11 @@ trait PackagedModelsTrait
 		return static::$packageConfigPrefix;
 	}
 
+	static function gpc() : string
+	{
+		return static::getProjectClassName();
+	}
+
 	static function getProjectClassName() : string
 	{
 		try

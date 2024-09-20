@@ -149,6 +149,12 @@ trait CRUDCacheTrait
 
 	static function findCachedField(string $fieldname, $value, array $with = [])
 	{
+		//TODO DEPRECATED
+		return static::findCachedByField($fieldname, $value, $with);
+	}
+
+	static function findCachedByField(string $fieldname, $value, array $with = [])
+	{
 		return cache()->remember(
 			static::staticCacheKey($fieldname . $value . Str::slug(json_encode($with))),
 			3600,

@@ -7,6 +7,10 @@ use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 
+use function config;
+use function dd;
+use function is_null;
+
 class RelationshipParameters
 {
 	use RelationshipParametersGettersTrait;
@@ -39,7 +43,13 @@ class RelationshipParameters
 	public ?string $fieldsGroupsParametersFile;
 	public $view;
 	public $fieldsGroupsNames = ['related'];
-	public $selectRowCheckboxes = true;
+	public ? bool $selectRowCheckboxes = null;
+	public ? bool $reloadButton = null;
+	public ? bool $copyButton = null;
+	public ? bool $csvButton = null;
+
+
+
 	public $relationshipsManager;
 
 	public function __construct(string $name, array $parameters, RelationshipsManager $relationshipsManager)
@@ -232,7 +242,10 @@ class RelationshipParameters
 			'elements' => $this->getElements(),
 			'selectRowCheckboxes' => $this->hasSelectRowCheckboxes(),
 			'extraVariables' => $this->getExtraVariables(),
-			'modelClass' => $this->getRelatedModelClass()
+			'modelClass' => $this->getRelatedModelClass(),
+			'reloadButton' => $this->getHasReloadButton(),
+			'copyButton' => $this->getHasCopyButton(),
+			'csvButton' => $this->getHasCsvButton()
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
@@ -348,7 +361,34 @@ class RelationshipParameters
 	 **/
 	public function hasSelectRowCheckboxes() : bool
 	{
-		return $this->selectRowCheckboxes;
+		if(! is_null($this->selectRowCheckboxes))
+			return $this->selectRowCheckboxes;
+
+		return config('crud.realtionshipManagers.selectRowCheckboxes');
+	}
+
+	public function getHasCsvButton()
+	{
+		if(! is_null($this->csvButton))
+			return $this->csvButton;
+
+		return config('crud.realtionshipManagers.csvButton');
+	}
+
+	public function getHasCopyButton()
+	{
+		if(! is_null($this->copyButton))
+			return $this->copyButton;
+
+		return config('crud.realtionshipManagers.copyButton');
+	}
+
+	public function getHasReloadButton()
+	{
+		if(! is_null($this->reloadButton))
+			return $this->reloadButton;
+
+		return config('crud.realtionshipManagers.reloadButton');
 	}
 
 	/**
