@@ -11,6 +11,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+use function route;
+
 trait CRUDRelationshipModelTrait
 {
 	use CRUDDeleterTrait;
@@ -96,6 +98,13 @@ trait CRUDRelationshipModelTrait
 	{
 		$relatedRoutePrefix = $this->pluralLowerClass();
 		$routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
+
+		if (Route::has($routeName))
+			return route($routeName, [$related]);
+
+		$relatedModelBaseClass = $related->getMorphClass();
+
+		$routeName = $this->getKeyedRouteName("createBy{$relatedModelBaseClass}");
 
 		if (Route::has($routeName))
 			return route($routeName, [$related]);

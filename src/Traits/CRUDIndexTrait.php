@@ -159,6 +159,8 @@ trait CRUDIndexTrait
 
 	public function addIndexButtons() { }
 
+	public function addPostFieldsToTable() {}
+
 	private function getTableName()
 	{
 		return Str::slug($this->getModelClassBasename());
@@ -223,6 +225,7 @@ trait CRUDIndexTrait
 			$this->table->addParentModel($this->parentModel);
 
 		$this->addIndexButtonsToTable();
+		$this->addPostFieldsToTable();
 
 		$this->manageTableCaption();
 

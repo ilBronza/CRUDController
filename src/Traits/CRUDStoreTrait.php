@@ -56,6 +56,11 @@ trait CRUDStoreTrait
 
 	}
 
+	public function performAdditionalOperations()
+	{
+
+	}
+
 	/**
 	 * validate request and store model
 	 *
@@ -73,6 +78,8 @@ trait CRUDStoreTrait
 		);
 
 		$this->sendStoreSuccessMessage();
+
+		$this->performAdditionalOperations();
 
 		if(CrudRequestHelper::isSaveAndCopy($request))
 			return redirect()->to($this->modelInstance->getEditUrl());

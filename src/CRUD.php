@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 use function config;
+use function ini_set;
 
 class CRUD extends Controller
 {
@@ -80,6 +81,9 @@ class CRUD extends Controller
 	{
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
+
+		ini_set('max_execution_time', 40);
+		ini_set('memory_limit', - 1);
 
 		$this->setModelClass();
 

@@ -153,6 +153,11 @@ trait CRUDCacheTrait
 		return static::findCachedByField($fieldname, $value, $with);
 	}
 
+	static function findCachedByName($name, array $with = [])
+	{
+		return static::findCachedByField('name', $name, $with);
+	}
+
 	static function findCachedByField(string $fieldname, $value, array $with = [])
 	{
 		return cache()->remember(

@@ -33,6 +33,8 @@ class RelationshipParameters
 	public $elements;
 	public $controller;
 	public $buttons;
+
+	public ? bool $hasCreateButton = null;
 	public $currentView;
 	public $extraVariables;
 	public $translatedTitle;
@@ -415,9 +417,17 @@ class RelationshipParameters
 			$this->table->setDomMode($this->domMode);
 	}
 
+	public function hasCreateButton()
+	{
+		if(! is_null($this->hasCreateButton))
+			return $this->hasCreateButton;
+
+		return config('crud.realtionshipManagers.createButton', false);
+	}
+
 	public function manageTableButtons()
 	{
-		if (config('crud.createRelatedEntitiesInShow'))
+		if ($this->hasCreateButton())
 		{
 			if ($this->isPolimorphicParentingRelationship())
 				$this->table->addButton(
