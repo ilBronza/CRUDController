@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+
+use function is_null;
+
 // use \newdatatable;
 
 trait CRUDIndexTrait
@@ -138,7 +141,7 @@ trait CRUDIndexTrait
 
 	public function getPageLength()
 	{
-		return $this->pageLength ?? 50;
+		return $this->pageLength ?? config('datatables.pageLength', 50);
 	}
 
 	private function addIndexButtonsToTable()
@@ -199,6 +202,7 @@ trait CRUDIndexTrait
 		if(! $selectRow)
 			$selectRow = $this->getSelectRow();
 
+
 		$this->table = Datatables::create(
 			$tableName,
 			$this->getTableFieldsGroups($fieldsGroupsNames),
@@ -223,6 +227,9 @@ trait CRUDIndexTrait
 
 		if(isset($this->parentModel)&&($this->mustDisplayParentModel()))
 			$this->table->addParentModel($this->parentModel);
+
+		if(! is_null($this->mustPrintIntestation ?? null))
+			$this->table->setMustPrintIntestation($this->mustPrintIntestation);
 
 		$this->addIndexButtonsToTable();
 		$this->addPostFieldsToTable();

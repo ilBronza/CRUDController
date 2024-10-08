@@ -145,6 +145,7 @@ class ExtraField implements CastsAttributes
                 $extraFields->$key = $value;
 
                 unset($model->$key);
+	            $model->offsetUnset($key);
             }
             catch(\Exception $e)
             {

@@ -308,7 +308,7 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 			else
 			{
-				Log::critical('dichiara ' . $setterName . ' su ' . get_class($this->getModel()));
+				// Log::critical('dichiara ' . $setterName . ' su ' . get_class($this->getModel()));
 				$this->getModel()->$attributeName = $parameters[$requestName];
 			}
 		}

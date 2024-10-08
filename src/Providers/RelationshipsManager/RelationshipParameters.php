@@ -34,6 +34,8 @@ class RelationshipParameters
 	public $controller;
 	public $buttons;
 
+	public $mustPrintIntestation = false;
+
 	public ? bool $hasCreateButton = null;
 	public $currentView;
 	public $extraVariables;
@@ -259,6 +261,10 @@ class RelationshipParameters
 
 		$this->table->setAjaxTable();
 		$this->table->setCaption(false);
+
+		$this->table->addHtmlClass('related-table');
+
+		$this->table->setMustPrintIntestation($this->mustPrintIntestation);
 
 		$this->manageTableButtons();
 	}

@@ -183,7 +183,8 @@ trait CRUDModelExtraFieldsTrait
 			$relationsToSave = [];
 
 			if($model->relationLoaded('extraFields'))
-				$model->extraFields->save();
+				if($model->extraFields)
+					$model->extraFields->save();
 
 
 			//			{

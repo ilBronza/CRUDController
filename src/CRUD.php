@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
@@ -26,13 +27,6 @@ class CRUD extends Controller
 {
 	use ExtraViewsTrait;
 
-	public $relationshipsElements;
-	public $relationshipsTableNames;
-	public ? Model $modelInstance;
-
-	public ? bool $updateEditor = null;
-	public $modelFormHelper;
-
 	static $availableExtraViewsPositions = [
 		'outherTop',
 		'outherBottom',
@@ -43,6 +37,13 @@ class CRUD extends Controller
 		'outherLeft',
 		'outherRight'
 	];
+
+	public $mustPrintIntestation = null;
+	public $relationshipsElements;
+	public $relationshipsTableNames;
+	public ?Model $modelInstance;
+	public ?bool $updateEditor = null;
+	public $modelFormHelper;
 	public Collection $fetchers;
 	public $debug = false;
 
@@ -50,13 +51,14 @@ class CRUD extends Controller
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
+
 	public $iframed;
 	public $modelClass;
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 
 	//general parameters
 	public $extraViews = [];
-	public $pageLength = 50;
+	public $pageLength;
 	public $returnBack = false;
 	public $avoidBackToList = false;
 	public $avoidShowButton = false;
@@ -112,7 +114,7 @@ class CRUD extends Controller
 	public function getModelClass() : string
 	{
 		if (! $this->modelClass)
-			throw new \Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
+			throw new Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 
 		return $this->modelClass;
 	}
@@ -302,14 +304,6 @@ class CRUD extends Controller
 		return $this->getModelFormHelper()->getForm()->addFetcher($position, $fetcher);
 	}
 
-	public function hasUpdateEditor()
-	{
-		if(is_null($this->updateEditor))
-			return config('form.updateEditor', false);
-
-		return $this->updateEditor;
-	}
-
 	public function provideFormDefaultSettings() : array
 	{
 		$defaults = [];
@@ -342,6 +336,14 @@ class CRUD extends Controller
 	public function getModel() : ?Model
 	{
 		return $this->modelInstance;
+	}
+
+	public function hasUpdateEditor()
+	{
+		if (is_null($this->updateEditor))
+			return config('form.updateEditor', false);
+
+		return $this->updateEditor;
 	}
 
 	public function overrideWithCustomSettingsToDefaults(array $settings) : array
@@ -388,7 +390,7 @@ class CRUD extends Controller
 	{
 		if (count($this->extraViews))
 		{
-			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
+			throw new Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
 			view()->share('extraViews', $this->extraViews);
 		}
 	}
