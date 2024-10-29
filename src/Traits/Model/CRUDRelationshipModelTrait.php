@@ -19,7 +19,7 @@ trait CRUDRelationshipModelTrait
 
 	static function getSelfPossibleList() : array
 	{
-		$elements = static::orderBy('alias')->get();
+		$elements = static::orderBy('name')->get();
 
 		return static::buildElementsArryForSelect($elements);
 	}

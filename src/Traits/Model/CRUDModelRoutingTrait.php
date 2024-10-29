@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Exception;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -9,27 +10,27 @@ trait CRUDModelRoutingTrait
 {
 	public $routeBasenamePrefix = null;
 
-	static function getModelRoutesPrefix() : ? string
+	static function getModelRoutesPrefix() : ?string
 	{
 		return static::$routePrefix ?? null;
 	}
 
 	public function getRouteClassname()
 	{
-		if($this->routeClassname ?? false)
+		if ($this->routeClassname ?? false)
 			return $this->routeClassname;
 
 		return lcfirst(class_basename($this));
 	}
 
-    static function getStaticRouteBasename()
-    {
-        return static::make()->getRouteBasename();
-    }
+	static function getStaticRouteBasename()
+	{
+		return static::make()->getRouteBasename();
+	}
 
 	public function getRouteBasename()
 	{
-		if($this->routeBasename ?? false)
+		if ($this->routeBasename ?? false)
 			return $this->routeBasename;
 
 		$className = $this->getRouteClassname();
@@ -40,7 +41,7 @@ trait CRUDModelRoutingTrait
 		]);
 	}
 
-	public function getRouteBaseNamePrefix() : ? string
+	public function getRouteBaseNamePrefix() : ?string
 	{
 		return $this->routeBasenamePrefix;
 	}
@@ -65,12 +66,12 @@ trait CRUDModelRoutingTrait
 
 		$_data = [];
 
-		if($element)
+		if ($element)
 			$_data[$routeClassname] = $this->getKey();
 
-		return route($routeName, array_merge(
-				$_data,
-				$data
+		return route(
+			$routeName, array_merge(
+				$_data, $data
 			)
 		);
 	}
@@ -83,7 +84,7 @@ trait CRUDModelRoutingTrait
 		return route($routeBasename . '.deleteMedia', [
 			$routeClassname => $this->getKey(),
 			'media' => $fileId
-		], $data);        
+		], $data);
 	}
 
 	public function getDeleteMediaUrlByMedia(Media $file, array $data = []) : string
@@ -94,12 +95,12 @@ trait CRUDModelRoutingTrait
 		return route($routeBasename . '.deleteMedia', [
 			$routeClassname => $this->getKey(),
 			'media' => $file->getKey()
-		], $data);        
+		], $data);
 	}
 
 	public function getDeleteMediaUrl($fileId, array $data = []) : string
 	{
-		throw new \Exception('DEPRECATO in favore di getDeleteMediaUrlByKey');
+		throw new Exception('DEPRECATO in favore di getDeleteMediaUrlByKey');
 		//TODO DOGODO SISDO DEPRECATED
 		// $routeBasename = $this->getRouteBasename();
 		// $routeClassname = $this->getRouteClassname();
@@ -120,11 +121,11 @@ trait CRUDModelRoutingTrait
 		return $this->getKeyedRoute('create', $data);
 	}
 
-	public function getReorderUrl(array $data = [])
-	{
-		return $this->getKeyedRoute('reorder', $data, false);
-	}
-
+	//	public function getReorderUrl(array $data = [])
+	//	{
+	//		return $this->getKeyedRoute('reorder', $data, false);
+	//	}
+	//
 	public function getIndexUrl(array $data = [])
 	{
 		return $this->getKeyedRoute('index', $data, false);

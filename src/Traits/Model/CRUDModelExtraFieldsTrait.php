@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Traits\Model;
 use Carbon\Carbon;
 use IlBronza\CRUD\Models\Casts\ExtraField;
 use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
+use IlBronza\CRUD\Models\Casts\Parameter;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -31,6 +32,9 @@ trait CRUDModelExtraFieldsTrait
 		$result = array_filter($this->getCasts(), function ($item)
 		{
 			if (strpos($item, 'ExtraField') !== false)
+				return true;
+
+			if (strpos($item, 'Parameter') !== false)
 				return true;
 
 			return false;
@@ -138,10 +142,7 @@ trait CRUDModelExtraFieldsTrait
 	public function getCustomExtraAttribute(string $customExtraAttributesModel, string $attribute)
 	{
 		if(! $projectExtraFieldsModel = $this->getCachedProjectCustomExtraFieldsModel($customExtraAttributesModel))
-		{
-			Log::critical('No custom extra fields model found for ' . $customExtraAttributesModel . ' on ' . class_basename($this));
 			return null;
-		}
 
 		return $projectExtraFieldsModel->$attribute;
 	}
@@ -202,10 +203,14 @@ trait CRUDModelExtraFieldsTrait
 				if(! $model->relationLoaded($extraFieldRelationName))
 					continue;
 
+				if(! $model->$extraFieldRelationName)
+					continue;
+
 				$model->$extraFieldRelationName->save();
 
 //				$relationsToSave[] = $extraFieldRelationName;
 			}
+
 
 //			foreach($relationsToSave as $relationToSave)
 //			{

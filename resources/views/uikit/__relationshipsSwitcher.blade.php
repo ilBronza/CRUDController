@@ -1,23 +1,3 @@
-<script type="text/javascript">
-
-    UIkit.util.ready(function ()
-    {
-        // add all URL parts you need to this array in the same order as the switcher items are
-        var switcherItems = [
-			@foreach($relationshipManager->getRelationships() as $relationship)
-                '{{ Str::slug($relationship->getCardTitle()) }}',
-			@endforeach
-        ];
-
-        var itemIndex = switcherItems.indexOf(window.location.href.split('#')[1]);
-
-        if (itemIndex > 0)
-        {
-            UIkit.switcher('#relationswitcher{{ $relationshipManager->getModel()->getKey() }}').show(itemIndex);
-        }
-    });
-</script>
-
 <div class="uk-card-footer relationships">
 
 	<ul id="relationswitcher{{ $relationshipManager->getModel()->getKey() }}"
@@ -41,3 +21,41 @@
 	</ul>
 
 </div>
+
+<script type="text/javascript">
+
+	window.strSanitize = function(string)
+    {
+        return string.toLowerCase().replace(/[^a-zA-Z]/g, "");
+    }
+
+    $('body').on('click', '#relationswitcher{{ $relationshipManager->getModel()->getKey() }} li a', function ()
+    {
+        var hash = window.strSanitize($(this).text());
+
+        window.location.hash = hash;
+    })
+
+
+    UIkit.util.ready(function ()
+    {
+        var liveSwithcerItems = [];
+
+        $("#relationswitcher{{ $relationshipManager->getModel()->getKey() }} li a").each(function()
+        {
+            const str = $(this).text();
+
+            liveSwithcerItems.push(
+                window.strSanitize(str)
+			);
+		});
+
+        var itemIndex = liveSwithcerItems.indexOf(window.location.href.split('#')[1]);
+
+        if (itemIndex > 0)
+        {
+            UIkit.switcher('#relationswitcher{{ $relationshipManager->getModel()->getKey() }}').show(itemIndex);
+        }
+    });
+</script>
+

@@ -27,6 +27,8 @@ class RelationshipParameters
 		'MorphTo' => 'view',
 		'BelongsTo' => 'view'
 	];
+
+	public ? bool $sorting;
 	public $name;
 	public $relation;
 	public $relationType;
@@ -208,11 +210,6 @@ class RelationshipParameters
 		return $this->renderAs == 'table';
 	}
 
-	public function getRelatedModel() : Model
-	{
-		return $this->relatedModel;
-	}
-
 	public function getElementGetterMethod()
 	{
 		return $this->elementGetterMethod;
@@ -229,6 +226,37 @@ class RelationshipParameters
 			return $this->setTable();
 
 		return $this->setCurrentView();
+	}
+
+	public function getTable() : Datatables
+	{
+		return $this->table;
+	}
+
+	public function hasSorting()
+	{
+		if(isset($this->sorting))
+			return $this->sorting;
+
+		if(! $table = $this->getTable())
+			return false;
+
+		$fields = $table->getFields();
+
+		foreach($fields as $name => $_field)
+			if($name == 'sorting_index')
+				return true;
+
+		return false;
+	}
+
+	public function setSortingIndexParameters()
+	{
+		$this->table->setDragAndDropColumnIntestation('sorting_index');
+		$this->table->setDragAndDropSelector('sorting_index');
+		$this->table->setDragAndDropStoringReorderUrl(
+			$this->getRelatedModel()->getStoreMassReorderUrl()
+		);
 	}
 
 	/**
@@ -253,6 +281,10 @@ class RelationshipParameters
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
+
+
+		if($this->hasSorting())
+			$this->setSortingIndexParameters();
 
 		$this->manageDomTable();
 
@@ -360,6 +392,11 @@ class RelationshipParameters
 		$relationMethod = $this->getRelationshipMethod();
 
 		return $this->elements = $this->relationshipsManager->model->{$relationMethod};
+	}
+
+	public function getRelationshipsManager() : RelationshipsManager
+	{
+		return $this->relationshipsManager;
 	}
 
 	/**
@@ -654,6 +691,11 @@ class RelationshipParameters
 	private function renderTable()
 	{
 		return $this->table->renderPortion();
+	}
+
+	public function getRelatedModel() : Model
+	{
+		return $this->relatedModel;
 	}
 
 	/**

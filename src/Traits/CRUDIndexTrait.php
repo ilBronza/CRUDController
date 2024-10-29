@@ -152,7 +152,8 @@ trait CRUDIndexTrait
 		}
 		catch(\Exception $e)
 		{
-			Log::critical('Usa avoid create button per evitare l\'eccezione: ' . $e->getMessage());
+			throw new \Exception('errore nella creazione del pulsante nuovo elemento per la route ' . $e->getMessage());
+			dd('Usa avoid create button per evitare l\'eccezione: ' . $e->getMessage());
 		}
 		
 		$this->manageReorderButton();

@@ -331,4 +331,23 @@ trait CRUDParentingTrait
 
         return null;
     }
+
+	public function isContainedBy(Model $model) : bool
+	{
+		if($this->is($model))
+			return true;
+
+		if($this->isRoot())
+			return false;
+
+		$this->recursiveParents()->get();
+
+		$element = $this;
+
+		while($element = $element->parent)
+			if($element->is($model))
+				return true;
+
+		return false;
+	}
 }

@@ -11,6 +11,7 @@ use function extract;
 class ExtraField implements CastsAttributes
 {
     public $extraModelClassname;
+	public $extraFieldName;
 
     /**
      * Come usare ExtraField
@@ -54,16 +55,12 @@ class ExtraField implements CastsAttributes
      * 
      **/
 
-
-
-
-
-
-
-    public function __construct(string $extraModelClassname = null)
+    public function __construct(string $extraModelClassname = null, string $extraFieldName = null)
     {
-        $this->extraModelClassname = $extraModelClassname;
+	    $this->extraModelClassname = $extraModelClassname;
+	    $this->extraFieldName = $extraFieldName;
     }
+
     /**
      * Cast the given value.
      *
@@ -106,7 +103,10 @@ class ExtraField implements CastsAttributes
 
     public function _get($model, string $key, $value, array $attributes)
     {
-        if(! $this->extraModelClassname)
+	    if($this->extraFieldName)
+		    $key = $this->extraFieldName;
+
+	    if(! $this->extraModelClassname)
             return $model->getExtraAttribute($key);
 
         return $model->getCustomExtraAttribute($this->extraModelClassname, $key);
@@ -135,7 +135,10 @@ class ExtraField implements CastsAttributes
 
     public function _set($model, string $key, $value, array $attributes = null)
     {
-        if(! $extraModelClassname = $this->extraModelClassname)
+		if($this->extraFieldName)
+			$key = $this->extraFieldName;
+
+	    if(! $extraModelClassname = $this->extraModelClassname)
         {
             // if(! ($model->relationLoaded('extraFields')))
             $extraFields = $model->getCachedProjectExtraFieldsModel();

@@ -24,20 +24,20 @@ trait CRUDModelButtonsTrait
 
     static function getCreateButton(array $routeParameters = []) : Button
     {
-		try
-		{
+//		try
+//		{
 			$placeholder = static::make();
 
 			$href = $placeholder->getCreateUrl();
 			$text = __('crud::crud.createNew', ['model' => $placeholder->getTranslatedClassname()]);
-		}
-		catch(\Exception $e)
-		{
-			Log::critical($e->getMessage() . ' - ' . $e->getTraceAsString());
-
-			$href = route(static::getStaticRouteBasename() . '.create', $routeParameters);
-			$text = 'generals.create' . class_basename(static::class);
-		}
+//		}
+//		catch(\Exception $e)
+//		{
+//			Log::critical($e->getMessage() . ' - ' . $e->getTraceAsString());
+//
+//			$href = route(static::getStaticRouteBasename() . '.create', $routeParameters);
+//			$text = 'generals.create' . class_basename(static::class);
+//		}
 
 		$button = Button::create([
 			'href' => $href,

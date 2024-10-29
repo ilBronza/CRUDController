@@ -15,7 +15,7 @@ return [
 	'singleModel_children' => 'Elementi figli',
 	'singleModel_user' => 'Utente',
 	'cardTitleCreate' => 'Crea un nuovo elemento',
-	'cardTitleEdit' => 'Modifica elemento :element',
+	'cardTitleEdit' => 'Modifica elemento <strong>:element</strong>',
 	'cardIntroEdit' => 'In questa sezione puoi modificare i dati dell\'oggetto scelto.<br />Ricorda di salvare la pagina prima dell\'uscita.',
 	'cardIntroCreate' => 'In questa sezione puoi creare un <strong>nuovo elemento di tipo ":type" </strong>.<br />Ricorda di salvare la pagina prima dell\'uscita.',
 	'youAlreadyOpenedThisUrlOnADifferentPage' => 'Questo link è già aperto in un altra finestra',
