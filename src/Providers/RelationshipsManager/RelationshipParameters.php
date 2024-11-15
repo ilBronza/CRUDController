@@ -34,7 +34,9 @@ class RelationshipParameters
 	public $relationType;
 	public $elements;
 	public $controller;
-	public $buttons;
+	public array $buttons = [];
+
+	public bool $onlyButtonsDom = false;
 
 	public $mustPrintIntestation = false;
 
@@ -282,6 +284,8 @@ class RelationshipParameters
 
 		$this->table = Datatables::createStandAloneTable($parameters);
 
+		if($this->onlyButtonsDom)
+			$this->table->setOnlyButtonsDom();
 
 		if($this->hasSorting())
 			$this->setSortingIndexParameters();
@@ -468,6 +472,11 @@ class RelationshipParameters
 		return config('crud.realtionshipManagers.createButton', false);
 	}
 
+	public function getName() : string
+	{
+		return $this->name;
+	}
+
 	public function manageTableButtons()
 	{
 		if ($this->hasCreateButton())
@@ -485,6 +494,9 @@ class RelationshipParameters
 					)
 				);
 		}
+
+		foreach ($this->buttons as $button)
+			$this->table->addButton($button);
 
 		foreach ($this->buttonsMethods as $buttonsMethod)
 			$this->table->addButton(

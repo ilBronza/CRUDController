@@ -98,6 +98,8 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			$formOptions['updateEditor'] ?? null
 		);
 
+		$this->form->setShowTitle($formOptions['showTitle'] ?? true);
+
 		$this->form->addHtmlClass(Str::slug(request()->route()->getName()));
 
 		$this->form->setDivider(
@@ -115,6 +117,11 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		$this->form->setTitle(
 			$formOptions['title'] ?? $this->getTitle()
 		);
+
+		if($formOptions['buttonsNavbar'] ?? false)
+			$this->form->setButtonsNavbar(
+				$formOptions['buttonsNavbar']
+			);
 
 		if($formOptions['backToListUrl'] ?? false)
 			$this->form->setBackToListUrl(

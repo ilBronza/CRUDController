@@ -3,7 +3,7 @@
 	<ul id="relationswitcher{{ $relationshipManager->getModel()->getKey() }}"
 		class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
 		@foreach($relationshipManager->getRelationships() as $relationship)
-			<li><a class="uk-button uk-button-small uk-button-default"
+			<li {{ Str::slug($relationship->getName()) }}><a class="uk-button uk-button-small uk-button-default"
 				   href="#">{!! $relationship->getCardTitle() !!}</a></li>
 		@endforeach
 	</ul>

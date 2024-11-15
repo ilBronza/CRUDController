@@ -49,9 +49,7 @@ trait PackagedModelsTrait
 	{
 		try
 		{
-			return config(
-				static::getConfigParameterKey('class')
-			);			
+			return static::getClassname();
 		}
 		catch(\Throwable $e)
 		{
@@ -78,6 +76,13 @@ trait PackagedModelsTrait
 	{
 		return config(
 			static::getConfigParameterKey('table')
+		);
+	}
+
+	public static function getClassname() : string
+	{
+		return config(
+			static::getConfigParameterKey('class')
 		);
 	}
 

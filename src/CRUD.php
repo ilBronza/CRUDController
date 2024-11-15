@@ -47,10 +47,17 @@ class CRUD extends Controller
 	public Collection $fetchers;
 	public $debug = false;
 
+	public bool $showTitle = true;
+
 	use CRUDFileParametersTrait;
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
+
+	public function showTitle() : bool
+	{
+		return $this->showTitle;
+	}
 
 	public $iframed;
 	public $modelClass;
@@ -313,6 +320,10 @@ class CRUD extends Controller
 
 		if (in_array('show', $this->allowedMethods) && (! $this->avoidShowButton()) && ($this->getModel()?->exists))
 			$defaults['showElement'] = $this->getShowUrl();
+
+		$defaults['buttonsNavbar'] = $this->getButtonsNavbar();
+
+		$defaults['showTitle'] = $this->showtitle();
 
 		$defaults['saveAndNew'] = $this->hasSaveAndNew();
 		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();

@@ -15,11 +15,14 @@ trait CRUDExtraButtonsTrait
 
 	public function getButtonsNavbarName() : string
 	{
-		return "navbar" . Str::slug($this->getId());
+		return "navbar" . Str::slug($this->getName() .$this->getId());
 	}
 
-	public function setButtonsNavbar()
+	public function setButtonsNavbar(Navbar $navbar = null)
 	{
+		if($navbar)
+			return $this->buttonsNavbar = $navbar;
+
 		$this->buttonsNavbar = app('menu')->getIndependentNavbarByName(
 			$this->getButtonsNavbarName()
 		);

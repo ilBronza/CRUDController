@@ -2,6 +2,8 @@
 
 
 return [
+	'print' => 'Stampa',
+	'excel' => 'Excel',
 	'viewElementsTree' => 'Albero degli elementi',
 	'createNew' => 'Crea :model',
 	'createBy' => 'Crea da :by',

@@ -39,7 +39,7 @@ class ExtraFieldDossier implements CastsAttributes
 	{
 		return $this->formSlug;
 	}
-	
+
 	public function set($model, string $key, $value, array $attributes)
 	{
 		$form = Form::gpc()::findCachedByField('slug', $this->getFormSlug());
