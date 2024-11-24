@@ -27,7 +27,12 @@ trait CRUDModelTrait
 
 	public function getActivitylogOptions() : LogOptions
 	{
-		return LogOptions::defaults();
+		return LogOptions::defaults()->logAll()->logOnlyDirty();
+	}
+
+	public function getTranslatedClassname()
+	{
+		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 
 	public function printJsonFieldHtml($array)
@@ -134,11 +139,6 @@ trait CRUDModelTrait
 	public static function pluralLowerClass()
 	{
 		return Str::plural(strtolower(class_basename(static::class)));
-	}
-
-	public function getTranslatedClassname()
-	{
-		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 	//Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
 	//DEPRECATO, non voglio niente che non abbia array

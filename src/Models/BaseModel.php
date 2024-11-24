@@ -29,7 +29,12 @@ class BaseModel extends Model
 		'deleted_at'
 	];
 
-    public function updateWithoutEvent(array $data = [])
+	public function getActivitylogOptions(): LogOptions
+	{
+		return LogOptions::defaults()->logAll()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
+	}
+
+	public function updateWithoutEvent(array $data = [])
     {
         if(count($data))
             static::where('id', $this->id)
@@ -46,11 +51,6 @@ class BaseModel extends Model
 	{
 		return $query->whereNull($fieldName)
 				->orWhere($fieldName, false);
-	}
-
-	public function getActivitylogOptions(): LogOptions
-	{
-		return LogOptions::defaults();
 	}
 
 	public function getTranslatedClassname()

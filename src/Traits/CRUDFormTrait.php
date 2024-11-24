@@ -135,6 +135,11 @@ trait CRUDFormTrait
 			);
 	}
 
+	public function getForm() : Form
+	{
+		return $this->getModelFormHelper()->getForm();
+	}
+
 	public function getAllFieldsetFields(array $fieldsetParameters) : array
 	{
 		if(isset($fieldsetParameters['fields']))

@@ -103,6 +103,9 @@ class ExtraField implements CastsAttributes
 
     public function _get($model, string $key, $value, array $attributes)
     {
+		if(! $model->exists)
+			return null;
+
 	    if($this->extraFieldName)
 		    $key = $this->extraFieldName;
 

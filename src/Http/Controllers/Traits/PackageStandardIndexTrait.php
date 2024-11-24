@@ -7,10 +7,20 @@ use IlBronza\CRUD\Traits\CRUDPlainIndexTrait;
 
 trait PackageStandardIndexTrait
 {
+    public $allowedMethods = ['index'];
+
     use CRUDPlainIndexTrait;
     use CRUDIndexTrait;
 
-    abstract function getIndexElementsRelationsArray() : array;
+    function getIndexElementsRelationsArray() : array
+    {
+        return [];
+    }
+
+    function getIndexElementsScopesArray() : array
+    {
+        return $this->scopes;
+    }
 
     public function getIndexFieldsArray()
     {
@@ -28,6 +38,9 @@ trait PackageStandardIndexTrait
 
         if($with = $this->getIndexElementsRelationsArray())
             $query->with($with);
+
+        foreach($scopes = $this->getIndexElementsScopesArray() as $scope)
+            $query->{$scope}();
 
         return $query->get();
     }

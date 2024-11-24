@@ -10,8 +10,15 @@ trait CRUDExtraButtonsTrait
 {
 	public ? Navbar $buttonsNavbar = null;
 
-	abstract public function getName() : ? string;
-	abstract public function getId() : ? string;
+	public function getName() : ? string
+	{
+		return strtolower(class_basename($this));
+	}
+
+	public function getId() : ? string
+	{
+		return str()->random(5);
+	}
 
 	public function getButtonsNavbarName() : string
 	{

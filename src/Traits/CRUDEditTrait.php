@@ -99,8 +99,6 @@ trait CRUDEditTrait
     }
 
     public function manageBeforeEdit() {
-		$this->shareEditButtons();
-		$this->loadEditExtraViews();
     }
 
 	public function shareModels()
@@ -152,6 +150,9 @@ trait CRUDEditTrait
 			$this->getUpdateModelAction(),
 			$this->provideFormDefaultSettings()
 		);
+
+		$this->shareEditButtons();
+		$this->loadEditExtraViews();
 
 		$this->manageBeforeEdit();
 

@@ -12,6 +12,7 @@ use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
+use IlBronza\CRUD\Traits\IlBronzaPackages\CRUDExtraButtonsTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
 use IlBronza\Form\Traits\ExtraViewsTrait;
 use IlBronza\UikitTemplate\Fetcher;
@@ -19,12 +20,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-
 use function config;
 use function ini_set;
 
 class CRUD extends Controller
 {
+	use CRUDExtraButtonsTrait;
 	use ExtraViewsTrait;
 
 	static $availableExtraViewsPositions = [

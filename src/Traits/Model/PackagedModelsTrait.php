@@ -62,6 +62,11 @@ trait PackagedModelsTrait
 		return config(static::getPackageConfigPrefix() . '.routePrefix');
 	}
 
+	public static function getConfigByKey(string $key)
+	{
+		return config(static::getConfigParameterKey($key));
+	}
+
 	public static function getConfigParameterKey(string $key) : string
 	{
 		return implode(".", [

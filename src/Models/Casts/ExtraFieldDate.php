@@ -41,8 +41,11 @@ class ExtraFieldDate extends ExtraField
         if($value instanceof Carbon)
             return $value;
 
-        try
+		try
         {
+			if(strlen($value) == '10')
+				return Carbon::createFromFormat('Y-m-d', $value);
+
             return Carbon::createFromFormat('Y-m-d H:i:s', $value);
         }
         catch(\Exception $e)

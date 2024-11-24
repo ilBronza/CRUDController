@@ -8,9 +8,8 @@ use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRestoreTrait;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\LogOptions;
 
-class BaseDestroyableModel extends Model 
+class BaseDestroyableModel extends Model
 {
 	use CRUDRestoreTrait;
 
@@ -22,29 +21,26 @@ class BaseDestroyableModel extends Model
 		'deleted_at'
 	];
 
-    public function updateWithoutEvent(array $data = [])
-    {
-        if(count($data))
-            static::where('id', $this->id)
-                ->update($data);
-    }
+	public function updateWithoutEvent(array $data = [])
+	{
+		if (count($data))
+			static::where('id', $this->id)->update($data);
+	}
 
 	public function scopeWhereBooleanNotFalse($query, string $fieldName)
 	{
-		return $query->whereNull($fieldName)
-				->orWhere($fieldName, true);
+		return $query->whereNull($fieldName)->orWhere($fieldName, true);
 	}
 
 	public function scopeWhereBooleanNotTrue($query, string $fieldName)
 	{
-		return $query->whereNull($fieldName)
-				->orWhere($fieldName, false);
+		return $query->whereNull($fieldName)->orWhere($fieldName, false);
 	}
 
-	public function getActivitylogOptions(): LogOptions
-	{
-		return LogOptions::defaults();
-	}
+	//	public function getActivitylogOptions(): LogOptions
+	//	{
+	//		return LogOptions::defaults();
+	//	}
 
 	public function getTranslatedClassname()
 	{
@@ -53,23 +49,23 @@ class BaseDestroyableModel extends Model
 
 	public function _customSetter(string $fieldName, mixed $value, bool $save = false) : mixed
 	{
-		if($this->casts[$fieldName] ?? null)
+		if ($this->casts[$fieldName] ?? null)
 		{
 			$caster = class_basename($this->getCastType($fieldName));
 
-			if(strpos($caster, 'extrafield') === 0)
-				{
-					$type = explode(":", $caster)[1] ?? null;
+			if (strpos($caster, 'extrafield') === 0)
+			{
+				$type = explode(":", $caster)[1] ?? null;
 
-					ExtraField::staticSet($type, $this, $fieldName, $value);
-				}
+				ExtraField::staticSet($type, $this, $fieldName, $value);
+			}
 			else
 				$this->$fieldName = $value;
 		}
 		else
 			$this->$fieldName = $value;
 
-		if($save)
+		if ($save)
 			$this->save();
 
 		return $this->$fieldName;
