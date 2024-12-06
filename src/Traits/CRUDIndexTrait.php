@@ -203,6 +203,7 @@ trait CRUDIndexTrait
 		if(! $selectRow)
 			$selectRow = $this->getSelectRow();
 
+		$this->setPagetitle();
 
 		$this->table = Datatables::create(
 			$tableName,

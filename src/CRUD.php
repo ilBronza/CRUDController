@@ -20,8 +20,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+
 use function config;
+use function dd;
+use function implode;
+use function in_array;
 use function ini_set;
+use function is_string;
+use function method_exists;
+use function request;
+use function trans;
 
 class CRUD extends Controller
 {
@@ -55,17 +63,12 @@ class CRUD extends Controller
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
 
-	public function showTitle() : bool
-	{
-		return $this->showTitle;
-	}
-
 	public $iframed;
 	public $modelClass;
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
+	public $extraViews = [];
 
 	//general parameters
-	public $extraViews = [];
 	public $pageLength;
 	public $returnBack = false;
 	public $avoidBackToList = false;
@@ -74,14 +77,14 @@ class CRUD extends Controller
 	public $rowSelectCheckboxes = false;
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
+	public $indexCacheKey;
 
 	// index parameters
-	public $indexCacheKey;
 	public $canEditModelInstance = true;
 	public $editModelInstanceUrl;
+	public $editFormDivider = false;
 
 	//show parameters
-	public $editFormDivider = false;
 	public $createFormDivider = false;
 	public $relationshipManager;
 	public $showStickyButtonsNavbar = false;
@@ -347,7 +350,15 @@ class CRUD extends Controller
 
 	public function getModel() : ?Model
 	{
-		return $this->modelInstance;
+		if (isset($this->modelInstance))
+			return $this->modelInstance;
+
+		return null;
+	}
+
+	public function showTitle() : bool
+	{
+		return $this->showTitle;
 	}
 
 	public function hasUpdateEditor()
@@ -420,4 +431,38 @@ class CRUD extends Controller
 		return Str::plural(Str::camel($className));
 	}
 
+	public function calculatePageTitle() : ? string
+	{
+		if (request()->ajax())
+			return null;
+
+		if (isset($this->pageTitle))
+			return $this->pageTitle;
+
+		if ((! request()->route())||(! $routeName = request()->route()->getName()))
+			return config('app.name');
+
+		if(method_exists($this, 'getPackageConfigName'))
+			return trans($this->getPackageConfigName() . '::routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+
+		return trans('routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+	}
+
+	public function getName() : ? string
+	{
+		return null;
+	}
+
+	public function getId() : ? string
+	{
+		return null;
+	}
+
+	public function setPageTitle()
+	{
+		if(! $pageTitle = $this->calculatePageTitle())
+			return null;
+
+		app('uikittemplate')->setPageTitle($pageTitle);
+	}
 }

@@ -131,6 +131,8 @@ trait CRUDEditTrait
 			$modelInstance
 		);
 
+		$this->setPagetitle();
+
 		$this->checkIfUserCanUpdate();
 
 		/**

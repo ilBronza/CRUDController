@@ -104,6 +104,8 @@ trait CRUDCreateTrait
 			$this->makeModel()
 		);
 
+		$this->setPagetitle();
+
 		$this->userCanPerformCreate();
 		$this->manageReturnBack();
 

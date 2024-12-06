@@ -175,6 +175,12 @@ trait CRUDModelExtraFieldsTrait
 					$mutator->set($model, $attribute, $model->$attribute, []);
 				}
 
+				$model->attributes[$attribute] = null;
+				$model->classCastCache[$attribute] = null;
+
+				unset($model->attributes[$attribute]);
+				unset($model->classCastCache[$attribute]);
+
 				$model->offsetUnset($attribute);
 			}
 		});

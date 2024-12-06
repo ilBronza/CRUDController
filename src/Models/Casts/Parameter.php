@@ -20,7 +20,15 @@ class Parameter implements CastsAttributes
 
 	public function getParameters($model, array $attributes) : array
 	{
-		return json_decode( $attributes[$this->parametersFieldName] ?? null, true) ?? [];
+		try
+		{
+			return json_decode( $attributes[$this->parametersFieldName] ?? null, true) ?? [];
+		}
+		catch ( \Throwable $e )
+		{
+			$result = json_decode( $attributes[$this->parametersFieldName] ?? null, true) ?? [];
+			dd([$result, $attributes, $attributes[$this->parametersFieldName], $this->parametersFieldName, $e->getMessage()]);
+		}
 	}
 
 	public function setParameters(array $attributes, array $parameters) : array

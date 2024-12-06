@@ -172,6 +172,8 @@ trait CRUDShowTrait
 
 		$this->setModel($modelInstance);
 
+		$this->setPagetitle();
+
 		$this->checkIfUserCanSee();
 
 		if(request()->ibeditor)
