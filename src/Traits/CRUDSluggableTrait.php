@@ -40,6 +40,8 @@ trait CRUDSluggableTrait
 				$slug = Str::slug($slug);
 			}
 
+			$slug = Str::limit($slug, config('app.slug_length', 128));
+
 			$existingsSlugs = DB::table((new static)->getTable())
 					->select($slugField)
 					->where($model->getKeyName(), '!=', $model->getKey())

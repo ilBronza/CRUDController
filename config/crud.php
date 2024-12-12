@@ -3,6 +3,7 @@
 return [
     //
 	'realtionshipManagers' => [
+		'active' => true,
 		'selectRowCheckboxes' => true,
 		'reloadButton' => false,
 		'copyButton' => false,
