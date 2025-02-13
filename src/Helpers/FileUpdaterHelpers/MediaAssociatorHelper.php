@@ -28,8 +28,7 @@ class MediaAssociatorHelper
 	{
 		$helper = new static($model, $collectionName, $disk, $parameters);
 
-		$helper->file = $helper->getModel()
-					->addMediaFromRequest($fileRequestAttributeName);
+		$helper->file = $helper->getModel()->addMediaFromRequest($fileRequestAttributeName);
 
 		return $helper->storeDataAndReturnMessage();
 	}

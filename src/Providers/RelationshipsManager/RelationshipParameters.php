@@ -7,6 +7,7 @@ use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 
+use function class_basename;
 use function config;
 use function dd;
 use function is_null;
@@ -38,7 +39,7 @@ class RelationshipParameters
 
 	public bool $onlyButtonsDom = false;
 
-	public $mustPrintIntestation = false;
+	public $mustPrintIntestation = true;
 
 	public ? bool $hasCreateButton = null;
 	public $currentView;
@@ -137,7 +138,7 @@ class RelationshipParameters
 	/**
 	 * set all relation properties by relation type
 	 *
-	 * set $relationType => as BelongsToMane, BelongsTo, etc.
+	 * set $relationType => as BelongsToMany, BelongsTo, etc.
 	 * set related model instance => ex. post
 	 * set renderingType
 	 **/
@@ -145,8 +146,11 @@ class RelationshipParameters
 	{
 		$relationMethod = $this->getRelationshipMethod();
 
-		$this->eloquentRelationship = $this->relationshipsManager->model->{$relationMethod}();
-		$this->relationType = class_basename($this->eloquentRelationship);
+		if(! $this->relationType)
+		{
+			$this->eloquentRelationship = $this->relationshipsManager->model->{$relationMethod}();
+			$this->relationType = class_basename($this->eloquentRelationship);
+		}
 
 		$this->setRelatedModel();
 

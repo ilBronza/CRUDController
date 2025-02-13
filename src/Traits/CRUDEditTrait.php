@@ -2,11 +2,14 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelEditor;
 use IlBronza\Form\Helpers\FieldsetsProvider\EditFieldsetsProvider;
 use Illuminate\Http\Request;
 
+use function app;
 use function config;
+use function dd;
 use function method_exists;
 use function request;
 use function view;
@@ -77,12 +80,27 @@ trait CRUDEditTrait
 	{
 	}
 
+	public function getBackToListButton() : Button
+	{
+		return Button::create([
+			'name' => 'back_to_list',
+			'icon' => 'bars',
+			'text' => 'crud::buttons.backToList',
+			'href' => $this->getModel()->getIndexUrl()
+		]);
+
+	}
+
 	public function shareEditButtons()
 	{
 		$this->getExtendedEditButtons();
 
 		if((isset($this->editButtons))&&(count($this->editButtons)))
 			view()->share('buttons', $this->editButtons);
+
+		$this->addNavbarButton(
+			$this->getBackToListButton()
+		);
 	}
 
 	public function addEditExtraViews()

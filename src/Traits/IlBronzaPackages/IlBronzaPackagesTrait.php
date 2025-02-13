@@ -4,6 +4,9 @@ namespace IlBronza\CRUD\Traits\IlBronzaPackages;
 
 use IlBronza\CRUD\Providers\RouterProvider\IbRouter;
 
+use Illuminate\Contracts\Foundation\CachesConfiguration;
+
+use function array_replace_recursive;
 use function config;
 use function dd;
 use function get_class;
@@ -43,6 +46,5 @@ trait IlBronzaPackagesTrait
 		return static::_getController(
 			static::getPackageConfigPrefix() . ".models.{$target}.controllers.{$type}"
 		);
-
 	}
 }

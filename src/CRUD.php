@@ -20,13 +20,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Log;
 
 use function config;
-use function dd;
+use function get_class;
 use function implode;
 use function in_array;
 use function ini_set;
-use function is_string;
 use function method_exists;
 use function request;
 use function trans;
@@ -117,6 +117,11 @@ class CRUD extends Controller
 		$this->setFetchers();
 	}
 
+	static function getClassKey() : string
+	{
+		return Str::slug(static::class);
+	}
+
 	/**
 	 * get subject model class
 	 *
@@ -137,14 +142,6 @@ class CRUD extends Controller
 	{
 		// example
 		// $this->modelClass = config('someting.model');
-	}
-
-	private function checkIfModelUsesTrait()
-	{
-		//TODO RISOLVERE STA ROBA
-		// foreach($this->neededTraits as $neededTrait)
-		// 	if(! in_array($neededTrait, class_uses(new ($this->getModelClass())())))
-		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->getModelClass());
 	}
 
 	public function getValidExtraViewsPositions() : array
@@ -175,11 +172,6 @@ class CRUD extends Controller
 		session([$classKey => $url]);
 
 		return $classKey;
-	}
-
-	static function getClassKey() : string
-	{
-		return Str::slug(static::class);
 	}
 
 	public function manageReturnBack() : ?string
@@ -418,6 +410,43 @@ class CRUD extends Controller
 		}
 	}
 
+	public function calculatePageTitle() : ?string
+	{
+		if (request()->ajax())
+			return null;
+
+		if (isset($this->pageTitle))
+			return $this->pageTitle;
+
+		if ((! request()->route()) || (! $routeName = request()->route()->getName()))
+			return config('app.name');
+
+		if (method_exists($this, 'getPackageConfigName'))
+			return trans($this->getPackageConfigName() . '::routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+
+		Log::critical('dichiara getPackageConfigName per il controller ' . get_class($this));
+
+		return trans('routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+	}
+
+	public function getName() : ?string
+	{
+		return null;
+	}
+
+	public function getId() : ?string
+	{
+		return null;
+	}
+
+	public function setPageTitle()
+	{
+		if (! $pageTitle = $this->calculatePageTitle())
+			return null;
+
+		app('uikittemplate')->setPageTitle($pageTitle);
+	}
+
 	/**
 	 * get controller's model translation file name prefix
 	 *
@@ -431,38 +460,11 @@ class CRUD extends Controller
 		return Str::plural(Str::camel($className));
 	}
 
-	public function calculatePageTitle() : ? string
+	private function checkIfModelUsesTrait()
 	{
-		if (request()->ajax())
-			return null;
-
-		if (isset($this->pageTitle))
-			return $this->pageTitle;
-
-		if ((! request()->route())||(! $routeName = request()->route()->getName()))
-			return config('app.name');
-
-		if(method_exists($this, 'getPackageConfigName'))
-			return trans($this->getPackageConfigName() . '::routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
-
-		return trans('routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
-	}
-
-	public function getName() : ? string
-	{
-		return null;
-	}
-
-	public function getId() : ? string
-	{
-		return null;
-	}
-
-	public function setPageTitle()
-	{
-		if(! $pageTitle = $this->calculatePageTitle())
-			return null;
-
-		app('uikittemplate')->setPageTitle($pageTitle);
+		//TODO RISOLVERE STA ROBA
+		// foreach($this->neededTraits as $neededTrait)
+		// 	if(! in_array($neededTrait, class_uses(new ($this->getModelClass())())))
+		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->getModelClass());
 	}
 }

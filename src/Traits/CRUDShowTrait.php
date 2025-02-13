@@ -8,6 +8,9 @@ use IlBronza\CRUD\Traits\CRUDShowRelationshipsTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
 use Illuminate\Http\Request;
 
+use function is_null;
+use function view;
+
 trait CRUDShowTrait
 {
 	use CRUDShowRelationshipsTrait;
@@ -16,6 +19,7 @@ trait CRUDShowTrait
 	//edit parameters
 	public $standardShowView = 'crud::uikit.show';
 	public $showButtons = [];
+	public ? bool $showEditLink = null;
 
 	/**
 	 * get show view name
@@ -79,6 +83,15 @@ trait CRUDShowTrait
 		return null;
 	}
 
+
+	public function showEditLink() : bool
+	{
+		if(! is_null($this->showEditLink))
+			return $this->showEditLink;
+
+		return config('crud.showEditLink', true);
+	}
+
 	private function shareShowParameters()
 	{
 		$this->shareShowModels();
@@ -93,6 +106,8 @@ trait CRUDShowTrait
 		view()->share('showStickyButtonsNavbar', $this->showStickyButtonsNavbar);
 		view()->share('canEditModelInstance', $this->canEditModelInstance);
 		view()->share('editModelInstanceUrl', $this->getEditModelIsntanceUrl());
+
+		view()->share('showEditLink', $this->showEditLink());
 
 		if((in_array('index', $this->allowedMethods))&&(! $this->avoidBackToList))
 			view()->share('backToListUrl', $this->getIndexUrl());

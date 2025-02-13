@@ -9,7 +9,6 @@ return [
 	'createBy' => 'Crea da :by',
 	'add' => 'Aggiungi :what',
 	'showElement' => 'Mostra :element',
-	'backToList' => 'Vai alla lista',
 	'showElementPage' => 'Mostra elemento :element',
 	'editElement' => 'Modifica :element',
 	'singleModel_categories' => 'Categoria',

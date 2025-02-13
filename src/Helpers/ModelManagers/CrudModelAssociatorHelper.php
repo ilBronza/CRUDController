@@ -2,9 +2,10 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
-use IlBronza\CRUD\Helpers\ModelManagers\CrudModelClonerHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+
+use function get_class;
 
 class CrudModelAssociatorHelper
 {
@@ -80,10 +81,27 @@ class CrudModelAssociatorHelper
 					$value = CrudModelClonerHelper::cloneIfClonable($value);
 
 				$this->getModel()
-					->{$this->getRelation()}()
-					->save(
-						$value
-					);
+				     ->{$this->getRelation()}()
+				     ->save(
+					     $value
+				     );
+			}
+
+			return $this->sendAssociationEvent();
+		}
+
+		if($relationTypeName == 'HasOne')
+		{
+			foreach($this->getValues() as $value)
+			{
+				if($duplicateDirectRelations)
+					$value = CrudModelClonerHelper::cloneIfClonable($value);
+
+				$this->getModel()
+				     ->{$this->getRelation()}()
+				     ->save(
+					     $value
+				     );
 			}
 
 			return $this->sendAssociationEvent();
@@ -92,15 +110,27 @@ class CrudModelAssociatorHelper
 		if($relationTypeName == 'BelongsToMany')
 		{
 			$this->getModel()
-				->{$this->getRelation()}()
-				->sync(
-					$this->getValues()
-				);
+			     ->{$this->getRelation()}()
+			     ->sync(
+				     $this->getValues()
+			     );
 
 			return $this->sendAssociationEvent();
 		}
 
-		throw new \Exception($relationTypeName . ' Errore manca questo tipo da associare in ' . get_class($this));
+		if($relationTypeName == 'MorphMany')
+		{
+			foreach($this->getValues() as $value)
+				$this->getModel()
+				     ->{$this->getRelation()}()
+				     ->save(
+					     CrudModelClonerHelper::cloneIfClonable($value)
+				     );
+
+			return $this->sendAssociationEvent();
+		}
+
+		throw new \Exception($relationTypeName . ' Errore manca questo tipo da associare in ' . get_class($this) . ' per la relazione ' . get_class($this->getModel()) . ' -> ' . $this->getRelation());
 	}
 
 	static function associateRelation(Model $model, string $relation, array|Collection $values, bool $duplicateDirectRelations = false)

@@ -9,15 +9,17 @@
     <div class="uk-card-header">
         <div uk-grid>
             <div class="uk-width-expand">
-                @if($indexUrl = $modelInstance->getIndexUrl())
-                <a class="uk-display-inline-block" href="{{ $indexUrl }}">
-                    <i class="fa-solid fa-list"></i>
-                    Torna alla lista {{ $modelInstance->getPluralTranslatedClassname() }}
-                </a>
-                @endif
-
                 <span class="uk-h3 uk-display-block">
                     {{ $modelInstance->getName() }}
+
+                    @if($modelInstance->userCanUpdate(Auth::user()))
+                    @if(($editUrl = ($editModelInstanceUrl ?? $modelInstance->getEditURL()))&&((((! isset($canEditModelInstance))||($canEditModelInstance)))))
+                        <a href="{{ $editUrl }}">
+                            {!! FaIcon::edit() !!}
+                        </a>
+                    @endif
+                    @endif
+
                 </span>
 
                 @if((isset($backToListUrl))||(isset($showButtons)))
@@ -48,7 +50,18 @@
                 @endif
             </div>
 
-            @include('crud::utilities.editLink', ['element' => $modelInstance])
+            @if($showEditLink)
+                @include('crud::utilities.editLink', ['element' => $modelInstance])
+            @endif
+
+            @if($indexUrl = $modelInstance->getIndexUrl())
+                <div class="uk-width-auto">
+                    <a class="uk-display-inline-block" href="{{ $indexUrl }}">
+                        <i class="fa-solid fa-list"></i>
+                        Torna alla lista {{ $modelInstance->getPluralTranslatedClassname() }}
+                    </a>
+                </div>
+            @endif
 
         </div>
     </div>

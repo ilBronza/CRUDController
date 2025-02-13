@@ -4,11 +4,14 @@ return [
     //
 	'realtionshipManagers' => [
 		'active' => true,
-		'selectRowCheckboxes' => true,
+		'selectRowCheckboxes' => false,
 		'reloadButton' => false,
 		'copyButton' => false,
 		'csvButton' => false,
 	],
+
+	//inside every show controller
+	'showEditLink' => true,
 
 	'alertOldFieldsetMethods' => env('CRUD_ALERT_OLD_FIELDSETS_METHOD', true),
     'editFormCardClass' => env('CRUD_EDIT_CARD_CLASS', ''),
