@@ -1,16 +1,16 @@
-<div class="uk-card-footer relationships">
+<div class="uk-card-footer relationships {{ strtolower($relationshipManager->getModel()->getMorphClass()) }}">
 
 	<ul id="relationswitcher{{ $relationshipManager->getModel()->getKey() }}"
 		class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
 		@foreach($relationshipManager->getRelationships() as $relationship)
-			<li {{ Str::slug($relationship->getName()) }}><a class="uk-button uk-button-small uk-button-default"
+			<li class="{{ Str::slug($relationship->getName()) }}"><a class="uk-button uk-button-small uk-button-default"
 				   href="#">{!! $relationship->getCardTitle() !!}</a></li>
 		@endforeach
 	</ul>
 
 	<ul class="uk-switcher uk-margin">
 		@foreach($relationshipManager->getRelationships() as $relationship)
-			<li>
+			<li class="{{ Str::slug($relationship->getName()) }}">
 				<div class="uk-card uk-card-small">
 					<div class="uk-card-body">
 						{!! $relationship->render() !!}

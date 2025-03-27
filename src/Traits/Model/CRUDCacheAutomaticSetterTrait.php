@@ -22,6 +22,7 @@ trait CRUDCacheAutomaticSetterTrait
 
     public function automaticallyStoreInCache($model)
     {
+        dd('questo crea problemi con gli extrafields appena creati, verificare');
         foreach(static::getAutomaticCachingRelationships() as $relationship)
         {
             if($model->relationLoaded($relationship))

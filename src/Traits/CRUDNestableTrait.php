@@ -205,6 +205,7 @@ trait CRUDNestableTrait
                 $siblingId = $this->removeLeadingControlCharacter($sibling);
 
                 $item = $this->getModelClass()::findOrFail($siblingId);
+
                 $item->sorting_index = $index;
                 $item->save();
             }

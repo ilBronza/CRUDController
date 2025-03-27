@@ -29,5 +29,6 @@ return [
 	'serverClearCache' => 'Pulisci server Cache',
 	'elementSuccesfullyDeleted' => ':element cancellato con successo',
 	'cardTitleShow' => 'Mostra :element',
+	'createRelatedBy' => 'Crea :related per :by'
 ];
 

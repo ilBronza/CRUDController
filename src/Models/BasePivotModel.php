@@ -14,8 +14,8 @@ class BasePivotModel extends Pivot
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 
-	protected $dates = [
-		'deleted_at'
+	protected $casts = [
+		'deleted_at' => 'datetime'
 	];
 
 }

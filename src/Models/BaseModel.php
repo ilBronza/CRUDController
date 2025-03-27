@@ -25,14 +25,9 @@ class BaseModel extends Model
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 
-	protected $dates = [
-		'deleted_at'
+	protected $casts = [
+		'deleted_at' => 'datetime'
 	];
-
-	public function getActivitylogOptions(): LogOptions
-	{
-		return LogOptions::defaults()->logAll()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
-	}
 
 	public function updateWithoutEvent(array $data = [])
     {
@@ -64,7 +59,7 @@ class BaseModel extends Model
 		{
 			$caster = class_basename($this->getCastType($fieldName));
 
-			if(strpos($caster, 'extrafield') === 0)
+			if(stripos($caster, 'extrafield') === 0)
 				{
 					$type = explode(":", $caster)[1] ?? null;
 

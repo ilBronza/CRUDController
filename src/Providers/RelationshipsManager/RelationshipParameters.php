@@ -29,11 +29,16 @@ class RelationshipParameters
 		'BelongsTo' => 'view'
 	];
 
-	public ? bool $sorting;
+	public ?bool $sorting;
 	public $name;
 	public $relation;
 	public $relationType;
+	public $eloquentRelationship;
+	public $renderAs;
+	public $relatedModel;
 	public $elements;
+
+	public $relatedModelClass;
 	public $controller;
 	public array $buttons = [];
 
@@ -41,7 +46,7 @@ class RelationshipParameters
 
 	public $mustPrintIntestation = true;
 
-	public ? bool $hasCreateButton = null;
+	public ?bool $hasCreateButton = null;
 	public $currentView;
 	public $extraVariables;
 	public $translatedTitle;
@@ -52,12 +57,10 @@ class RelationshipParameters
 	public ?string $fieldsGroupsParametersFile;
 	public $view;
 	public $fieldsGroupsNames = ['related'];
-	public ? bool $selectRowCheckboxes = null;
-	public ? bool $reloadButton = null;
-	public ? bool $copyButton = null;
-	public ? bool $csvButton = null;
-
-
+	public ?bool $selectRowCheckboxes = null;
+	public ?bool $reloadButton = null;
+	public ?bool $copyButton = null;
+	public ?bool $csvButton = null;
 
 	public $relationshipsManager;
 
@@ -68,31 +71,6 @@ class RelationshipParameters
 
 		$this->manageParameters($parameters);
 		$this->setRenderingType();
-	}
-
-	/**
-	 * set parameters and build default relation parameters
-	 **/
-	private function manageParameters(array $parameters)
-	{
-		foreach ($parameters as $name => $value)
-			$this->{$name} = $value;
-
-		$this->manageRelation($parameters);
-	}
-
-	/**
-	 * set relation name if given, otherwise set name as relation
-	 *
-	 * @param $parameters  | array
-	 **/
-	private function manageRelation(array $parameters)
-	{
-		if (isset($parameters['relation']))
-			$this->setRelation($parameters['relation']);
-
-		else
-			$this->setRelation($this->name);
 	}
 
 	/**
@@ -146,7 +124,7 @@ class RelationshipParameters
 	{
 		$relationMethod = $this->getRelationshipMethod();
 
-		if(! $this->relationType)
+		if (! $this->relationType)
 		{
 			$this->eloquentRelationship = $this->relationshipsManager->model->{$relationMethod}();
 			$this->relationType = class_basename($this->eloquentRelationship);
@@ -234,6 +212,11 @@ class RelationshipParameters
 		return $this->setCurrentView();
 	}
 
+	public function returnSingleRow()
+	{
+		return $this->setTable();
+	}
+
 	public function getTable() : Datatables
 	{
 		return $this->table;
@@ -241,16 +224,16 @@ class RelationshipParameters
 
 	public function hasSorting()
 	{
-		if(isset($this->sorting))
+		if (isset($this->sorting))
 			return $this->sorting;
 
-		if(! $table = $this->getTable())
+		if (! $table = $this->getTable())
 			return false;
 
 		$fields = $table->getFields();
 
-		foreach($fields as $name => $_field)
-			if($name == 'sorting_index')
+		foreach ($fields as $name => $_field)
+			if ($name == 'sorting_index')
 				return true;
 
 		return false;
@@ -270,9 +253,11 @@ class RelationshipParameters
 	 **/
 	public function setTable()
 	{
-		if (request()->rowId)
-			if ($this->name != 'quantities')
-				return;
+//		if (request()->rowId)
+//			if ($this->name != 'quantities')
+//				return;
+//
+//		dd('qwe');
 
 		$parameters = [
 			'name' => $this->getTableName(),
@@ -288,10 +273,10 @@ class RelationshipParameters
 
 		$this->table = Datatables::createStandAloneTable($parameters);
 
-		if($this->onlyButtonsDom)
+		if ($this->onlyButtonsDom)
 			$this->table->setOnlyButtonsDom();
 
-		if($this->hasSorting())
+		if ($this->hasSorting())
 			$this->setSortingIndexParameters();
 
 		$this->manageDomTable();
@@ -414,7 +399,7 @@ class RelationshipParameters
 	 **/
 	public function hasSelectRowCheckboxes() : bool
 	{
-		if(! is_null($this->selectRowCheckboxes))
+		if (! is_null($this->selectRowCheckboxes))
 			return $this->selectRowCheckboxes;
 
 		return config('crud.realtionshipManagers.selectRowCheckboxes');
@@ -422,7 +407,7 @@ class RelationshipParameters
 
 	public function getHasCsvButton()
 	{
-		if(! is_null($this->csvButton))
+		if (! is_null($this->csvButton))
 			return $this->csvButton;
 
 		return config('crud.realtionshipManagers.csvButton');
@@ -430,7 +415,7 @@ class RelationshipParameters
 
 	public function getHasCopyButton()
 	{
-		if(! is_null($this->copyButton))
+		if (! is_null($this->copyButton))
 			return $this->copyButton;
 
 		return config('crud.realtionshipManagers.copyButton');
@@ -438,7 +423,7 @@ class RelationshipParameters
 
 	public function getHasReloadButton()
 	{
-		if(! is_null($this->reloadButton))
+		if (! is_null($this->reloadButton))
 			return $this->reloadButton;
 
 		return config('crud.realtionshipManagers.reloadButton');
@@ -470,7 +455,7 @@ class RelationshipParameters
 
 	public function hasCreateButton()
 	{
-		if(! is_null($this->hasCreateButton))
+		if (! is_null($this->hasCreateButton))
 			return $this->hasCreateButton;
 
 		return config('crud.realtionshipManagers.createButton', false);
@@ -492,11 +477,13 @@ class RelationshipParameters
 					)
 				);
 			else if ($this->isParentingRelationship())
+			{
 				$this->table->addButton(
 					$this->relatedModel->getCreateByRelatedButton(
-						$this->getParentModel()
+						$this->getParentModel(), $this->relatedModel
 					)
 				);
+			}
 		}
 
 		foreach ($this->buttons as $button)
@@ -641,34 +628,6 @@ class RelationshipParameters
 		return $this->renderAs == 'view';
 	}
 
-	private function renderView()
-	{
-		if ($this->controllerHasTeaserMethod())
-			return $this->renderControllerTeaser();
-
-		if (! $this->getElement())
-			return view('crud::utilities.messages._modelMissingOrNotSet');
-
-		return app($this->getController())->teaserMode()->_show(
-			$this->getElement()
-		);
-
-		throw new Exception('dichiara il controller teaser method? O facciamo un fetcher?');
-
-		if ($this->hasStandardView())
-			return view(
-				$this->getView(), ['teaserModel' => $this->getElement()]
-			);
-
-		$modelClassName = $this->getElement()->getRouteClassname();
-
-		return view(
-			$this->getView(), [
-				$modelClassName => $this->getElement()
-			]
-		);
-	}
-
 	public function controllerHasTeaserMethod() : bool
 	{
 		if (! $controller = $this->getController())
@@ -704,14 +663,67 @@ class RelationshipParameters
 		return $this->getView() == $this->getStandardView();
 	}
 
-	private function renderTable()
-	{
-		return $this->table->renderPortion();
-	}
-
 	public function getRelatedModel() : Model
 	{
 		return $this->relatedModel;
+	}
+
+	/**
+	 * set parameters and build default relation parameters
+	 **/
+	private function manageParameters(array $parameters)
+	{
+		foreach ($parameters as $name => $value)
+			$this->{$name} = $value;
+
+		$this->manageRelation($parameters);
+	}
+
+	/**
+	 * set relation name if given, otherwise set name as relation
+	 *
+	 * @param $parameters  | array
+	 **/
+	private function manageRelation(array $parameters)
+	{
+		if (isset($parameters['relation']))
+			$this->setRelation($parameters['relation']);
+
+		else
+			$this->setRelation($this->name);
+	}
+
+	private function renderView()
+	{
+		if ($this->controllerHasTeaserMethod())
+			return $this->renderControllerTeaser();
+
+		if (! $this->getElement())
+			return view('crud::utilities.messages._modelMissingOrNotSet');
+
+		return app($this->getController())->teaserMode()->_show(
+			$this->getElement()
+		);
+
+		throw new Exception('dichiara il controller teaser method? O facciamo un fetcher?');
+
+		if ($this->hasStandardView())
+			return view(
+				$this->getView(), ['teaserModel' => $this->getElement()]
+			);
+
+		$modelClassName = $this->getElement()->getRouteClassname();
+
+		return view(
+			$this->getView(), [
+				$modelClassName => $this->getElement()
+			]
+		);
+	}
+
+	private function renderTable()
+	{
+		return $this->table->renderPortion();
 	}
 
 	/**

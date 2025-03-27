@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Traits;
 
 use Auth;
+use DB;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -176,6 +177,9 @@ trait CRUDIndexTrait
 	{
 		if(isset($this->caption))
 			return $this->caption;
+
+		if($caption = $this->getTable()->getcaption())
+			return $caption;
 
 		return
 			$this->getTable()?->getPlaceholderElement()?->getPluralTranslatedClassname();

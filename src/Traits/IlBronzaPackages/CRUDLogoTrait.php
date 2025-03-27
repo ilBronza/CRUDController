@@ -32,4 +32,8 @@ trait CRUDLogoTrait
 		return $this->getKeyedRoute('logoFetcher');
 	}
 
+	public function getUploadLogoFormUrl() : string
+	{
+		return $this->getKeyedRoute('logoUploadForm');
+	}
 }

@@ -7,10 +7,13 @@ use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+
+use function dd;
 
 trait CRUDUpdateTrait
 {
@@ -167,7 +170,10 @@ trait CRUDUpdateTrait
 	 **/
 	public function sendUpdateSuccessMessage()
 	{
-
+		Ukn::s(trans('crud::messages.successfullyUpdated', [
+			'modelClass' => $this->getModel()->getTranslatedClassname(),
+			'model' => $this->getModel()->getName()
+		]));
 	}
 
 	public function manageAfterUpdate(Request $request)

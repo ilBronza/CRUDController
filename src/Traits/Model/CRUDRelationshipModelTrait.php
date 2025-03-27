@@ -78,20 +78,23 @@ trait CRUDRelationshipModelTrait
 		}
 	}
 
-	public function _getCreateByRelatedButton(Model $related, string $url) : Button
+	public function _getCreateByRelatedButton(Model $baseModel, string $url, Model $related = null) : Button
 	{
 		return Button::create([
 			'href' => $url,
-			'translatedText' => trans('crud::crud.createBy', ['by' => $related->getName()]),
+			'translatedText' => trans('crud::crud.createRelatedBy', [
+				'by' => $baseModel->getName(),
+				'related' => $related?->getTranslatedClassName()
+			]),
 			'icon' => 'plus'
 		]);
 	}
 
-	public function getCreateByRelatedButton(Model $related) : Button
+	public function getCreateByRelatedButton(Model $baseModel, $related) : Button
 	{
-		$url = $this->getCreateByRelatedUrl($related);
+		$url = $this->getCreateByRelatedUrl($baseModel);
 
-		return $this->_getCreateByRelatedButton($related, $url);
+		return $this->_getCreateByRelatedButton($baseModel, $url, $related);
 	}
 
 	public function getCreateByRelatedUrl(Model $related) : string

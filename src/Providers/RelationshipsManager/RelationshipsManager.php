@@ -7,6 +7,8 @@ use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
+use function request;
+
 abstract class RelationshipsManager
 {
 	public $name;
@@ -143,6 +145,13 @@ abstract class RelationshipsManager
 		foreach($this->getRelationships() as $name => $relationshipsParameters)
 			if($name == request()->model)
 				return $relationshipsParameters->setShowParameters();
+	}
+
+	public function manageRefreshRow()
+	{
+		foreach($this->getRelationships() as $name => $relationshipsParameters)
+			if($name == request()->model)
+				return $relationshipsParameters->returnSingleRow();
 	}
 
 	public function getCustomDom()

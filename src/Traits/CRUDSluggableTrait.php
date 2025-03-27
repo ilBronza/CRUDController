@@ -33,7 +33,7 @@ trait CRUDSluggableTrait
 
 			$slug = Str::limit($slug, config('app.slug_length', 128));
 
-			$existingsSlugs = DB::table((new static)->getTable())->select($slugField)->where($model->getKeyName(), '!=', $model->getKey())->where(function ($query) use ($slug, $slugField)
+			$existingsSlugs = $model::query()->withTrashed()->select($slugField)->where($model->getKeyName(), '!=', $model->getKey())->where(function ($query) use ($slug, $slugField)
 			{
 				$query->where($slugField, $slug);
 				$query->orWhere($slugField, 'LIKE', $slug . '-%');
@@ -54,6 +54,8 @@ trait CRUDSluggableTrait
 
 				$model->{$slugField} = $slug . '-' . $i;
 			}
+
+
 		});
 	}
 

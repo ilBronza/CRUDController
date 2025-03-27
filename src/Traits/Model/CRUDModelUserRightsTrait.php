@@ -2,9 +2,16 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use App\Models\ProjectSpecific\Contracttype;
 use Auth;
 use IlBronza\AccountManager\Models\User;
 use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Support\Facades\Log;
+
+use function dd;
+use function get_class;
+use function get_class_methods;
 
 trait CRUDModelUserRightsTrait
 {
@@ -57,7 +64,43 @@ trait CRUDModelUserRightsTrait
         if(Auth::guest())
             return false;
 
-        return true;
+		if(! $user)
+			$user = Auth::user();
+
+	    try
+	    {
+		    /**
+		     * if user doesn't have config requried roles, he cnanot see the model
+		     * if user has the required roles, he pass this check
+		     *
+		     * 'contracttype' => [
+		     *      'class' => Contracttype::class,
+		     *      'roles' => [
+		     *          'show' => [
+		     *              'any' => ['administrator', 'vnl_2025']
+		     *             ]
+		     *          ]
+		     *      ],
+		     *
+		     *  declaration example
+		     */
+
+		    if(! $roles = $this->getConfigByKey('roles.show.any', []))
+				$roles = config(static::getPackageConfigPrefix() . '.roles', []);
+
+			if(($roles)&&(! $user->hasAnyRole($roles)))
+				return false;
+	    }
+	    catch(\Exception $e)
+	    {
+		    /**
+		     *
+		     * we should use always packaged methods for model
+		     */
+		    Log::critical($e->getMessage() . ' Aggiungi il model package per gestire sta cosa per il model ' . get_class($this));
+	    }
+
+	    return true;
     }
 
     public function userCanSeeTeaser(User $user = null)

@@ -22,7 +22,10 @@ class Parameter implements CastsAttributes
 	{
 		try
 		{
-			return json_decode( $attributes[$this->parametersFieldName] ?? null, true) ?? [];
+			if(! isset($attributes[$this->parametersFieldName]))
+				return [];
+
+			return json_decode( $attributes[$this->parametersFieldName], true);
 		}
 		catch ( \Throwable $e )
 		{

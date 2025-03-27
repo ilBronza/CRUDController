@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use Exception;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdaterEditor;
 use IlBronza\Form\Facades\Form;
 use IlBronza\FormField\FormField;
@@ -33,59 +34,9 @@ trait CRUDUpdateEditorTrait
 		return $this->manageUpdateGeneric($request);
 	}
 
-	private function isToggle(Request $request)
-	{
-		return $request->input('toggle', false);
-	}
-
-	private function validateToggleRequest(Request $request)
-	{
-		throw new \Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
-
-		$this->setUpdateFieldsetsProvider();
-		$validationArray = $this->fieldsetsProvider->getValidationParameters();
-
-		// $validationArray = $this->getUpdateEditorValidationArray();
-
-		$parameters = $request->validate([
-			'field' => 'string|required|in:' . implode(',', array_keys($validationArray)),
-			'value' => 'boolean|nullable'
-		]);
-
-		$fieldName = $parameters['field'];
-		$value = $this->getToggleValue($parameters, $fieldName);
-
-		return [
-			$fieldName => $value
-		];
-	}
-
-	private function getToggleValue(array $parameters, string $fieldName)
-	{
-		throw new \Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
-
-		if (isset($parameters['value']))
-			return $parameters['value'];
-
-		if (! $nullable = $this->getInputRequestExtraData('nullable'))
-			return ! $this->modelInstance->$fieldName;
-
-		if ((($value = $this->modelInstance->$fieldName) === 0) || ($value === false))
-			return null;
-
-		return ! $this->modelInstance->$fieldName;
-	}
-
 	public function getInputRequestExtraData(string $dataName, $default = null)
 	{
 		return request()->input('fieldExtraData.' . $dataName, $default);
-	}
-
-	private function returnUpdateParameters(Request $request, array $updateParameters)
-	{
-		$updateParameters = $this->addFieldExtraDataParameters($updateParameters);
-
-		return $updateParameters;
 	}
 
 	public function addFieldExtraDataParameters(array $updateParameters)
@@ -116,11 +67,6 @@ trait CRUDUpdateEditorTrait
 		return $updateParameters;
 	}
 
-	private function isAction(Request $request)
-	{
-		return $request->input('ibaction', false);
-	}
-
 	public function manageAction(Request $request)
 	{
 		$ibaction = $request->ibaction;
@@ -135,9 +81,78 @@ trait CRUDUpdateEditorTrait
 		return $this->returnUpdateParameters($request, $updateParameters);
 	}
 
+	public function returnFieldFromEditor(Request $request)
+	{
+		$field = $request->field;
+
+		$updateParameters['success'] = true;
+		$updateParameters[$request->field] = $this->getModel()->$field;
+		$updateParameters['value'] = $this->getModel()->$field;
+		$updateParameters['fetch-field'] = true;
+		$updateParameters['field'] = $request->field;
+		$updateParameters['model-id'] = $this->getModel()->getKey();
+
+		return $this->returnUpdateParameters($request, $updateParameters);
+	}
+
+	private function isToggle(Request $request)
+	{
+		return $request->input('toggle', false);
+	}
+
+	private function validateToggleRequest(Request $request)
+	{
+		throw new Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
+
+		$this->setUpdateFieldsetsProvider();
+		$validationArray = $this->fieldsetsProvider->getValidationParameters();
+
+		// $validationArray = $this->getUpdateEditorValidationArray();
+
+		$parameters = $request->validate([
+			'field' => 'string|required|in:' . implode(',', array_keys($validationArray)),
+			'value' => 'boolean|nullable'
+		]);
+
+		$fieldName = $parameters['field'];
+		$value = $this->getToggleValue($parameters, $fieldName);
+
+		return [
+			$fieldName => $value
+		];
+	}
+
+	private function getToggleValue(array $parameters, string $fieldName)
+	{
+		throw new Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
+
+		if (isset($parameters['value']))
+			return $parameters['value'];
+
+		if (! $nullable = $this->getInputRequestExtraData('nullable'))
+			return ! $this->modelInstance->$fieldName;
+
+		if ((($value = $this->modelInstance->$fieldName) === 0) || ($value === false))
+			return null;
+
+		return ! $this->modelInstance->$fieldName;
+	}
+
+	private function returnUpdateParameters(Request $request, array $updateParameters)
+	{
+		$updateParameters = $this->addFieldExtraDataParameters($updateParameters);
+
+		return $updateParameters;
+	}
+
+	private function isAction(Request $request)
+	{
+		return $request->input('ibaction', false);
+	}
+
 	private function manageToggle(Request $request)
 	{
-		throw new \Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
+		throw new Exception('Questa roba va buttata via tutta in favore del nuovo javascript che tratta il toggle come un campo normale');
 
 		$updateParameters = $this->validateToggleRequest($request);
 
@@ -200,6 +215,13 @@ trait CRUDUpdateEditorTrait
 		return $this->findFormFieldByName($fieldsets, $fieldName);
 	}
 
+	//	public function hasEditorUpdateRequest(Request $request) : bool
+	//	{
+	//		replaced by hasEditorUpdateRequest in CRUDRequestHelper
+	//
+	//return $request->input('ib-editor', false);
+	//	}
+
 	private function findFormFieldByName($fieldsets, $fieldName)
 	{
 		foreach ($fieldsets as $fieldset)
@@ -219,30 +241,9 @@ trait CRUDUpdateEditorTrait
 		return null;
 	}
 
-	//	public function hasEditorUpdateRequest(Request $request) : bool
-	//	{
-	//		replaced by hasEditorUpdateRequest in CRUDRequestHelper
-	//
-	//return $request->input('ib-editor', false);
-	//	}
-
-	public function returnFieldFromEditor(Request $request)
-	{
-		$field = $request->field;
-
-		$updateParameters['success'] = true;
-		$updateParameters[$request->field] = $this->getModel()->$field;
-		$updateParameters['value'] = $this->getModel()->$field;
-		$updateParameters['fetch-field'] = true;
-		$updateParameters['field'] = $request->field;
-		$updateParameters['model-id'] = $this->getModel()->getKey();
-
-		return $this->returnUpdateParameters($request, $updateParameters);
-	}
-
 	private function validateUpdateEditorRequest(Request $request)
 	{
-		throw new \Exception('TODO questa è cancellabile ?');
+		throw new Exception('TODO questa è cancellabile ?');
 		$this->setUpdateFieldsetsProvider();
 		$validationArray = $this->fieldsetsProvider->getValidationParameters();
 

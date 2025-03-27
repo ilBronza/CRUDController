@@ -133,6 +133,7 @@ trait CRUDEditTrait
 		//TODO accorpare sta roba presente anche in show in un unico helper (creare show helper e edit helper e che sia finita)
 		$this->shareModels();
 
+
 		if(method_exists($this, 'getRelationshipsManagerClass'))
 			if($this->getRelationshipsManagerClass())
 				return $this->useRelationshipsManager();
@@ -150,8 +151,10 @@ trait CRUDEditTrait
 		);
 
 		$this->setPagetitle();
-
 		$this->checkIfUserCanUpdate();
+
+		if($this->requestHasRefreshRow())
+			return $this->manageRelatedRefreshRow();
 
 		/**
 		 * creare qua un trait per gestire i parametri extra in generale

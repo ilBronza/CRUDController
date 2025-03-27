@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 use Log;
 
 use function config;
+use function dd;
 use function get_class;
 use function implode;
 use function in_array;
@@ -353,6 +354,24 @@ class CRUD extends Controller
 		return $this->showTitle;
 	}
 
+	public function requestHasRefreshRow()
+	{
+		return request()->refreshRow;
+	}
+
+	public function manageRelatedRefreshRow()
+	{
+		if(! method_exists($this, 'getRelationshipsManagerClass'))
+			throw new \Exception('Missing relationships Manager class for ' . get_class($this));
+
+			if(! $this->getRelationshipsManagerClass())
+				throw new \Exception('Missing relationships Manager class for ' . get_class($this));
+
+				$relationshipsManager = $this->setRelationshipsManager();
+
+				return $relationshipsManager->manageRefreshRow();
+	}
+
 	public function hasUpdateEditor()
 	{
 		if (is_null($this->updateEditor))
@@ -421,10 +440,16 @@ class CRUD extends Controller
 		if ((! request()->route()) || (! $routeName = request()->route()->getName()))
 			return config('app.name');
 
-		if (method_exists($this, 'getPackageConfigName'))
-			return trans($this->getPackageConfigName() . '::routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+		$pagetTitleParameters = request()->route()->parameters();
+		$pagetTitleParameters['model'] = $this->getModel()?->getName();
 
-		Log::critical('dichiara getPackageConfigName per il controller ' . get_class($this));
+		if($this->parentModel ?? null)
+			$pagetTitleParameters['parentModel'] = $this->parentModel->getName();
+
+		if (method_exists($this, 'getPackageConfigName'))
+			return trans($this->getPackageConfigName() . '::routes.' . $routeName, $pagetTitleParameters);
+
+		// Log::critical('dichiara getPackageConfigName per il controller ' . get_class($this));
 
 		return trans('routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
 	}
@@ -439,9 +464,9 @@ class CRUD extends Controller
 		return null;
 	}
 
-	public function setPageTitle()
+	public function setPageTitle(string $pageTitle = null)
 	{
-		if (! $pageTitle = $this->calculatePageTitle())
+		if((! $pageTitle)&&(! $pageTitle = $this->calculatePageTitle()))
 			return null;
 
 		app('uikittemplate')->setPageTitle($pageTitle);

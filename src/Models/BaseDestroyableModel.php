@@ -17,8 +17,8 @@ class BaseDestroyableModel extends Model
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 
-	protected $dates = [
-		'deleted_at'
+	protected $casts = [
+		'deleted_at' => 'datetime'
 	];
 
 	public function updateWithoutEvent(array $data = [])
@@ -37,11 +37,6 @@ class BaseDestroyableModel extends Model
 		return $query->whereNull($fieldName)->orWhere($fieldName, false);
 	}
 
-	//	public function getActivitylogOptions(): LogOptions
-	//	{
-	//		return LogOptions::defaults();
-	//	}
-
 	public function getTranslatedClassname()
 	{
 		return trans('crudModels.' . $this->getCamelcaseClassBasename());
@@ -53,7 +48,7 @@ class BaseDestroyableModel extends Model
 		{
 			$caster = class_basename($this->getCastType($fieldName));
 
-			if (strpos($caster, 'extrafield') === 0)
+			if (stripos($caster, 'extrafield') === 0)
 			{
 				$type = explode(":", $caster)[1] ?? null;
 

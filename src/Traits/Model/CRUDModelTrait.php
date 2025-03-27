@@ -14,20 +14,11 @@ trait CRUDModelTrait
 	use CRUDModelButtonsTrait;
 	use CRUDModelUserRightsTrait;
 
-	// use LogsActivity;
 	use CRUDDeleterTrait;
 
-	// public function hasOwnership()
-	// {
-	//     if(isset($this->hasOwnership))
-	//         return $this->hasOwnership;
-
-	//     return true;
-	// }
-
-	public function getActivitylogOptions() : LogOptions
+	public function getActivitylogOptions(): LogOptions
 	{
-		return LogOptions::defaults()->logAll()->logOnlyDirty();
+		return LogOptions::defaults()->logAll()->dontSubmitEmptyLogs()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
 	}
 
 	public function getTranslatedClassname()

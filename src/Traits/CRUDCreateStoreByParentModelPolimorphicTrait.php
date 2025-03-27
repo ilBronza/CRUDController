@@ -76,8 +76,8 @@ trait CRUDCreateStoreByParentModelPolimorphicTrait
 
     public function getModelDefaultPolimorphicParameters()
     {
-        if(! in_array($this->relatedModel, $this->getAssociableClassesList()))
-            throw new \Exception('Impossibile associare questo tipo di classe');
+//        if(! in_array($this->relatedModel, $this->getAssociableClassesList()))
+//            throw new \Exception('Impossibile associare questo tipo di classe');
 
         $this->modelTypeField = $this->getModelPolimorphicTypeField();
         $this->modelKeyField = $this->getModelPolimorphicKeyField();
