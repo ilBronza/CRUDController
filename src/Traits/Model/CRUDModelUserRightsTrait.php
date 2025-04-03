@@ -2,133 +2,162 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use App\Models\ProjectSpecific\Contracttype;
 use Auth;
+use Exception;
 use IlBronza\AccountManager\Models\User;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Support\Facades\Log;
 
+use function config;
 use function dd;
 use function get_class;
-use function get_class_methods;
 
 trait CRUDModelUserRightsTrait
 {
-    public static function getBaseUserRightsResult(User $user = null) : ? bool
-    {
-        if(! $user = Auth::user())
-            return false;
+	static function getStaticBaseUserRightsResult(User $user = null) : ?bool
+	{
+		if (! $user = Auth::user())
+			return false;
 
-        if($user->isSuperadmin())
-            return true;
+		if ($user->isSuperadmin())
+			return true;
 
-        if($user->hasRole('administrator'))
-            return true;
+		if ($user->hasRole('administrator'))
+			return true;
 
-        return null;
-    }
+//		$roles = $this->getConfigByKey('roles.show.any', []);
+//
+//		dd($roles);
 
-    public function userCanUpdate(User $user = null)
-    {
-        if(is_null($user))
-            $user = Auth::user();
+		//	    if(! $roles = $this->getConfigByKey('roles.show.any', []))
+		//		    $roles = config(static::getPackageConfigPrefix() . '.roles', []);
+		//
+		//	    if(($roles)&&(! $user->hasAnyRole($roles)))
+		//		    return false;
 
-        if(! is_null($result = $this->getBaseUserRightsResult($user)))
-            return $result;
+		return null;
+	}
 
-        return $this->user_id == $user->getKey();
-    }
+	public function getBaseUserRightsResult(User $user = null) : ?bool
+	{
+		if (! $user = Auth::user())
+			return false;
 
-    public function userCanDelete(User $user = null)
-    {
-        if(is_null($user))
-            $user = Auth::user();
+		if ($user->isSuperadmin())
+			return true;
 
-        if(! is_null($result = $this->getBaseUserRightsResult($user)))
-            return $result;
+		if ($user->hasRole('administrator'))
+			return true;
 
-        return $this->user_id == $user->getKey();
-    }
+			    if(! $roles = $this->getConfigByKey('roles.show.any', []))
+				    $roles = config(static::getPackageConfigPrefix() . '.roles', []);
 
-    static function userCanCreate(User $user = null)
-    {
-        if(! is_null($result = static::getBaseUserRightsResult($user)))
-            return $result;
+			    if(($roles)&&($user->hasAnyRole($roles)))
+				    return true;
 
-        return false;
-    }
+		return null;
+	}
 
-    public function userCanSee(User $user = null)
-    {
-        if(Auth::guest())
-            return false;
-
-		if(! $user)
+	public function userCanUpdate(User $user = null)
+	{
+		if (is_null($user))
 			$user = Auth::user();
 
-	    try
-	    {
-		    /**
-		     * if user doesn't have config requried roles, he cnanot see the model
-		     * if user has the required roles, he pass this check
-		     *
-		     * 'contracttype' => [
-		     *      'class' => Contracttype::class,
-		     *      'roles' => [
-		     *          'show' => [
-		     *              'any' => ['administrator', 'vnl_2025']
-		     *             ]
-		     *          ]
-		     *      ],
-		     *
-		     *  declaration example
-		     */
+		if (! is_null($result = $this->getBaseUserRightsResult($user)))
+			return $result;
 
-		    if(! $roles = $this->getConfigByKey('roles.show.any', []))
+		return $this->user_id == $user->getKey();
+	}
+
+	public function userCanDelete(User $user = null)
+	{
+		if (is_null($user))
+			$user = Auth::user();
+
+		if (! is_null($result = $this->getBaseUserRightsResult($user)))
+			return $result;
+
+		return $this->user_id == $user->getKey();
+	}
+
+	static function userCanCreate(User $user = null)
+	{
+		if (! is_null($result = static::getStaticBaseUserRightsResult($user)))
+			return $result;
+
+		return false;
+	}
+
+	public function userCanSee(User $user = null)
+	{
+		if (Auth::guest())
+			return false;
+
+		if (! $user)
+			$user = Auth::user();
+
+		try
+		{
+			/**
+			 * if user doesn't have config requried roles, he cnanot see the model
+			 * if user has the required roles, he pass this check
+			 *
+			 * 'contracttype' => [
+			 *      'class' => Contracttype::class,
+			 *      'roles' => [
+			 *          'show' => [
+			 *              'any' => ['administrator', 'vnl_2025']
+			 *             ]
+			 *          ]
+			 *      ],
+			 *
+			 *  declaration example
+			 */
+
+			if (! $roles = $this->getConfigByKey('roles.show.any', []))
 				$roles = config(static::getPackageConfigPrefix() . '.roles', []);
 
-			if(($roles)&&(! $user->hasAnyRole($roles)))
+			if (($roles) && (! $user->hasAnyRole($roles)))
 				return false;
-	    }
-	    catch(\Exception $e)
-	    {
-		    /**
-		     *
-		     * we should use always packaged methods for model
-		     */
-		    Log::critical($e->getMessage() . ' Aggiungi il model package per gestire sta cosa per il model ' . get_class($this));
-	    }
+		}
+		catch (Exception $e)
+		{
+			/**
+			 *
+			 * we should use always packaged methods for model
+			 */
+			Log::critical($e->getMessage() . ' Aggiungi il model package per gestire sta cosa per il model ' . get_class($this));
+		}
 
-	    return true;
-    }
+		return true;
+	}
 
-    public function userCanSeeTeaser(User $user = null)
-    {
-        if(Auth::guest())
-            return false;
+	public function userCanSeeTeaser(User $user = null)
+	{
+		if (Auth::guest())
+			return false;
 
-        return true;
-    }
+		return true;
+	}
 
-    public function owns(Model $model)
-    {
-        if(Auth::user()->isSuperadmin())
-            return true;
+	public function owns(Model $model)
+	{
+		if (Auth::user()->isSuperadmin())
+			return true;
 
-        $owningMethod = $this->getOwningMethod($model);
-        if(method_exists($this, $owningMethod))
-            return $this->$owningMethod($model);
+		$owningMethod = $this->getOwningMethod($model);
+		if (method_exists($this, $owningMethod))
+			return $this->$owningMethod($model);
 
-        if($model->{$this->getForeignKey()} == $this->getKey())
-            return true;
+		if ($model->{$this->getForeignKey()} == $this->getKey())
+			return true;
 
-        return false;
-    }
+		return false;
+	}
 
-    public function getOwningMethod(Model $model)
-    {
-        return  'owns' . class_basename($model);
-    }
+	public function getOwningMethod(Model $model)
+	{
+		return 'owns' . class_basename($model);
+	}
 
 }
