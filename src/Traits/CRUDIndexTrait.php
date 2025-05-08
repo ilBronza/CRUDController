@@ -224,8 +224,15 @@ trait CRUDIndexTrait
 			$baseModel ?? $this->getModelClass()
 		);
 
+		if($request->isMethod('post'))
+			$this->table->setAjaxMethod('POST');
+
         if((request()->ajax()) && (! request()->ibFetcher))
 			return $this->table->renderPage();
+
+
+		if($this->fixedHeader ?? null)
+			$this->table->fixedHeader = $this->fixedHeader;
 
 		$this->table->addBaseModelClass($this->getModelClass());
 

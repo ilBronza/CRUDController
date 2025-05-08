@@ -18,6 +18,7 @@ use function array_filter;
 use function array_keys;
 use function class_basename;
 use function dd;
+use function event;
 use function explode;
 use function get_class;
 use function in_array;
@@ -236,6 +237,9 @@ trait CRUDModelExtraFieldsTrait
 //					die($relationToSave);
 //				}
 //			}
+
+			event('adjustPricesEvent', $model);
+
 		});
 
 	}

@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Models\Casts;
 use IlBronza\Prices\Models\Price;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
+use function dd;
 use function explode;
 
 class CastFieldPrice implements CastsAttributes
@@ -65,6 +66,9 @@ class CastFieldPrice implements CastsAttributes
 
 	public function get($model, string $key, $value, array $attributes)
 	{
+		if(! $model->exists)
+			return null;
+
 		if($model->relationLoaded($this->getCollectionId()))
 			return $model->{$this->getCollectionId()}->price;
 
