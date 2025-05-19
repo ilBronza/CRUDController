@@ -17,7 +17,7 @@ class CRUDAllowedMethods
     public function handle($request, Closure $next, ... $allowedMethods)
     {
         if(! in_array(Route::current()->getActionMethod(), $allowedMethods))
-            abort(403, 'Method ' . Route::current()->getActionMethod() . ' not declared');
+            abort(403, get_class($this) .  ' - Method ' . Route::current()->getActionMethod() . ' not declared');
 
         return $next($request);
     }

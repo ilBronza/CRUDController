@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Models;
 
+use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
 
@@ -12,6 +13,7 @@ class BasePivotModel extends Pivot
 {
 	use SoftDeletes;
 	use CRUDModelTrait;
+	use CRUDCacheTrait;
 	use CRUDRelationshipModelTrait;
 
 	protected $casts = [
