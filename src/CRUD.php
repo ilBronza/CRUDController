@@ -101,16 +101,21 @@ class CRUD extends Controller
 
 		$this->setModelClass();
 
-		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
+		if(class_basename($this) != 'CrudOperatorsController')
+			$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 
+		if(class_basename($this) != 'CrudOperatorsController')
 		if ((in_array('destroy', $this->getAllowedMethods())) || (in_array('forceDelete', $this->getAllowedMethods())))
 			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
 
+		if(class_basename($this) != 'CrudOperatorsController')
 		if (config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
 
 		//perchè si applica solo se non viene usato il metodo only()???
+		if(class_basename($this) != 'CrudOperatorsController')
 		$this->middleware('CRUDParseAjaxBooleansAndNull');
+		if(class_basename($this) != 'CrudOperatorsController')
 		$this->middleware(CRUDParseComasAndDots::class);
 
 		$this->checkIfModelUsesTrait();
