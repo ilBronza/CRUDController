@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use function config;
 use function dd;
 use function get_class;
+use function is_null;
 
 trait CRUDModelUserRightsTrait
 {

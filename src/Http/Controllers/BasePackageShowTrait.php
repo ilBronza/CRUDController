@@ -22,4 +22,10 @@ trait BasePackageShowTrait
         return config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.relationshipsManagerClasses.show");
     }
 
+    public function show(string $model)
+    {
+        $model = $this->findModel($model);
+
+        return $this->_show($model);
+    }
 }
