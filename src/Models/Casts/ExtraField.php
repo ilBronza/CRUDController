@@ -163,9 +163,8 @@ class ExtraField implements CastsAttributes
         }
 
 		if(! $model->relationLoaded($extraModelClassname))
-			$model->setRelation($extraModelClassname, $model->provideExtraFieldCustomModel($extraModelClassname));
+			$model->$extraModelClassname = $model->provideExtraFieldCustomModel($extraModelClassname);
 
-        if(isset($model->$extraModelClassname))
-            $model->$extraModelClassname->$key = $value;
+        $model->$extraModelClassname->$key = $value;
     }
 }

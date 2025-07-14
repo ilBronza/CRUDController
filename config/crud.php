@@ -10,6 +10,12 @@ return [
 		'csvButton' => false,
 	],
 
+	'cache' => [
+		'highlightClickedLinks' => [
+			'enabled' => false
+		]
+	],
+
 	//inside every show controller
 	'showEditLink' => true,
 

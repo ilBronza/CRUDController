@@ -2,6 +2,7 @@
 
 
 return [
+	'bulkEditTitle' => 'Modifica multipla',
 	'print' => 'Stampa',
 	'excel' => 'Excel',
 	'viewElementsTree' => 'Albero degli elementi',
@@ -11,6 +12,7 @@ return [
 	'showElement' => 'Mostra :element',
 	'showElementPage' => 'Mostra elemento :element',
 	'editElement' => 'Modifica :element',
+	'clearClickedLinksCache' => 'Pulisci cache link cliccati',
 	'singleModel_categories' => 'Categoria',
 	'singleModel_operators' => 'Operatore',
 	'singleModel_children' => 'Elementi figli',
@@ -29,6 +31,16 @@ return [
 	'serverClearCache' => 'Pulisci server Cache',
 	'elementSuccesfullyDeleted' => ':element cancellato con successo',
 	'cardTitleShow' => 'Mostra :element',
-	'createRelatedBy' => 'Crea :related per :by'
+	'createRelatedBy' => 'Crea :related per :by',
+	'activities' => [
+		'created' => 'Creato',
+		'updated' => 'Aggiornato',
+		'deleted' => 'Cancellato',
+		'restored' => 'Ripristinato',
+		'updated_by' => 'Aggiornato da',
+		'created_by' => 'Creato da',
+		'deleted_by' => 'Cancellato da',
+		'restored_by' => 'Ripristinato da'
+	]
 ];
 

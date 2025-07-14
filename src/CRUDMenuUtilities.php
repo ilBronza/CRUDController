@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD;
 
+use function route;
+
 class CRUDMenuUtilities
 {
     public function manageMenuButtons()
@@ -22,14 +24,22 @@ class CRUDMenuUtilities
             'text' => 'crud::crud.cache',
         ]);
 
-        $cacheButton->addChild($menu->createButton([
-            'name' => 'cacheClear',
-            'icon' => 'rotate-left',
-            'text' => 'crud::crud.clearCache',
-            'href' => route('cache.clear')
-        ]));
+	    $cacheButton->addChild($menu->createButton([
+		    'name' => 'cacheClear',
+		    'icon' => 'rotate-left',
+		    'text' => 'crud::crud.clearCache',
+		    'href' => route('cache.clear')
+	    ]));
 
-        $cacheButton->addChild($menu->createButton([
+		if(config('crud.cache.highlightClickedLinks.enabled', false))
+		    $cacheButton->addChild($menu->createButton([
+			    'name' => 'clickedLinksClear',
+			    'icon' => 'rotate-left',
+			    'text' => 'crud::crud.clearClickedLinksCache',
+			    'href' => '#',
+		    ]));
+
+	    $cacheButton->addChild($menu->createButton([
             'name' => 'serverCacheClear',
             'icon' => 'rotate-left',
             'text' => 'crud::crud.serverClearCache',

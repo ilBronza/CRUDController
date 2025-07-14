@@ -4,12 +4,14 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use Carbon\Carbon;
 use IlBronza\CRUD\Models\Casts\ExtraField;
+use IlBronza\CRUD\Models\Casts\ExtraFieldDossier;
 use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
 use IlBronza\CRUD\Models\Casts\Parameter;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Str;
@@ -28,6 +30,43 @@ use function strpos;
 
 trait CRUDModelExtraFieldsTrait
 {
+	static ? array $historyFields = null;
+
+	public function getExtraFieldsRelatedModels() : array
+	{
+		$fields = $this->getExtraFieldsCasts();
+
+		$related = [];
+
+		foreach($fields as $attribute => $casting)
+		{
+			if(stripos($casting, 'ExtraFieldDossier') !== false)
+			{
+				$pieces = explode(':', $casting);
+				$_fields = explode(',', $pieces[1]);
+
+				if($dossierrow = ExtraFieldDossier::obtainDossierrow($this, $_fields[0], $_fields[1]))
+					$related[] = $dossierrow;
+			}
+			elseif(str_ends_with($casting, 'ExtraField'))
+				$related[] = $this->extraFields;
+
+			elseif(str_ends_with($casting, 'ExtraFieldDate'))
+				$related[] = $this->extraFields;
+
+			elseif(stripos($casting, 'Parameter') !== false)
+				{
+					continue;
+					throw new \Exception($casting);
+				}
+
+				else
+					throw new \Exception($casting);
+		}
+
+		return array_unique($related, SORT_REGULAR);
+	}
+
 	public function getExtraFieldsCasts() : array
 	{
 		$result = array_filter($this->getCasts(), function ($item)

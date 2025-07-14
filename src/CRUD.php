@@ -52,6 +52,7 @@ class CRUD extends Controller
 	public $relationshipsElements;
 	public $relationshipsTableNames;
 	public ?Model $modelInstance;
+	public ?Model $plceholderModel = null;
 	public ?bool $updateEditor = null;
 	public $modelFormHelper;
 	public Collection $fetchers;
@@ -101,21 +102,16 @@ class CRUD extends Controller
 
 		$this->setModelClass();
 
-		if(class_basename($this) != 'CrudOperatorsController')
-			$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
+		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 
-		if(class_basename($this) != 'CrudOperatorsController')
 		if ((in_array('destroy', $this->getAllowedMethods())) || (in_array('forceDelete', $this->getAllowedMethods())))
 			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
 
-		if(class_basename($this) != 'CrudOperatorsController')
 		if (config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
 
 		//perchè si applica solo se non viene usato il metodo only()???
-		if(class_basename($this) != 'CrudOperatorsController')
 		$this->middleware('CRUDParseAjaxBooleansAndNull');
-		if(class_basename($this) != 'CrudOperatorsController')
 		$this->middleware(CRUDParseComasAndDots::class);
 
 		$this->checkIfModelUsesTrait();
@@ -139,6 +135,19 @@ class CRUD extends Controller
 			throw new Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 
 		return $this->modelClass;
+	}
+
+	public function setPlaceholderModel()
+	{
+		$this->plceholderModel = $this->getModelClass()::make();
+	}
+
+	public function getPlaceholderModel() : ?Model
+	{
+		if (! $this->plceholderModel)
+			$this->setPlaceholderModel();
+
+		return $this->plceholderModel;
 	}
 
 	/**

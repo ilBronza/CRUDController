@@ -3,6 +3,7 @@
 
 return [
 	'backToList' => 'Vai alla lista',
-	'uploadNewImage' => 'Carica immagine'
+	'uploadNewImage' => 'Carica immagine',
+	'bulkEdit' => 'Modifica multipla',
 ];
 

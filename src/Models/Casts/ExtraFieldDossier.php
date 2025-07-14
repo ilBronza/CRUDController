@@ -3,9 +3,13 @@
 namespace IlBronza\CRUD\Models\Casts;
 
 use IlBronza\FileCabinet\Helpers\DossierCreatorHelper;
+use IlBronza\FileCabinet\Helpers\DossierrowProviderHelper;
+use IlBronza\FileCabinet\Models\Dossierrow;
 use IlBronza\FileCabinet\Models\Form;
 use IlBronza\FileCabinet\Models\Formrow;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+
+use Illuminate\Database\Eloquent\Model;
 
 use function explode;
 use function ff;
@@ -60,4 +64,11 @@ class ExtraFieldDossier implements CastsAttributes
 		return $dossier->getValueByFormrow($formrow);
 	}
 
+	static function obtainDossierrow(Model $model, string $formSlug, string $formrowSlug) : ? Dossierrow
+	{
+		$form = Form::gpc()::findCachedByField('slug', $formSlug);
+		$formrow = Formrow::gpc()::findCachedByField('slug', $formrowSlug);
+
+		return DossierrowProviderHelper::getFromModelFormFormrow($model, $form, $formrow);
+	}
 }

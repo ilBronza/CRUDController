@@ -33,7 +33,7 @@ trait IlBronzaPackagesTrait
 	static function _getController(string $configKey) : string
 	{
 		if(! $result = config($configKey))
-			throw new \Exception("manca {$configKey} nella configurazione di " . static::class);
+			dd("manca {$configKey} nella configurazione di " . static::class);
 
 		return $result;
 	}

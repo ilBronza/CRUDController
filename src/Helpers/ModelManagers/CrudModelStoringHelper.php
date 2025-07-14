@@ -106,15 +106,20 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		return $this->getFieldsetsProvider()->getValidationParameters();
 	}
 
+	public function validateParameters(array $validationParamters) : array
+	{
+		return $this->getRequest()->validate(
+			$validationParamters
+		);
+	}
+
 	public function getValidatedRequestParameters() : array
 	{
 		$this->setFieldsetsProvider();
 
 		$validationParamters = $this->getValidationParameters();
 
-		$parameters = $this->getRequest()->validate(
-			$validationParamters
-		);
+		$parameters = $this->validateParameters($validationParamters);
 
 		return $this->sanitizeParametersAndValues($parameters);
 	}
@@ -192,6 +197,16 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		$keyName = $placeholderModel->getKeyName();
 
 		return $placeholderModel->query()->whereIn($keyName, $toRelate)->get();
+	}
+
+	private function relateHasOneThroughElements(string $relationshipMethod, $toRelate)
+	{
+		$relationshipSetterMethod = 'set' . Str::studly($relationshipMethod);
+
+		if(! method_exists($this->getModel(), $relationshipSetterMethod))
+			throw new \Exception('dichiara ' . $relationshipSetterMethod . ' su ' . get_class($this->getModel()) . ' per salvare una relazione hasOneThrough');
+
+		return $this->getModel()->$relationshipSetterMethod($toRelate);
 	}
 
 	private function relateMorphManyElements(string $relationshipMethod, $toRelate)
@@ -322,6 +337,7 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		if(! $model->exists)
 			$model->save();
+
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
 			$this->bindParameter($requestName, $attributeName, $parameters);

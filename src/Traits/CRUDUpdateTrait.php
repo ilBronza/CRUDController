@@ -28,6 +28,9 @@ trait CRUDUpdateTrait
 
 	public function checkIfUserCanUpdate()
 	{
+		// if(\Auth::id() == 259569)
+		// 	dd($this->modelInstance);
+
 		if(! $this->modelInstance->userCanUpdate(Auth::user()))
 			abort(403);
 
@@ -232,6 +235,11 @@ trait CRUDUpdateTrait
 		return $this->updateEvents ?? [];
 	}
 
+	public function getUpdaterHelperClassName() : string
+	{
+		return CrudModelUpdater::class;
+	}
+
 	/**
 	 * validate request and update model
 	 *
@@ -255,7 +263,7 @@ trait CRUDUpdateTrait
 		if(CrudRequestHelper::isFileUploadRequest($request))
 			return $this->_uploadFile($request, 'update');
 
-		$this->modelInstance = CrudModelUpdater::saveByRequest(
+		$this->modelInstance = $this->getUpdaterHelperClassName()::saveByRequest(
 			$this->getModel(),
 			$this->getUpdateParametersClass(),
 			$request,

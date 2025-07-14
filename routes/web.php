@@ -2,6 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('close-iframe', function(Request $request)
+{
+	return view('crud::utilities.messages.closeIframe', [
+		'closeMessage' => __('crud::messages.success'),
+		'reloadAllTables' => true
+	]);
+})->name('iframe.close');
+
+
+
 Route::get('cache-clear', function()
 	{
 		cache()->flush();
