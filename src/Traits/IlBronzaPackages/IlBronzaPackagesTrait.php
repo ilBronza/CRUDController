@@ -52,7 +52,7 @@ trait IlBronzaPackagesTrait
 	static function _getController(string $configKey) : string
 	{
 		if(! $result = config($configKey))
-			dd("manca {$configKey} nella configurazione di " . static::class);
+			echo("manca {$configKey} nella configurazione di " . static::class);
 
 		return $result;
 	}
