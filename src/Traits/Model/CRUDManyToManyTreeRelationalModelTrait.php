@@ -2,7 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-trait CRUDMAnyToManyTreeRelationalModelTrait
+trait CRUDManyToManyTreeRelationalModelTrait
 {
     static $parentKeyName = 'parent_id';
     static $childKeyName = 'child_id';

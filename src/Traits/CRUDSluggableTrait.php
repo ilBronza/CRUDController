@@ -2,8 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+use function dd;
 
 //public $nameField = 'name'
 //the field to take the string from, when creating the alias
@@ -18,34 +20,29 @@ trait CRUDSluggableTrait
 		return static::$slugField ?? 'slug';
 	}
 
-	public function getNameForSlug()
+	public static function bootCRUDSluggableTrait()
 	{
-		return $this->getName();
-	}
+		static::saving(function ($model)
+		{
+			if (($slugField = static::getSlugField()) === false)
+				return;
 
-	protected static function boot()
-	{
-		parent::boot();
-
-		static::saving(function ($model) {
-			$slugField = static::getSlugField();
-
-			if(! $slug = $model->{$slugField})
+			if (! $slug = $model->{$slugField})
+			{
 				$slug = $model->getNameForSlug();
 
-			$slug = Str::slug($slug);
+				$slug = Str::slug($slug);
+			}
 
-			$existingsSlugs = DB::table((new static)->getTable())
-					->select($slugField)
-					->where($model->getKeyName(), '!=', $model->getKey())
-					->where(function($query) use($slug, $slugField)
-					{
-						$query->where($slugField, $slug);
-						$query->orWhere($slugField, 'LIKE', $slug . '-%');
-					})
-					->get();
+			$slug = Str::limit($slug, config('app.slug_length', 128));
 
-			if(! $existingsSlugs->firstWhere($slugField, $slug))
+			$existingsSlugs = $model::query()->withTrashed()->select($slugField)->where($model->getKeyName(), '!=', $model->getKey())->where(function ($query) use ($slug, $slugField)
+			{
+				$query->where($slugField, $slug);
+				$query->orWhere($slugField, 'LIKE', $slug . '-%');
+			})->get();
+
+			if (! $existingsSlugs->firstWhere($slugField, $slug))
 			{
 				$model->{$slugField} = $slug;
 			}
@@ -55,12 +52,21 @@ trait CRUDSluggableTrait
 
 				do
 				{
-					$i++;
-				}
-				while($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
-				
+					$i ++;
+				} while ($existingsSlugs->firstWhere($slugField, $slug . '-' . $i));
+
 				$model->{$slugField} = $slug . '-' . $i;
 			}
 		});
+	}
+
+	public function getNameForSlug()
+	{
+		return $this->getName();
+	}
+
+	public function getSlug() : ?string
+	{
+		return $this->{$this->getSlugField()};
 	}
 }

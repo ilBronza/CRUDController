@@ -4,6 +4,11 @@ namespace IlBronza\CRUD\Traits;
 
 trait CRUDRoutingTrait
 {
+	public function getCreateUrl()
+	{
+		return $this->getRouteUrlByType('create');
+	}
+
 	public function isSaveAndNew()
 	{
 		return request()->has('save_and_new');
@@ -16,7 +21,18 @@ trait CRUDRoutingTrait
 
 	public function getIndexUrl()
 	{
+		if($model = $this->getModel())
+			return $model->getIndexUrl();
+
 		return $this->getRouteUrlByType('index');
+	}
+
+	public function getShowUrl() : ? string
+	{
+		if($model = $this->getModel())
+			return $model->getShowUrl();
+
+		return null;
 	}
 
 	public function getRouteNameByType(string $type)

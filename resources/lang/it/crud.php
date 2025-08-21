@@ -2,22 +2,45 @@
 
 
 return [
+	'bulkEditTitle' => 'Modifica multipla',
+	'print' => 'Stampa',
+	'excel' => 'Excel',
+	'viewElementsTree' => 'Albero degli elementi',
+	'createNew' => 'Crea :model',
+	'createBy' => 'Crea da :by',
 	'add' => 'Aggiungi :what',
-	'backToList' => 'Vai alla lista',
+	'showElement' => 'Mostra :element',
 	'showElementPage' => 'Mostra elemento :element',
 	'editElement' => 'Modifica :element',
+	'clearClickedLinksCache' => 'Pulisci cache link cliccati',
 	'singleModel_categories' => 'Categoria',
 	'singleModel_operators' => 'Operatore',
 	'singleModel_children' => 'Elementi figli',
 	'singleModel_user' => 'Utente',
 	'cardTitleCreate' => 'Crea un nuovo elemento',
-	'cardTitleEdit' => 'Modifica elemento :element',
+	'cardTitleEdit' => 'Modifica elemento <strong>:element</strong>',
 	'cardIntroEdit' => 'In questa sezione puoi modificare i dati dell\'oggetto scelto.<br />Ricorda di salvare la pagina prima dell\'uscita.',
 	'cardIntroCreate' => 'In questa sezione puoi creare un <strong>nuovo elemento di tipo ":type" </strong>.<br />Ricorda di salvare la pagina prima dell\'uscita.',
 	'youAlreadyOpenedThisUrlOnADifferentPage' => 'Questo link è già aperto in un altra finestra',
 	'youOwnThisUri' => 'Hai la precedenza su questa finestra',
 	'aDifferentUserIsWatchingThisPage' => 'Un altro utente ha la precedenza su questa finestra',
 	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'L\'altra finestra è stata chiusa, questa ha guadagnato la precedenza',
-	'sortElements' => 'Riordina elementi'
+	'sortElements' => 'Riordina elementi',
+	'cache' => 'Gestione cache',
+	'clearCache' => 'Pulisci cache',
+	'serverClearCache' => 'Pulisci server Cache',
+	'elementSuccesfullyDeleted' => ':element cancellato con successo',
+	'cardTitleShow' => 'Mostra :element',
+	'createRelatedBy' => 'Crea :related per :by',
+	'activities' => [
+		'created' => 'Creato',
+		'updated' => 'Aggiornato',
+		'deleted' => 'Cancellato',
+		'restored' => 'Ripristinato',
+		'updated_by' => 'Aggiornato da',
+		'created_by' => 'Creato da',
+		'deleted_by' => 'Cancellato da',
+		'restored_by' => 'Ripristinato da'
+	]
 ];
 

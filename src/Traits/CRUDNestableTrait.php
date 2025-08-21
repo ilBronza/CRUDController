@@ -185,7 +185,7 @@ trait CRUDNestableTrait
 
     public function storeReorder(Request $request)
     {
-        return "undici";
+        // return "undici";
         $elementId = $this->removeLeadingControlCharacter($request->element_id);
         $parentId = $this->removeLeadingControlCharacter($request->parent_id);
 
@@ -205,16 +205,15 @@ trait CRUDNestableTrait
                 $siblingId = $this->removeLeadingControlCharacter($sibling);
 
                 $item = $this->getModelClass()::findOrFail($siblingId);
+
                 $item->sorting_index = $index;
                 $item->save();
             }
         }
 
-        dd('asd');
-
         return response()->json([
             'success' => true,
-            'message' => 'Elemento spostato correttamente'
+            'message' => 'Elemento ' . $item->getName() . ' spostato correttamente'
         ]);
     }
 
@@ -268,4 +267,22 @@ trait CRUDNestableTrait
         return view('form::uikit.form', compact('form'));
     }
 
+	public function rebuildSortingIndex(Collection $elements = null) : Collection
+	{
+		if(! $elements)
+			$elements = $this->getBrothers();
+
+		$index = 1;
+
+		foreach($elements->sortBy([
+			['sorting_index', 'asc'],
+			['created_at', 'asc'],
+		]) as $element)
+		{
+			$element->sorting_index = $index ++;
+			$element->save();
+		}
+
+		return $elements;
+	}
 }

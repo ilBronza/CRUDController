@@ -47,6 +47,11 @@ trait CRUDCreateTrait
 
 	}
 
+	public function addCreateSettings()
+	{
+		
+	}
+
 	public function shareCreateButtons()
 	{
 		$this->getExtendedCreateButtons();
@@ -74,6 +79,7 @@ trait CRUDCreateTrait
 	 **/
 	public function shareDefaultCreateFormParameters()
 	{
+		mori('qua servo angora?? 14 marzo 2024');
 		return $this->shareDefaultFormParameters('create');
 	}
 
@@ -83,7 +89,8 @@ trait CRUDCreateTrait
 	public function userCanPerformCreate() {}
 	public function manageBeforeCreate() {
 		$this->shareCreateButtons();
-		$this->loadCreateExtraViews();		
+		$this->loadCreateExtraViews();	
+		$this->addCreateSettings();	
 	}
 
 	/**
@@ -96,6 +103,8 @@ trait CRUDCreateTrait
 		$this->setModel(
 			$this->makeModel()
 		);
+
+		$this->setPagetitle();
 
 		$this->userCanPerformCreate();
 		$this->manageReturnBack();

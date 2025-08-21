@@ -2,26 +2,34 @@
 
 namespace IlBronza\CRUD\Models;
 
+use IlBronza\CRUD\Models\Casts\ExtraField;
 use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
+use IlBronza\CRUD\Traits\Model\CRUDRestoreTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+use function array_merge;
 
 class BaseModel extends Model 
 {
+	use LogsActivity;
 	use SoftDeletes;
+
+	use CRUDRestoreTrait;
 
 	use CRUDCacheTrait;
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 
-	protected $dates = [
-		'deleted_at'
+	protected $casts = [
+		'deleted_at' => 'datetime'
 	];
 
-    public function updateWithoutEvent(array $data = [])
+	public function updateWithoutEvent(array $data = [])
     {
         if(count($data))
             static::where('id', $this->id)
@@ -40,14 +48,32 @@ class BaseModel extends Model
 				->orWhere($fieldName, false);
 	}
 
-	public function getActivitylogOptions(): LogOptions
-	{
-		return LogOptions::defaults();
-	}
-
 	public function getTranslatedClassname()
 	{
 		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 
+	public function _customSetter(string $fieldName, mixed $value, bool $save = false) : mixed
+	{
+		if($this->casts[$fieldName] ?? null)
+		{
+			$caster = class_basename($this->getCastType($fieldName));
+
+			if(stripos($caster, 'extrafield') === 0)
+				{
+					$type = explode(":", $caster)[1] ?? null;
+
+					ExtraField::staticSet($type, $this, $fieldName, $value);
+				}
+			else
+				$this->$fieldName = $value;
+		}
+		else
+			$this->$fieldName = $value;
+
+		if($save)
+			$this->save();
+
+		return $this;
+	}
 }

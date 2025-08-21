@@ -4,8 +4,15 @@ namespace IlBronza\CRUD\Models\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
+use function dd;
+use function explode;
+use function extract;
+
 class ExtraField implements CastsAttributes
 {
+    public $extraModelClassname;
+	public $extraFieldName;
+
     /**
      * Come usare ExtraField
      * 
@@ -48,16 +55,12 @@ class ExtraField implements CastsAttributes
      * 
      **/
 
-
-
-
-
-
-
-    public function __construct(string $extraModelClassname = null)
+    public function __construct(string $extraModelClassname = null, string $extraFieldName = null)
     {
-        $this->extraModelClassname = $extraModelClassname;
+	    $this->extraModelClassname = $extraModelClassname;
+	    $this->extraFieldName = $extraFieldName;
     }
+
     /**
      * Cast the given value.
      *
@@ -69,7 +72,44 @@ class ExtraField implements CastsAttributes
      */
     public function get($model, string $key, $value, array $attributes)
     {
-        if(! $this->extraModelClassname)
+        return $this->_get($model, $key, $value, $attributes);
+    }
+
+	static function makeByCastAttribute(string $casting)
+	{
+		$pieces = explode(':', $casting);
+
+		$castingClass = $pieces[0];
+
+		if(! ($attributes = $pieces[1] ?? null))
+			return new $castingClass();
+
+		$pieces = explode(',', $attributes);
+
+		return new $castingClass(...$pieces);
+	}
+
+	static function getRelationName(string $casting) : ? string
+	{
+		$pieces = explode(':', $casting);
+
+		if(! ($attributesString = $pieces[1] ?? null))
+			return null;
+
+		$attributes = explode(",", $attributesString);
+
+		return $attributes[0];
+	}
+
+    public function _get($model, string $key, $value, array $attributes)
+    {
+		if(! $model->exists)
+			return null;
+
+	    if($this->extraFieldName)
+		    $key = $this->extraFieldName;
+
+	    if(! $this->extraModelClassname)
             return $model->getExtraAttribute($key);
 
         return $model->getCustomExtraAttribute($this->extraModelClassname, $key);
@@ -86,20 +126,44 @@ class ExtraField implements CastsAttributes
      */
     public function set($model, string $key, $value, array $attributes)
     {
-        if(! $this->extraModelClassname)
-        {
-            if(! isset($model->extraFields))
-                $model->extraFields = $model->getCachedProjectExtraFieldsModel();
+        return $this->_set($model, $key, $value, $attributes);
+    }
 
-            $model->extraFields->$key = $value;
+    static function staticSet(string $type = null, $model, string $key, $value)
+    {
+        $caster = new static($type);
+
+        $caster->_set($model, $key, $value);
+    }
+
+    public function _set($model, string $key, $value, array $attributes = null)
+    {
+		if($this->extraFieldName)
+			$key = $this->extraFieldName;
+
+	    if(! $extraModelClassname = $this->extraModelClassname)
+        {
+            // if(! ($model->relationLoaded('extraFields')))
+            $extraFields = $model->getCachedProjectExtraFieldsModel();
+
+            try
+            {
+                $extraFields->$key = $value;
+
+                unset($model->$key);
+	            $model->offsetUnset($key);
+            }
+            catch(\Exception $e)
+            {
+
+                dddl($e);
+            }
 
             return ;
         }
 
-        $extraModelClassname = $this->extraModelClassname;
-
-        if(! $model->$extraModelClassname)
-            $model->$extraModelClassname = $model->provideExtraFieldCustomModel($extraModelClassname);
+		if(! $model->relationLoaded($extraModelClassname))
+			$model->$extraModelClassname = $model->provideExtraFieldCustomModel($extraModelClassname);
 
         $model->$extraModelClassname->$key = $value;
     }

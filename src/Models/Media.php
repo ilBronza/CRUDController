@@ -44,4 +44,9 @@ class Media extends BaseMedia
 
 		return route('media.show', [$this]);
 	}
+
+	public function getOriginalFileCreatedAt()
+	{
+		return $this->original_file_created_at;
+	}
 }

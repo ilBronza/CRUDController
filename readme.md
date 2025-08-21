@@ -51,6 +51,78 @@ and then run npm
 
 ## Usage
 
+## Relazioni
+
+creare un getter con i possibili valori di relazione in un select
+``` bash
+	public function getPossiblePaymenttypesValuesArray() : array
+	{
+		return Paymenttype::getProjectClassName()::all()->pluck('name', 'id')->toArray();
+	}
+```
+
+## RelationshipsManager
+
+Gestisce il display delle relazioni in una pagina di dettaglio, tipicamente Show o Edit
+
+### Dichiarazione
+
+``` bash
+<?php
+
+class QuotationRelationManager Extends RelationshipsManager
+{
+	public  function getAllRelationsParameters() : array
+	{
+		return [
+			'show' => [
+				'relations' => [
+				
+				# dichiarazione complessa, dove vengono specificati parametri aggiuntivi oltre al controller
+				    'quotationrows' => [
+                                        'controller' => config('products.models.quotationrow.controllers.index'),
+                                        'elementGetterMethod' => 'getQuotationrowsForShowRelation',
+
+                                        #alternativo a fieldsGroups
+                                        'fieldsGroupsParametersFile' => config('products.models.quotationrow.fieldsGroupsFiles.byQuotation'),
+
+                                        #alternativo a fieldsGroupsParametersFile
+                                        'fieldsGroups' => [
+                                            'base' => [
+                                                'translationPrefix' => 'operators::fields',
+                                                'fields' =>
+                                                    [
+                                                        'mySelfPrimary' => 'primary',
+                                                        'mySelfEdit' => 'links.edit',
+                                                        'contracttype.name' => 'flat',
+                            
+                                                        'internal_approval_rating' => 'flat',
+                                                        'level' => 'flat',
+                            
+                                                        'cost_company_day' => 'flat',
+                                                        'cost_gross_day' => 'flat',
+                                                        'cost_neat_day' => 'flat',
+                            
+                                                        'mySelfDelete' => 'links.delete'
+                                                    ]
+                                            ]
+                                        ]
+
+                                    ],
+
+				# dichiarazione semplice in cui si specifica solo il controller di Show
+					'project' => config('products.models.project.controllers.show'),
+
+				# dichiarazione semplice in cui si specifica solo il controller di Index, che si occupa
+				# di impostare i fieldsgroup tramite il suo metodo "getRelatedFieldsArray"
+					'dossiers' => config('filecabinet.models.dossier.controllers.index'),
+				]
+			]
+		];
+	}
+}```
+
+
 ## Change log
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.

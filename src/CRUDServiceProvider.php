@@ -2,14 +2,20 @@
 
 namespace IlBronza\CRUD;
 
+use IlBronza\CRUD\CRUDMenuUtilities;
+use IlBronza\CRUD\CRUDRoutingHelper;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
+use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
+use IlBronza\CRUD\Middleware\CRUDCheckForcedUrlMiddleware;
 use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
+use IlBronza\CRUD\Middleware\CRUDReturnBackMiddleware;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
+use IlBronza\CRUD\Middleware\IframeCheckerMiddleware;
 use IlBronza\CRUD\ResourceRegistrar;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
 use Illuminate\Routing\Router;
@@ -27,11 +33,22 @@ class CRUDServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(Router $router)
     {
-        $router = $this->app->make(Router::class);
+        // $router = $this->app->make(Router::class);
+
+	    $router->aliasMiddleware('IframeCheckerMiddleware', IframeCheckerMiddleware::class);
+	    $router->aliasMiddleware('CRUDReturnBackMiddleware', CRUDReturnBackMiddleware::class);
+
+        $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
+
+	    $router->pushMiddlewareToGroup('web', IframeCheckerMiddleware::class);
+	    $router->pushMiddlewareToGroup('web', CRUDReturnBackMiddleware::class);
+
+	    $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
+	    $router->middlewareGroup('web', [CRUDReturnBackMiddleware::class]);
 
         if(config('crud.useConcurrentRequestsAlert'))
             $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);
@@ -142,8 +159,12 @@ class CRUDServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 
         // Register the service the package provides.
-        $this->app->singleton('crud', function ($app) {
-            return new CRUD;
+        $this->app->singleton('CRUDMenuUtilities', function ($app) {
+            return new CRUDMenuUtilities;
+        });
+
+        $this->app->singleton('crudRouting', function ($app) {
+            return new CRUDRoutingHelper;
         });
 
         $this->app->singleton('MetaManager', function ($app) {

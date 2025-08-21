@@ -2,8 +2,23 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Illuminate\Support\Collection;
+
+use function collect;
+
 trait CRUDBrotherhoodTrait
 {
+    public function getBrothers(string $foreign = 'parent_id') : Collection
+    {
+        if(! in_array($foreign, array_keys($this->getAttributes())))
+			return collect();
+
+        if(! $this->$foreign)
+            return collect();
+
+        return static::where($this->getKeyName(), '!=', $this->getKey())->where($foreign, $this->$foreign)->get();
+    }
+
     public function getBrotherhoodFields()
     {
         if(! isset(static::$brotherhoodFields))

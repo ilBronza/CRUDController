@@ -2,106 +2,139 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
-use IlBronza\CRUD\Traits\Model\CRUDDeleterTrait;
-use IlBronza\CRUD\Traits\Model\CRUDModelButtonsTrait;
-use IlBronza\CRUD\Traits\Model\CRUDModelRoutingTrait;
-use IlBronza\CRUD\Traits\Model\CRUDModelUserRightsTrait;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 trait CRUDModelTrait
 {
-    static $teaserFields = [];
+	static $teaserFields = [];
+	public ?string $translationFolderPrefix = null;
 
-    use CRUDModelRoutingTrait;
-    use CRUDModelButtonsTrait;
-    use CRUDModelUserRightsTrait;
+	use CRUDModelRoutingTrait;
+	use CRUDModelButtonsTrait;
+	use CRUDModelUserRightsTrait;
 
-    // use LogsActivity;
-    use CRUDDeleterTrait;
+	use CRUDDeleterTrait;
 
-    // public function hasOwnership()
-    // {
-    //     if(isset($this->hasOwnership))
-    //         return $this->hasOwnership;
+	public function getActivitylogOptions(): LogOptions
+	{
+		return LogOptions::defaults()->logAll()->dontSubmitEmptyLogs()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
+	}
 
-    //     return true;
-    // }
+	public function getTranslatedClassname()
+	{
+		return trans('crudModels.' . $this->getCamelcaseClassBasename());
+	}
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults();
-    }
+	public function printJsonFieldHtml($array)
+	{
+		return view('formfield::show.uikit._json', ['arrayElement' => $array])->render();
+	}
 
-    public function printJsonFieldHtml($array)
-    {
-        return view('formfield::show.uikit._json', ['arrayElement' => $array])->render();
-    }
+	public function getBrowserTitle()
+	{
+		return $this->getName();
+	}
 
-    public function getBrowserTitle()
-    {
-        return $this->getName();
-    }
+	public function getName() : ?string
+	{
+		$nameField = $this->getNameFieldName();
 
-    public function getNestableName() : ? string
-    {
-        return $this->getName();
-    }
+		return $this->{$nameField};
+	}
 
-    public function getNestableIndex() : int
-    {
-        return $this->sorting_index ?? 0;
-    }
+	public static function getNameFieldName()
+	{
+		return static::$nameField ?? 'name';
+	}
 
-    public function getNestableKey() : string
-    {
-        return config('crud.nestableLeadingId') . $this->getKey();
-    }
+	public function getNestableName() : ?string
+	{
+		return $this->getName();
+	}
 
-    public static function getPluralCamelcaseClassBasename()
-    {
-        return Str::plural(static::getCamelcaseClassBasename());
-    }
+	public function getNestableIndex() : int
+	{
+		return $this->sorting_index ?? 0;
+	}
 
-    public static function getCamelcaseClassBasename()
-    {
-        return lcfirst(class_basename(static::class));
-    }
+	public function getNestableKey() : string
+	{
+		return config('crud.nestableLeadingId') . $this->getKey();
+	}
 
-    public function getTranslationsFileName()
-    {
-        if($this->translationsFilename ?? false)
-            return $this->translationsFilename;
+	static function getByName(string $name)
+	{
+		return static::where('name', $name)->first();
+	}
 
-        return Str::plural(
-            Str::camel(
-                class_basename($this)
-            )
-        );
-    }
+	static function getSelfPossibleValuesArray(string $keyField = null, string $nameField = null) : array
+	{
+		$placeholder = static::make();
 
-    public static function getNameFieldName()
-    {
-        return static::$nameField ?? 'name';
-    }
+		if (! $keyField)
+			$keyField = $placeholder->getKeyName();
 
-    public function getName()
-    {
-        $nameField = $this->getNameFieldName();
+		if (! $nameField)
+			$nameField = $placeholder->getNameFieldName();
 
-        return $this->{$nameField};
-    }
+		return self::select(
+			$nameField, $keyField
+		)->pluck(
+			$nameField, $keyField
+		)->toArray();
+	}
 
-    public function getTranslatedClassname()
-    {
-        return trans('crudModels.' . $this->getCamelcaseClassBasename());
-    }
-    //Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
-    //DEPRECATO, non voglio niente che non abbia array
-    // public function getTeaserFields()
-    // {
-    //     return $this->teaserFields;
-    // }
+	public function getPluralTranslatedClassname()
+	{
+		$plural = $this->getPluralCamelcaseClassBasename();
+
+		return trans($this->getTranslationsFileName() . '.' . $plural);
+	}
+
+	public static function getPluralCamelcaseClassBasename()
+	{
+		return Str::plural(static::getCamelcaseClassBasename());
+	}
+
+	public static function getCamelcaseClassBasename()
+	{
+		return lcfirst(class_basename(static::class));
+	}
+
+	public function getTranslationsFileName()
+	{
+		if ($this->translationsFilename ?? false)
+			return $this->translationsFilename;
+
+		$plural = $this->getPluralCamelcaseClassBasename();
+
+		if ($prefix = ($this->getTranslationsFolderPrefix()))
+			return $prefix . '::' . $plural;
+
+		return $plural;
+	}
+
+	public function getTranslationsFolderPrefix() : ?string
+	{
+		return $this->translationFolderPrefix;
+	}
+
+	public static function getTranslation(string $string, array $parameters = [])
+	{
+		$fileString = static::pluralLowerClass() . '.' . $string;
+
+		return trans($fileString, $parameters);
+	}
+
+	public static function pluralLowerClass()
+	{
+		return Str::plural(strtolower(class_basename(static::class)));
+	}
+	//Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
+	//DEPRECATO, non voglio niente che non abbia array
+	// public function getTeaserFields()
+	// {
+	//     return $this->teaserFields;
+	// }
 }

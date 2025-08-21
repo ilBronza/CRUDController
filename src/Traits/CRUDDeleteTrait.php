@@ -23,8 +23,8 @@ trait CRUDDeleteTrait
 		if($url = $this->getReturnUrl())
 			return $url;
 
-		if($url = $this->getAfterDeleteRoute())
-			return $url;
+		// if($url = $this->getAfterDeleteRoute())
+		// 	return $url;
 
 		if(in_array('index', $this->allowedMethods))
 			return $this->getRouteUrlByType('index');
@@ -36,7 +36,7 @@ trait CRUDDeleteTrait
 	private function returnDeletionResponse($element)
 	{
 		$name = $element->getName();
-		$message = __('messages.elementSuccesfullyDeleted', ['element' => $name]);
+		$message = __('crud::crud.elementSuccesfullyDeleted', ['element' => $name]);
 
 		if(request()->ajax())
 		{

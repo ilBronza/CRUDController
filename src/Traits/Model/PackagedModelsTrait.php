@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use function config;
+
 trait PackagedModelsTrait
 {
 	/**
@@ -35,20 +37,23 @@ trait PackagedModelsTrait
 	 **/
 	static function getPackageConfigPrefix()
 	{
-		return static::$packageConfigPrefix;		
+		return static::$packageConfigPrefix;
+	}
+
+	static function gpc() : string
+	{
+		return static::getProjectClassName();
 	}
 
 	static function getProjectClassName() : string
 	{
 		try
 		{
-			return config(
-				static::getConfigParameterKey('class')
-			);			
+			return static::getClassname();
 		}
 		catch(\Throwable $e)
 		{
-			dd($e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
+			dd("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
 		}
 	}
 
@@ -57,7 +62,12 @@ trait PackagedModelsTrait
 		return config(static::getPackageConfigPrefix() . '.routePrefix');
 	}
 
-	protected static function getConfigParameterKey(string $key) : string
+	public static function getConfigByKey(string $key)
+	{
+		return config(static::getConfigParameterKey($key));
+	}
+
+	public static function getConfigParameterKey(string $key) : string
 	{
 		return implode(".", [
 			static::getPackageConfigPrefix(),
@@ -73,4 +83,29 @@ trait PackagedModelsTrait
 			static::getConfigParameterKey('table')
 		);
 	}
+
+	public static function getClassname() : string
+	{
+		return config(
+			static::getConfigParameterKey('class')
+		);
+	}
+
+	public function getTranslationFilePrefix(string $file = null)
+	{
+		if(! $file)
+			$file = static::getPackageConfigPrefix();
+
+		return static::getPackageConfigPrefix() . "::{$file}.";
+	}
+
+    public function getPluralTranslatedClassname()
+    {
+		return trans($this->getTranslationFilePrefix() . $this->getPluralCamelcaseClassBasename());
+    }
+
+    public function getTranslatedClassname()
+    {
+    	return trans($this->getTranslationFilePrefix() . $this->getCamelcaseClassBasename());
+    }
 }

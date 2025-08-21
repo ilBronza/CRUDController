@@ -1,0 +1,173 @@
+<?php
+
+namespace IlBronza\CRUD\Providers\RelationshipsManager;
+
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParameters;
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+
+use function request;
+
+abstract class RelationshipsManager
+{
+	public $name;
+	public $type;
+	public $model;
+	public $relationships;
+	public $modelKey;
+
+	public $displayType = 'Switcher';
+
+	abstract  function getAllRelationsParameters() : array;
+
+	public function getModelClass()
+	{
+		return get_class($this->model);
+	}
+
+	public function getRelationsParameters()
+	{
+		$parameters = $this->getAllRelationsParameters();
+
+		return $parameters[$this->type];
+	}
+
+	public function getRelationParameters(string $relation)
+	{
+		$parameters = $this->getAllRelationsParameters();
+
+		return $parameters[$this->type]['relations'][$relation];
+	}
+
+	private function instantiateAllRelations()
+	{
+		$this->relationships = collect();
+
+		$relationsParameters = $this->getRelationsParameters();
+
+		foreach($relationsParameters['relations'] as $name => $parameters)
+			$this->addRelationship($name, $parameters);
+
+		$this->loadModelRelatedElements();
+	}
+
+	private function getRelationMethodByParameters(array $relationParameters) : string
+	{
+		return $relationParameters['relation'];
+	}
+
+	private function instantiateSingleRelation(string $relation) : self
+	{
+		$relationParameters = $this->getRelationParameters($relation);
+
+		$this->relationship = $this->createRelationship($relation, $relationParameters);
+
+		return $this;
+
+		// die("ASDADS relationship");
+
+		// $dummyRelatedModel = $this->model->{$relationMethod}()->make();
+		// $relationKeyName = $dummyRelatedModel->getKeyName();
+
+		// if(! is_array($modelKey))
+		// 	$modelKey = [$modelKey];
+
+		// $this->relatedModels = $this->model->{$relationMethod}()->whereIn($relationKeyName, $modelKey)->get();
+	}
+
+	public function __construct(string $type = 'show', Model $model, string $relation = null, $modelKey = null)
+	{
+		$this->name = $type;
+		$this->type = $type;
+		$this->model = $model;
+		$this->modelKey = $modelKey;
+
+		if(! $relation)
+			return $this->instantiateAllRelations();
+
+		return $this->instantiateSingleRelation($relation);
+	}
+
+	private function loadModelRelatedElements()
+	{
+		return ;
+		// $relationshipsNames = $this->getRelationshipsMethodsArray();
+
+		// foreach($relationshipsNames as $relationshipsName)
+		// {
+
+		// 	// $this->model->{$relationshipsName}()->get();
+
+		// 	$this->model->$relationshipsName;
+		// }
+	}
+
+	public function getModel()
+	{
+		return $this->model;
+	}
+
+	public function createRelationship(string $name, $parameters) : RelationshipParameters
+	{
+		if(is_string($parameters))
+			return $this->createRelationship($name, [
+				'controller' => $parameters
+			]);
+
+		return new RelationshipParameters($name, $parameters, $this);
+	}
+
+	public function addRelationship(string $name, $parameters)
+	{
+		$relationship = $this->createRelationship($name, $parameters);
+
+		$this->relationships->put($name, $relationship);
+	}
+
+	public function getRelationshipsNamesArray()
+	{
+		return array_keys($this->relationships);
+	}
+
+	public function getRelationships()
+	{
+		return $this->relationships;
+	}
+
+	public function getRelationshipsMethodsArray()
+	{
+		return $this->relationships->pluck('relation')->toArray();
+	}
+
+	public function manageAjaxTableRequest()
+	{
+		foreach($this->getRelationships() as $name => $relationshipsParameters)
+			if($name == request()->model)
+				return $relationshipsParameters->setShowParameters();
+	}
+
+	public function manageRefreshRow()
+	{
+		foreach($this->getRelationships() as $name => $relationshipsParameters)
+			if($name == request()->model)
+				return $relationshipsParameters->returnSingleRow();
+	}
+
+	public function getCustomDom()
+	{
+		dd("get custom dom");
+	}
+
+	public function getDisplayType()
+	{
+		/*
+			Possibili valori:
+				- Flat
+				- Switcher
+				- Toggler
+		*/
+		return $this->displayType ?? config('crud.relationships.displayType', 'Flat');
+	}
+
+}

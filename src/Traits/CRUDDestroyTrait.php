@@ -17,13 +17,13 @@ trait CRUDDestroyTrait
 		return $this->getRouteUrlByType('index');
 	}
 
-	public function destroy($modelInstanceId)
-	{
-		$this->modelInstance = $this->getModelClass()::withTrashed()->findOrFail($modelInstanceId);
-		$this->modelInstance->destroy();
+	// public function _destroy($modelInstanceId)
+	// {
+	// 	$this->modelInstance = $this->getModelClass()::withTrashed()->findOrFail($modelInstanceId);
+	// 	$this->modelInstance->destroy();
 
-		return redirect()->to(
-			$this->getDestroyedRedirectUrl()
-		);
-	}
+	// 	return redirect()->to(
+	// 		$this->getDestroyedRedirectUrl()
+	// 	);
+	// }
 }

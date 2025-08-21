@@ -4,6 +4,8 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 
+use function dd;
+
 trait CRUDFileParametersTrait
 {
 	public function getGenericParametersFile() : ? string
@@ -14,7 +16,7 @@ trait CRUDFileParametersTrait
 		return null;
 	}
 
-	private function getParametersFileByType(string $type) : ? string
+	private function getParametersFileByType(string $type, bool $strict = false) : ? string
 	{
 		$propertyName = "{$type}ParametersFile";
 
@@ -25,6 +27,9 @@ trait CRUDFileParametersTrait
 
 		if(method_exists($this, $propertyMethod))
 			return $this->{$propertyMethod}();
+
+		if($strict)
+			return null;
 
 		return $this->getGenericParametersFile();
 	}
@@ -83,7 +88,7 @@ trait CRUDFileParametersTrait
 
 	public function getUpdateParametersClass() : ? FieldsetParametersFile
 	{
-		if($file = $this->getParametersFileByType('update'))
+		if($file = $this->getParametersFileByType('update', $strict = true))
 			return new $file();
 
 		if($file = $this->getParametersFileByType('edit'))

@@ -10,14 +10,16 @@
         <div uk-grid>
             <div class="uk-width-expand">
                 <span class="uk-h3 uk-display-block">
-                    @if($indexUrl = $modelInstance->getIndexUrl())
-                    <a href="{{ $indexUrl }}">
-                        <i class="fa-solid fa-list"></i>
-                        Torna alla lista @lang('crudModels.' . Str::plural(strtolower(class_basename($modelInstance))))
-                    </a> - 
-                    @endif
-                    
                     {{ $modelInstance->getName() }}
+
+                    @if($modelInstance->userCanUpdate(Auth::user()))
+                    @if(($editUrl = ($editModelInstanceUrl ?? $modelInstance->getEditURL()))&&((((! isset($canEditModelInstance))||($canEditModelInstance)))))
+                        <a href="{{ $editUrl }}">
+                            {!! FaIcon::edit() !!}
+                        </a>
+                    @endif
+                    @endif
+
                 </span>
 
                 @if((isset($backToListUrl))||(isset($showButtons)))
@@ -48,15 +50,22 @@
                 @endif
             </div>
 
-            @if(($modelInstance->userCanUpdate(Auth::user())&&($canEditModelInstance)))
+            @if($showEditLink)
+                @include('crud::utilities.editLink', ['element' => $modelInstance])
+            @endif
+
+            @if($indexUrl = $modelInstance->getIndexUrl())
                 <div class="uk-width-auto">
-                    <a href="{{ $editModelInstanceUrl ?? $modelInstance->getEditURL() }}">@lang('crud.editElement', ['element' => $modelInstance->getName()])</a>
+                    <a class="uk-display-inline-block" href="{{ $indexUrl }}">
+                        <i class="fa-solid fa-list"></i>
+                        Torna alla lista {{ $modelInstance->getPluralTranslatedClassname() }}
+                    </a>
                 </div>
             @endif
 
         </div>
     </div>
-    <div class="uk-card-body">
+    <div class="uk-card-body {{ $htmlClasses ?? '' }}">
 	    @include($_showView)
     </div>
 

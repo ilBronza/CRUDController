@@ -22,6 +22,11 @@ trait CRUDArchiverTrait
         $this->attributes['archived_at'] = $value;
     }
 
+    public function scopeWithArchived($query)
+    {
+        $query->withoutGlobalScope('ArchivingScope');
+    }
+
     // public function setArchivedAtAttribute($value)
     // {
     //     if(! is_bool($value))

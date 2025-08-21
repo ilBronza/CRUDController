@@ -7,13 +7,17 @@ use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+
+use function config;
 
 abstract class CrudModelFormHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 
 	public $model;
+	public $fieldsetsProvider;
 
 	abstract function getCardClasses() : array;
 
@@ -90,6 +94,14 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			'method' => $this->getFormMethod()
 		]);
 
+		$this->form->setUpdateEditor(
+			$formOptions['updateEditor'] ?? null
+		);
+
+		$this->form->setShowTitle($formOptions['showTitle'] ?? true);
+
+		$this->form->addHtmlClass(Str::slug(request()->route()->getName()));
+
 		$this->form->setDivider(
 			$formOptions['divider'] ?? config('form.divider')
 		);
@@ -106,9 +118,22 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			$formOptions['title'] ?? $this->getTitle()
 		);
 
+		if($formOptions['cancelHref'] ?? false)
+			$this->form->setCancelHref($formOptions['cancelHref']);
+
+		if($formOptions['buttonsNavbar'] ?? false)
+			$this->form->setButtonsNavbar(
+				$formOptions['buttonsNavbar']
+			);
+
 		if($formOptions['backToListUrl'] ?? false)
 			$this->form->setBackToListUrl(
 				$formOptions['backToListUrl']
+			);
+
+		if($formOptions['showElement'] ?? false)
+			$this->form->setShowElementUrl(
+				$formOptions['showElement']
 			);
 
 		if($formOptions['submitButtonText'] ?? false)
@@ -121,6 +146,9 @@ abstract class CrudModelFormHelper implements CrudModelManager
 
 		if($formOptions['saveAndRefresh'] ?? false)
 			$this->form->addSaveAndRefreshButton();
+
+		if($formOptions['saveAndCopy'] ?? false)
+			$this->form->addSaveAndCopyButton();
 
 		$this->form->setIntro(
 			$this->getIntro()

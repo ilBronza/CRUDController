@@ -4,6 +4,9 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+use function dd;
 
 trait CRUDParentingTrait
 {
@@ -21,6 +24,11 @@ trait CRUDParentingTrait
         return static::$parentKeyName ?? 'parent_id';
     }
 
+    public function getParentId() : ? string
+    {
+        return $this->{$this->getParentKeyName()};
+    }
+
     public function scopeRoot($query)
     {
         return $query->whereNull(static::getParentKeyName());
@@ -29,6 +37,11 @@ trait CRUDParentingTrait
     public function parent()
     {
         return $this->belongsTo(static::class, static::getParentKeyName());
+    }
+
+    public function getParent() : ? Model
+    {
+        return $this->parent;
     }
 
     public function associateParent(Model $parent)
@@ -42,32 +55,160 @@ trait CRUDParentingTrait
         return $this->hasMany(static::class, static::getParentKeyName());
     }
 
-    public function recursiveChildren()
+    public function getChildren() : Collection
     {
-        return $this->children()->with('recursiveChildren');
-    }    
+        return $this->children;
+    }
+
+    public function getRecursiveChildren() : Collection
+    {
+        return $this->recursiveChildren;
+    }
+
+    public function recursiveChildren(array $with = [])
+    {
+        $return = $this->children()->with('recursiveChildren');
+
+		if($with)
+			$return->with($with);
+
+		return $return;
+    }
 
     public function recursiveParents()
     {
         return $this->parent()->with('recursiveParents');
     }
 
-    public function getTree()
+    public function getRoot() : ? static
+    {
+        if($this->isRoot())
+            return $this;
+
+        $this->recursiveParents()->get();
+
+        $element = $this;
+
+        while($element = $element->parent)
+            if($element->isRoot())
+                return $element;
+
+        return null;
+    }
+
+    static public function getRoots() : Collection
     {
         return cache()->remember(
-            $this->cacheKey('tree'),
+            static::staticCacheKey('getRoots'),
             3600,
             function()
             {
-                $this->load('recursivechildren');
+                return static::root()->get();                
+            }
+        );
+    }
 
-                return $this;
+    public function getRootAncestor() : ? static
+    {
+        return $this->getRoot();
+        // if($this->isRoot())
+        //     return $this;
+
+        // $this->recursiveParents()->get();
+
+        // $element = $this;
+
+        // while($element = $element->parent)
+        //     if($element->isRoot())
+        //         return $element;
+
+        // return null;
+    }
+
+    public function getTree(array $with = [])
+    {
+        return cache()->remember(
+            $this->cacheKey('tree' . json_encode($with)),
+            3600,
+            function() use($with)
+            {
+			    $relations = ['recursiveChildren'];
+
+				if($with)
+					$relations = array_merge($relations, $with);
+
+				foreach($with as $relation)
+					$relations[] = 'recursiveChildren.' . $relation;
+
+				$this->load($relations);
+
+				return $this;
             });
+    }
+
+    public function brothers()
+    {
+        return $this->hasMany(
+            static::class,
+            $this->getParentKeyName(),
+            $this->getParentKeyName()
+        )->where(
+            $this->getKeyName(), '!=', $this->getKey()
+        );
+    }
+
+    public function getSortingIndex() : ? int
+    {
+        return $this->sorting_index;
+    }
+
+    static function getFullTreeWithRelatedElements(string $key, array $related) : static
+    {
+        $baseElement = static::findOrFail($key);
+
+        $rootElement = $baseElement->getRootAncestor();
+
+        return static::getChildTreeWithRelatedElements($rootElement->getKey(), $related);
+    }
+
+    static function getChildTreeWithRelatedElements(string $key, array $related) : static
+    {
+        return static::with($related)
+                ->withRecursiveChildrenRelated($related)
+                ->findOrFail($key);
+    }
+
+    public function scopeWithRecursiveChildrenRelated($query, array $relatedTypes)
+    {
+        $query->with(['recursiveChildren' => function($_query) use ($relatedTypes)
+        {
+            $_query->with($relatedTypes);
+
+            $_query->getQuery()->withRecursiveChildrenRelated($relatedTypes);
+        }]);
+    }
+
+    public function scopeWithRecursiveParentRelated($query, array $relatedTypes)
+    {
+        $query->with(['recursiveParents' => function($_query) use ($relatedTypes)
+        {
+            $_query->with($relatedTypes);
+
+            $_query->getQuery()->withRecursiveParentRelated($relatedTypes);
+        }]);
+    }
+
+    public function scopeWithRecursiveParents($query)
+    {
+        $query->with(['parent' => function($_query)
+        {
+            $_query->getQuery()->withRecursiveParents();
+        }]);
     }
 
     static function staticGetTree(string $node = null)
     {
-        $cacheKey = str_slug(static::class) . 'Tree' . $node;
+        $cacheKey = Str::slug(static::class) . 'Tree' . $node;
 
         return cache()->remember(
             $cacheKey,
@@ -85,15 +226,7 @@ trait CRUDParentingTrait
     {
         $result = collect();
 
-        if($name)
-            $name .= ' || ';
-
-        $name = $name . $this->name;
-
-        $result->push([
-            'id' => $this->getKey(),
-            'name' => $name
-        ]);
+        $result->push($this);
 
         foreach($this->recursiveChildren as $child)
             $result = $result->merge(
@@ -101,11 +234,32 @@ trait CRUDParentingTrait
             );
 
         return $result;
+
+
+
+        // $result = collect();
+
+        // if($name)
+        //     $name .= ' || ';
+
+        // $name = $name . $this->name;
+
+        // $result->push([
+        //     'id' => $this->getKey(),
+        //     'name' => $name
+        // ]);
+
+        // foreach($this->recursiveChildren as $child)
+        //     $result = $result->merge(
+        //         $child->getElementsFlatTree($level + 1, $name)
+        //     );
+
+        // return $result;
     }
 
     static function getFlatTree(string $node = null, bool $noCache = false)
     {
-        $cacheKey = str_slug(static::class) . 'FlatTree' . $node;
+        $cacheKey = Str::slug(static::class) . 'FlatTree' . $node;
 
         if($noCache)
             cache()->forget($cacheKey);
@@ -150,12 +304,12 @@ trait CRUDParentingTrait
 
     public function isChild()
     {
-        return !! $this->parent_id;
+        return !! $this->{static::getParentKeyName()};
     }
 
     public function isRoot()
     {
-        return empty($this->parent_id);
+        return empty($this->{static::getParentKeyName()});
     }
 
     public function getParentPossibleValuesArray() : array
@@ -167,10 +321,10 @@ trait CRUDParentingTrait
 
     public function getBrothers() : Collection
     {
-        if(! $this->parent_id)
+        if(! $this->{static::getParentKeyName()})
             return collect();
 
-        return static::where(static::getParentKeyName(), $this->parent_id)
+        return static::where(static::getParentKeyName(), $this->{static::getParentKeyName()})
                 ->where($this->getKeyName(), '!=', $this->getKey())
                 ->get();
     }
@@ -181,4 +335,34 @@ trait CRUDParentingTrait
                 ->where($this->getKeyName(), '!=', $this->getKey())
                 ->get();        
     }
+
+    public function getInheritedAttribute(string $attributeName)
+    {
+        if($this->{$attributeName} !== null)
+            return $this->{$attributeName};
+
+        if($this->parent)
+            return $this->parent->getInheritedAttribute($attributeName);
+
+        return null;
+    }
+
+	public function isContainedBy(Model $model) : bool
+	{
+		if($this->is($model))
+			return true;
+
+		if($this->isRoot())
+			return false;
+
+		$this->recursiveParents()->get();
+
+		$element = $this;
+
+		while($element = $element->parent)
+			if($element->is($model))
+				return true;
+
+		return false;
+	}
 }

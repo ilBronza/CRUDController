@@ -135,6 +135,11 @@ trait CRUDFormTrait
 			);
 	}
 
+	public function getForm() : Form
+	{
+		return $this->getModelFormHelper()->getForm();
+	}
+
 	public function getAllFieldsetFields(array $fieldsetParameters) : array
 	{
 		if(isset($fieldsetParameters['fields']))
@@ -413,6 +418,9 @@ trait CRUDFormTrait
 	 */
 	public function shareDefaultFormParameters(string $type)
 	{
+		mori('qua servo angora?? 14 marzo 2024');
+
+		/**
 		// $action = $this->getModelActionByForm($type);
 		// $method = $this->getMethod($type);
 
@@ -452,17 +460,36 @@ trait CRUDFormTrait
 		if($this->hasSaveAndRefresh())
 			$this->form->addSaveAndRefreshButton();
 
+		if($this->hasSaveAndCopy())
+			$this->form->addSaveAndCopyButton();
+
 		view()->share('form', $this->form);
+
+		**/
 	}
 
 	public function hasSaveAndNew()
 	{
-		return $this->saveAndNew ?? config('crud.saveAndNew');
+		if(! empty($this->saveAndNew))
+			return $this->saveAndNew;
+
+		return config('crud.saveAndNew');
 	}
 
 	public function hasSaveAndRefresh()
 	{
-		return $this->saveAndRefresh ?? config('crud.saveAndRefresh');		
+		if(! empty($this->saveAndRefresh))
+			return $this->saveAndRefresh;
+
+		return config('crud.saveAndRefresh');
+	}
+
+	public function hasSaveAndCopy()
+	{
+		if(! empty($this->saveAndCopy))
+			return $this->saveAndCopy;
+
+		return config('crud.saveAndCopy');
 	}
 
 	/**

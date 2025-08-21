@@ -2,6 +2,9 @@
 
 namespace IlBronza\CRUD;
 
+use Auth;
+use App\Http\Controllers\Controller;
+use Exception;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
@@ -10,120 +13,113 @@ use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
+use IlBronza\CRUD\Traits\IlBronzaPackages\CRUDExtraButtonsTrait;
+use IlBronza\CRUD\Http\Controllers\Traits\ReturnBackTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
+use IlBronza\Form\Traits\ExtraViewsTrait;
+use IlBronza\UikitTemplate\Fetcher;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use \App\Http\Controllers\Controller;
+use Log;
+
+use function config;
+use function dd;
+use function get_class;
+use function implode;
+use function in_array;
+use function ini_set;
+use function method_exists;
+use function request;
+use function trans;
 
 class CRUD extends Controller
 {
+	use CRUDExtraButtonsTrait;
+	use ExtraViewsTrait;
+	use ReturnBackTrait;
+
+	static $availableExtraViewsPositions = [
+		'outherTop',
+		'outherBottom',
+		'innerTop',
+		'innerBottom',
+		'left',
+		'right',
+		'outherLeft',
+		'outherRight'
+	];
+
+	public $mustPrintIntestation = null;
+	public $relationshipsElements;
+	public $relationshipsTableNames;
+	public ?Model $modelInstance;
+	public ?Model $plceholderModel = null;
+	public ?bool $updateEditor = null;
+	public $modelFormHelper;
+	public Collection $fetchers;
+	public $debug = false;
+
+	public bool $showTitle = true;
+
 	use CRUDFileParametersTrait;
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
 
-	public $debug = false;
-
-	public function debugMode() : bool
-	{
-		return $this->debug;
-	}
-
-	//general parameters
+	public $iframed;
 	public $modelClass;
-	public $allowedMethods;
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
 
-	public $pageLength = 50;
-
-    public $returnBack = false;
-    public $avoidBackToList = false;
-    public $showFormIntro = true;
-
-    public $rowSelectCheckboxes = false;
-
-	// index parameters
+	//general parameters
+	public $pageLength;
+	public $returnBack = false;
+	public $avoidBackToList = false;
+	public $avoidShowButton = false;
+	public $showFormIntro = true;
+	public $rowSelectCheckboxes = false;
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
 
-	//show parameters
+	// index parameters
 	public $canEditModelInstance = true;
 	public $editModelInstanceUrl;
-
 	public $editFormDivider = false;
+
+	//show parameters
 	public $createFormDivider = false;
 	public $relationshipManager;
-
 	public $showStickyButtonsNavbar = false;
-
-
 	public $middlewareGuardedMethods = ['index', 'edit', 'update', 'create', 'store', 'delete'];
-
-	/**
-	 * function to set $modelClass dinamically 
-	 **/
-	public function setModelClass()
-	{
-		// example
-		// $this->modelClass = config('someting.model');
-	}
 
 	public function __construct()
 	{
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
 
+		ini_set('max_execution_time', 40);
+		ini_set('memory_limit', - 1);
+
 		$this->setModelClass();
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 
-		if((in_array('destroy', $this->getAllowedMethods()))||(in_array('forceDelete', $this->getAllowedMethods())))
+		if ((in_array('destroy', $this->getAllowedMethods())) || (in_array('forceDelete', $this->getAllowedMethods())))
 			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
 
-		if(config('crud.useConcurrentRequestsAlert'))
+		if (config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
 
 		//perchè si applica solo se non viene usato il metodo only()???
 		$this->middleware('CRUDParseAjaxBooleansAndNull');
 		$this->middleware(CRUDParseComasAndDots::class);
+
 		$this->checkIfModelUsesTrait();
-	}
 
-	public function isIframed()
-	{
-		return request()->input('iframed', false);
-	}
-
-	public function mustReturnBack() : bool
-	{
-		return !! $this->returnBack;
-	}
-
-	public function setReturnUrlToPrevious()
-	{
-		return $this->setReturnUrl(
-			url()->previous()
-		);
-	}
-
-	public function setReturnUrlIfEmpty(string $url)
-	{
-		if(! $this->checkReturnUrl())
-			$this->setReturnUrl(
-				$url
-			);
-	}
-
-	public function manageReturnBack() : ? string
-	{
-		if(! $this->mustReturnBack())
-			return null;
-
-		return $this->setReturnUrlIfEmpty(
-			url()->previous()
-		);
+		$this->setFetchers();
 	}
 
 	static function getClassKey() : string
@@ -131,51 +127,54 @@ class CRUD extends Controller
 		return Str::slug(static::class);
 	}
 
-	public function setReturnUrl(string $url) : string
-	{
-		$classKey = static::getClassKey();
-		session([$classKey => $url]);
-
-		return $classKey;
-	}
-
-	public function checkReturnUrl() : bool
-	{
-		$classKey = static::getClassKey();
-		$url = session($classKey, null);
-
-		return !! $url;
-	}
-
-	public function getReturnUrl() : ? string
-	{
-		$classKey = static::getClassKey();
-
-		$url = session($classKey, null);
-		session()->forget($classKey);
-
-		return $url;
-	}
-
-	private function checkIfModelUsesTrait()
-	{
-		//TODO RISOLVERE STA ROBA
-		// foreach($this->neededTraits as $neededTrait)
-		// 	if(! in_array($neededTrait, class_uses(new ($this->getModelClass())())))
-		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->getModelClass());
-	}
-
 	/**
-	 * get controller's model translation file name prefix
+	 * get subject model class
 	 *
 	 * @return string
 	 **/
-	protected function getModelTranslationFileName() : string
+	public function getModelClass() : string
 	{
-		$classNamePieces = explode('\\', $this->getModelClass());
-		$className = array_pop($classNamePieces);
+		if (! $this->modelClass)
+			throw new Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 
-		return Str::plural(Str::camel($className));
+		return $this->modelClass;
+	}
+
+	public function setPlaceholderModel()
+	{
+		$this->plceholderModel = $this->getModelClass()::make();
+	}
+
+	public function getPlaceholderModel() : ?Model
+	{
+		if (! $this->plceholderModel)
+			$this->setPlaceholderModel();
+
+		return $this->plceholderModel;
+	}
+
+	/**
+	 * function to set $modelClass dinamically
+	 **/
+	public function setModelClass()
+	{
+		// example
+		// $this->modelClass = config('someting.model');
+	}
+
+	public function getValidExtraViewsPositions() : array
+	{
+		return static::$availableExtraViewsPositions;
+	}
+
+	public function debugMode() : bool
+	{
+		return $this->debug;
+	}
+
+	public function isIframed()
+	{
+		return request()->input('iframed', false);
 	}
 
 	/**
@@ -188,21 +187,28 @@ class CRUD extends Controller
 		return class_basename($this->getModelClass());
 	}
 
-    public function findModel(string $key) : ? Model
-    {
-        return $this->getModelClass()::find($key);
-    }
-	/**
-	 * get subject model class
-	 *
-	 * @return string
-	 **/
-	public function getModelClass() : string
+	public function findModel(string $key, array $relations = []) : ?Model
 	{
-		if(! $this->modelClass)
-			throw new \Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
+		$query = $this->getFindModelQuery($key, $relations);
 
-		return $this->modelClass;
+		return $query->find($key);
+	}
+
+	public function getFindModelQuery(string $key, array $relations = []) : Builder
+	{
+		$query = $this->getModelClass()::query();
+
+		foreach ($relations as $relation)
+			$query->with($relation);
+
+		return $query;
+	}
+
+	public function findModelWithTrashed(string $key, array $relations = []) : ?Model
+	{
+		$query = $this->getFindModelQuery($key)->onlyTrashed();
+
+		return $query->find($key);
 	}
 
 	/**
@@ -230,7 +236,7 @@ class CRUD extends Controller
 	 */
 	public function getCreateNewModelButton() : Button
 	{
-		if(isset($this->parentModel))
+		if (isset($this->parentModel))
 			return $this->getModelClass()::getCreateChildButton($this->parentModel);
 
 		return $this->getModelClass()::getCreateButton();
@@ -238,15 +244,15 @@ class CRUD extends Controller
 
 	public function getReorderButton() : Button
 	{
-		return $this->getModelClass()::getReorderButton();		
+		return $this->getModelClass()::getReorderButton();
 	}
 
 	/**
 	 * add extra view to default page. can be used in index, show, create, edit
 	 *
-	 * @param string $position
-	 * @param string $view //view name
-	 * @param array $parameters //view parameters
+	 * @param  string  $position
+	 * @param  string  $view        //view name
+	 * @param  array   $parameters  //view parameters
 	 **/
 	public function addFormExtraView(string $position, string $view, array $parameters = [])
 	{
@@ -258,16 +264,35 @@ class CRUD extends Controller
 		return $this->modelFormHelper;
 	}
 
-	/**
-	 * share extraViews parameter to view
-	 **/
-	public function shareExtraViews()
+	public function addFormFetcher(string $position, Fetcher $fetcher)
 	{
-		if(count($this->extraViews))
-		{
-			throw new \Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
-			view()->share('extraViews', $this->extraViews);	
-		}
+		return $this->getModelFormHelper()->getForm()->addFetcher($position, $fetcher);
+	}
+
+	public function provideFormDefaultSettings() : array
+	{
+		$defaults = [];
+
+		if (in_array('index', $this->allowedMethods) && (! $this->avoidBackToList()))
+			$defaults['backToListUrl'] = $this->getIndexUrl();
+
+		if (in_array('show', $this->allowedMethods) && (! $this->avoidShowButton()) && ($this->getModel()?->exists))
+			$defaults['showElement'] = $this->getShowUrl();
+
+		$defaults['buttonsNavbar'] = $this->getButtonsNavbar();
+
+		if($url = $this->getReturnUrl())
+			$defaults['cancelHref'] = $url;
+
+		$defaults['showTitle'] = $this->showtitle();
+
+		$defaults['saveAndNew'] = $this->hasSaveAndNew();
+		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
+		$defaults['saveAndCopy'] = $this->hasSaveAndCopy();
+
+		$defaults['updateEditor'] = $this->hasUpdateEditor();
+
+		return $this->overrideWithCustomSettingsToDefaults($defaults);
 	}
 
 	public function avoidBackToList()
@@ -275,31 +300,53 @@ class CRUD extends Controller
 		return $this->avoidBackToList;
 	}
 
+	public function avoidShowButton() : bool
+	{
+		return $this->avoidShowButton;
+	}
 
+	public function getModel() : ?Model
+	{
+		if (isset($this->modelInstance))
+			return $this->modelInstance;
 
+		return null;
+	}
+
+	public function showTitle() : bool
+	{
+		return $this->showTitle;
+	}
+
+	public function requestHasRefreshRow()
+	{
+		return request()->refreshRow;
+	}
+
+	public function manageRelatedRefreshRow()
+	{
+		if(! method_exists($this, 'getRelationshipsManagerClass'))
+			throw new \Exception('Missing relationships Manager class for ' . get_class($this));
+
+			if(! $this->getRelationshipsManagerClass())
+				throw new \Exception('Missing relationships Manager class for ' . get_class($this));
+
+				$relationshipsManager = $this->setRelationshipsManager();
+
+				return $relationshipsManager->manageRefreshRow();
+	}
+
+	public function hasUpdateEditor()
+	{
+		if (is_null($this->updateEditor))
+			return config('form.updateEditor', false);
+
+		return $this->updateEditor;
+	}
 
 	public function overrideWithCustomSettingsToDefaults(array $settings) : array
 	{
 		return $settings;
-	}
-
-	public function provideFormDefaultSettings() : array
-	{
-		$defaults = [];
-
-		if(in_array('index', $this->allowedMethods)&&(! $this->avoidBackToList()))
-			$defaults['backToListUrl'] = $this->getIndexUrl();
-
-		$defaults['saveAndNew'] = $this->hasSaveAndNew();
-		$defaults['saveAndRefresh'] = $this->hasSaveAndRefresh();
-
-		return $this->overrideWithCustomSettingsToDefaults($defaults);
-	}
-
-
-	public function getModelDefaultParameters() : array
-	{
-		return [];
 	}
 
 	public function setModel(Model $model)
@@ -311,32 +358,102 @@ class CRUD extends Controller
 		);
 	}
 
-	public function getModel() : ? Model
-	{
-		return $this->modelInstance;
-	}
-
 	public function makeModel() : Model
 	{
+		$model = $this->getModelClass()::make();
+
 		$parameters = $this->addParentModelAssociationParameter(
 			$this->getModelDefaultParameters()
 		);
 
-		return $this->getModelClass()::make(
-			$parameters
+		foreach ($parameters as $key => $value)
+			$model->$key = $value;
+
+		return $model;
+	}
+
+	public function getModelDefaultParameters() : array
+	{
+		return [];
+	}
+
+	public function modelHasAutomaticCache() : bool
+	{
+		return in_array(
+			CRUDCacheAutomaticSetterTrait::class, class_uses_recursive($this->getModelClass())
 		);
 	}
 
+	public function shareExtraViews()
+	{
+		if (count($this->extraViews))
+		{
+			throw new Exception('GESTIRE EXTRA VIEW PER SHOW E INDEX');
+			view()->share('extraViews', $this->extraViews);
+		}
+	}
 
-    public function modelHasAutomaticCache() : bool
-    {
-        return in_array(
-            CRUDCacheAutomaticSetterTrait::class,
-            class_uses_recursive($this->getModelClass())
-        );
-    }
+	public function calculatePageTitle() : ?string
+	{
+		if (request()->ajax())
+			return null;
 
+		if (isset($this->pageTitle))
+			return $this->pageTitle;
 
+		if ((! request()->route()) || (! $routeName = request()->route()->getName()))
+			return config('app.name');
 
+		$pagetTitleParameters = request()->route()->parameters();
+		$pagetTitleParameters['model'] = $this->getModel()?->getName();
 
+		if($this->parentModel ?? null)
+			$pagetTitleParameters['parentModel'] = $this->parentModel->getName();
+
+		if (method_exists($this, 'getPackageConfigName'))
+			return trans($this->getPackageConfigName() . '::routes.' . $routeName, $pagetTitleParameters);
+
+		// Log::critical('dichiara getPackageConfigName per il controller ' . get_class($this));
+
+		return trans('routes.' . $routeName, ['model' => $this->getModel()?->getName()]);
+	}
+
+	public function getName() : ?string
+	{
+		return null;
+	}
+
+	public function getId() : ?string
+	{
+		return null;
+	}
+
+	public function setPageTitle(string $pageTitle = null)
+	{
+		if((! $pageTitle)&&(! $pageTitle = $this->calculatePageTitle()))
+			return null;
+
+		app('uikittemplate')->setPageTitle($pageTitle);
+	}
+
+	/**
+	 * get controller's model translation file name prefix
+	 *
+	 * @return string
+	 **/
+	protected function getModelTranslationFileName() : string
+	{
+		$classNamePieces = explode('\\', $this->getModelClass());
+		$className = array_pop($classNamePieces);
+
+		return Str::plural(Str::camel($className));
+	}
+
+	private function checkIfModelUsesTrait()
+	{
+		//TODO RISOLVERE STA ROBA
+		// foreach($this->neededTraits as $neededTrait)
+		// 	if(! in_array($neededTrait, class_uses(new ($this->getModelClass())())))
+		// 		throw new \Exception('add ' . $neededTrait . ' to model ' . $this->getModelClass());
+	}
 }

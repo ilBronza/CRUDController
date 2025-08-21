@@ -2,6 +2,36 @@
 
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('close-iframe', function(Request $request)
+{
+	return view('crud::utilities.messages.closeIframe', [
+		'closeMessage' => __('crud::messages.success'),
+		'reloadAllTables' => true
+	]);
+})->name('iframe.close');
+
+
+
+Route::get('cache-clear', function()
+	{
+		cache()->flush();
+
+		return back();
+	})
+->name('cache.clear');
+
+Route::get('/server-cache-clear', function() {
+
+    $exitCode = Artisan::call('cache:clear');
+    echo $exitCode;
+
+    $exitCode = Artisan::call('config:cache');
+    echo $exitCode;
+
+    return ;
+})->name('servercache.clear');
+
 Route::group([
 		'middleware' => ['web'],
 		'prefix' => 'concurrent-uri',

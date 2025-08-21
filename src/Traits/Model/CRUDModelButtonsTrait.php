@@ -5,21 +5,57 @@ namespace IlBronza\CRUD\Traits\Model;
 use IlBronza\Buttons\Button;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Log;
+
+use function class_basename;
+use function dd;
+use function route;
+
 trait CRUDModelButtonsTrait
 {
-    static function getCreateButton(array $routeParameters = []) : Button
+    public static function getGoToListButton() : Button
     {
         return Button::create([
-            'href' => route(static::getStaticRouteBasename() . '.create', $routeParameters), 
-            'text' => 'generals.create' . class_basename(static::class),
-            'icon' => 'plus'
-        ]);
+                'href' => route(pluralClass(static::class) . '.index'),
+                'translatedText' => static::getTranslation('goToList'),
+                'icon' => 'list'
+            ]);
+    }
+
+    static function getCreateButton(array $routeParameters = []) : Button
+    {
+//		try
+//		{
+			$placeholder = static::make();
+
+			$href = $placeholder->getCreateUrl();
+			$text = __('crud::crud.createNew', ['model' => $placeholder->getTranslatedClassname()]);
+//		}
+//		catch(\Exception $e)
+//		{
+//			Log::critical($e->getMessage() . ' - ' . $e->getTraceAsString());
+//
+//			$href = route(static::getStaticRouteBasename() . '.create', $routeParameters);
+//			$text = 'generals.create' . class_basename(static::class);
+//		}
+
+		$button = Button::create([
+			'href' => $href,
+			'text' => $text,
+			'icon' => 'plus'
+		]);
+
+        $button->setHtmlClass('uk-margin-large-left');
+        $button->setPrimary();
+
+        return $button;
     }
 
     static function getReorderButton(array $routeParameters = []) : Button
     {
         return Button::create([
-            'href' => route(static::getModelRoutesPrefix() . static::getPluralCamelcaseClassBasename() . '.reorder', $routeParameters), 
+            'href' => static::make()->getReorderUrl(),
+            // 'href' => route(static::getModelRoutesPrefix() . static::getPluralCamelcaseClassBasename() . '.reorder', $routeParameters), 
             'text' => 'generals.reorder' . class_basename(static::class),
             'icon' => 'bars-staggered'
         ]);        

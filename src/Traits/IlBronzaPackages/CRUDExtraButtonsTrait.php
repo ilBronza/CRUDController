@@ -1,0 +1,61 @@
+<?php
+
+namespace IlBronza\CRUD\Traits\IlBronzaPackages;
+
+use IlBronza\Buttons\Button;
+use IlBronza\Menu\Navbar;
+use Illuminate\Support\Str;
+
+trait CRUDExtraButtonsTrait
+{
+	public ? Navbar $buttonsNavbar = null;
+
+	public function getName() : ? string
+	{
+		return strtolower(class_basename($this));
+	}
+
+	public function getId() : ? string
+	{
+		return str()->random(5);
+	}
+
+	public function getButtonsNavbarName() : string
+	{
+		return "navbar" . Str::slug($this->getName() .$this->getId());
+	}
+
+	public function setButtonsNavbar(Navbar $navbar = null)
+	{
+		if($navbar)
+			return $this->buttonsNavbar = $navbar;
+
+		$this->buttonsNavbar = app('menu')->getIndependentNavbarByName(
+			$this->getButtonsNavbarName()
+		);
+
+		return $this->buttonsNavbar;
+	}
+
+	public function getButtonsNavbar() : Navbar
+	{
+		if($this->buttonsNavbar)
+			return $this->buttonsNavbar;
+
+		return $this->setButtonsNavbar();
+	}
+
+	public function hasButtonsNavbar() : bool
+	{
+		return !! $this->buttonsNavbar;
+	}
+
+	public function addNavbarButton(Button $button) : Navbar
+	{
+		$buttonsNavbar = $this->getButtonsNavbar();
+
+		$buttonsNavbar->addButton($button);
+
+		return $buttonsNavbar;
+	}
+}

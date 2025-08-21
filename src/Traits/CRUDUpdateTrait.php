@@ -2,12 +2,18 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+use function dd;
 
 trait CRUDUpdateTrait
 {
@@ -17,10 +23,14 @@ trait CRUDUpdateTrait
 	public function getAfterUpdateRoute()
 	{
 		return false;
+		// return $this->getRouteUrlByType('show');
 	}
 
 	public function checkIfUserCanUpdate()
 	{
+		// if(\Auth::id() == 259569)
+		// 	dd($this->modelInstance);
+
 		if(! $this->modelInstance->userCanUpdate(Auth::user()))
 			abort(403);
 
@@ -51,7 +61,7 @@ trait CRUDUpdateTrait
 			return $url;
 
 		if($this->isSaveAndNew())
-			return $this->getRouteUrlByType('create');
+			return $this->getCreateUrl();
 
 		if($this->isSaveAndRefresh())
 			return $this->getRouteUrlByType('edit');
@@ -61,6 +71,9 @@ trait CRUDUpdateTrait
 
 		if(in_array('show', $this->allowedMethods))
 			return $this->getRouteUrlByType('show');
+
+		if(url()->previous() == $this->getModel()->getEditUrl())
+			return $this->getModel()->getIndexUrl();
 
 		return url()->previous();
 	}
@@ -137,7 +150,18 @@ trait CRUDUpdateTrait
 		//this way I don't need to set fillable parameters
 		// $this->modelInstance->fill($parameters);
 		foreach($parameters as $property => $value)
-			$this->modelInstance->{$property} = $value;
+		{
+			$setterName = 'set' . Str::studly($property);
+
+			if(method_exists($this->modelInstance, $setterName))
+				$this->modelInstance->{$setterName}($value);
+
+			else
+			{
+				Log::critical('dichiara ' . $setterName . ' su ' . get_class($this->modelInstance));
+				$this->modelInstance->{$property} = $value;
+			}
+		}
 
 		$this->manageModelInstanceAfterUpdate($parameters);
 
@@ -149,7 +173,10 @@ trait CRUDUpdateTrait
 	 **/
 	public function sendUpdateSuccessMessage()
 	{
-
+		Ukn::s(trans('crud::messages.successfullyUpdated', [
+			'modelClass' => $this->getModel()->getTranslatedClassname(),
+			'model' => $this->getModel()->getName()
+		]));
 	}
 
 	public function manageAfterUpdate(Request $request)
@@ -198,6 +225,21 @@ trait CRUDUpdateTrait
 		);
 	}
 
+	public function getUpdateCallback() : ? callable
+	{
+		return null;
+	}
+
+	public function getUpdateEvents() : array
+	{
+		return $this->updateEvents ?? [];
+	}
+
+	public function getUpdaterHelperClassName() : string
+	{
+		return CrudModelUpdater::class;
+	}
+
 	/**
 	 * validate request and update model
 	 *
@@ -210,19 +252,29 @@ trait CRUDUpdateTrait
 
 		$this->checkIfUserCanUpdate();
 
-		if($this->hasEditorUpdateRequest($request))
+//		if($this->hasEditorUpdateRequest($request))
+		if(CrudRequestHelper::isEditorUpdateRequest($request))
 			return $this->_updateEditor($request);
 
-		if($this->hasFileUploadRequest($request))
+		if(CrudRequestHelper::isEditorReadRequest($request))
+			return $this->returnFieldFromEditor($request);
+
+		//		if($this->hasFileUploadRequest($request))
+		if(CrudRequestHelper::isFileUploadRequest($request))
 			return $this->_uploadFile($request, 'update');
 
-		$this->modelInstance = CrudModelUpdater::saveByRequest(
+		$this->modelInstance = $this->getUpdaterHelperClassName()::saveByRequest(
 			$this->getModel(),
 			$this->getUpdateParametersClass(),
-			$request
+			$request,
+			$this->getUpdateEvents(),
+			$this->getUpdateCallback()
 		);
 
 		$this->sendUpdateSuccessMessage();
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return redirect()->to($this->modelInstance->getEditUrl());
 
 		return redirect()->to(
 			$this->getAfterUpdatedRedirectUrl()

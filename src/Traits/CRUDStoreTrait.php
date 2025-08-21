@@ -2,11 +2,14 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelStorer;
 use IlBronza\Form\Facades\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\StoreFieldsetsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+
+use function dd;
 
 trait CRUDStoreTrait
 {
@@ -23,7 +26,7 @@ trait CRUDStoreTrait
 			return $url;
 
 		if($this->isSaveAndNew())
-			return $this->getRouteUrlByType('create');
+			return $this->getCreateUrl();
 
 		if($this->isSaveAndRefresh())
 			return $this->getRouteUrlByType('edit');
@@ -45,12 +48,17 @@ trait CRUDStoreTrait
 	 * @param Request $request, Model $modelInstance
 	 * @return Response redirect
 	 **/
-	public function store(Request $request)
+	public function store(Request $request, string $model = null)
 	{
 		return $this->_store($request);
 	}
 
 	public function checkUserStoringRights()
+	{
+
+	}
+
+	public function performAdditionalOperations()
 	{
 
 	}
@@ -72,6 +80,11 @@ trait CRUDStoreTrait
 		);
 
 		$this->sendStoreSuccessMessage();
+
+		$this->performAdditionalOperations();
+
+		if(CrudRequestHelper::isSaveAndCopy($request))
+			return redirect()->to($this->modelInstance->getEditUrl());
 
 		return redirect()->to(
 			$this->getAfterStoredRedirectUrl()

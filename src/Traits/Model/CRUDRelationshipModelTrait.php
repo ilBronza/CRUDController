@@ -3,118 +3,217 @@
 namespace IlBronza\CRUD\Traits\Model;
 
 use App\Models\Referent;
-use App\Models\User;
-use Auth;
+use Exception;
+use IlBronza\Buttons\Button;
+use IlBronza\Ukn\Facades\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+use function htmlentities;
+use function route;
+use function trans;
+
 trait CRUDRelationshipModelTrait
 {
-    use CRUDDeleterTrait;
+	use CRUDDeleterTrait;
 
-    public function getRelatedClassByRelationshipName(string $relationship) : string
-    {
-        return get_class($this->{$relationship}()->getRelated());
-    }
+	static function getSelfPossibleList() : array
+	{
+		$elements = static::orderBy('name')->get();
 
-    /**
-     * resolve and call getter function for possible related models
-     *
-     * @param string $relationship
-     * @return callable
-     **/
-    public function _getRelationshipPossibleValuesArray(string $relationship) : array
-    {
-        $relationModelClassBaseName = $this->getRelatedClassByRelationshipName($relationship);
+		return static::buildElementsArryForSelect($elements);
+	}
 
-        $elements = $relationModelClassBaseName::all();
+	/**
+	 * standard method to build array elements for select
+	 *
+	 * @param  Collection  $elements
+	 *
+	 * @return array
+	 **/
+	static public function buildElementsArryForSelect(Collection $elements) : array
+	{
+		$result = [];
 
-        return $this->buildElementsArryForSelect($elements);
-    }
+		foreach ($elements as $element)
+			$result[$element->getKey()] = $element->getNameForDisplayRelation();
 
-    /**
-     * resolve and call getter function for possible related models
-     *
-     * @param string $relationship
-     * @return callable
-     **/
-    public function getRelationshipPossibleValuesArray(string $relationship)
-    {
-        if($relationship == 'parent')
-        {
-            if(! isset($this->parentingTrait))
-                throw new \Exception('Aggiungere ParentingTrait al model ' . class_basename($this));
+		return $result;
+	}
 
-            return $this->getParentPossibleValuesArray();
-        }
+	public function getNameForDisplayRelation()
+	{
+		return $this->getName();
+	}
 
-        $getterMethodName = 'getPossible' . ucfirst(Str::plural($relationship)) . 'ValuesArray';
+	public function getCreateByPolimorphicRelatedButton(Model $related) : Button
+	{
+		$url = $this->getCreateByPolimorphicRelatedUrl($related);
 
-        if(method_exists($this, $getterMethodName))
-            return $this->$getterMethodName();
+		return $this->_getCreateByRelatedButton($related, $url);
+	}
 
-        return $this->_getRelationshipPossibleValuesArray($relationship);
-    }
+	public function getCreateByPolimorphicRelatedUrl(Model $related) : string
+	{
+		$relatedRoutePrefix = $this->pluralLowerClass();
+		$routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
 
-    /**
-     * standard method to build array elements for select
-     *
-     * @param Collection $elements
-     * @return array
-     **/
-    static public function buildElementsArryForSelect(Collection $elements)
-    {
-        $result = [];
+		if (Route::has($routeName))
+			return route($routeName, [$related]);
 
-        foreach($elements as $element)
-            $result[$element->getKey()] = $element->getNameForDisplayRelation();
+		$routeData = [
+			'model' => $related->getMorphClass(),
+			'key' => $related->getKey()
+		];
 
-        return $result;
-    }
+		try
+		{
+			return $this->getKeyedRoute("createBy", $routeData, false);
+		}
+		catch (Exception $e)
+		{
+			Ukn::e($e->getMessage() . ' Crea la route per ' . get_class($this) . ' o vieta l\'aggiunta automatica del puslante tramite il relationshipManager o il controller');
 
-    public function getNameForDisplayRelation()
-    {
-        return $this->getName();
-    }
+			return $e->getMessage();
+		}
+	}
 
-    /**
-     * get edit relation pivot row link
-     *
-     * calculate route to edit pivot row taking current model class and retrieving correct route
-     *
-     * @param Model $model
-     * @return string 
-     **/
-    public function getRelationEditUrl(Model $model)
-    {
-        $routePieces = [
-            $this->getPluralCamelcaseClassBasename(),
-            $model->getPluralCamelcaseClassBasename(),
-            'edit'
-        ];
+	public function _getCreateByRelatedText(Model $baseModel, Model $related = null)
+	{
+		return htmlentities(
+			trans('crud::crud.createRelatedBy', [
+			'by' => $baseModel->getTranslatedClassName(),
+			'related' => $related?->getTranslatedClassName()
+			])
+		);
+	}
 
-        return route(implode(".", $routePieces), [$this, $model]);
-    }
+	public function _getCreateByRelatedButton(Model $baseModel, string $url, Model $related = null) : Button
+	{
+		return Button::create([
+			'href' => $url,
+			'translatedText' => $this->_getCreateByRelatedText($baseModel, $related),
+			'icon' => 'plus'
+		]);
+	}
 
-    /**
-     *
-     **/
-    public function getParentingAttributes()
-    {
-        $attributes = $this->getAttributes();
+	public function getCreateByRelatedButton(Model $baseModel, $related) : Button
+	{
+		$url = $this->getCreateByRelatedUrl($baseModel);
 
-        if(isset($this->teaserFields))
-            return array_intersect_key($attributes, array_flip($this->teaserFields));
+		return $this->_getCreateByRelatedButton($baseModel, $url, $related);
+	}
 
-        return $attributes;
-    }
+	public function getCreateByRelatedUrl(Model $related) : string
+	{
+		$relatedRoutePrefix = $this->pluralLowerClass();
+		$routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
 
-    static function getSelfPossibleList()
-    {
-        $elements = static::orderBy('alias')->get();
+		if (Route::has($routeName))
+			return route($routeName, [$related]);
 
-        return static::buildElementsArryForSelect($elements);
-    }
+		$relatedModelBaseClass = $related->getMorphClass();
+
+		$routeName = $this->getKeyedRouteName("createBy{$relatedModelBaseClass}");
+
+		if (Route::has($routeName))
+			return route($routeName, [$related]);
+
+		$routeData = [
+			'model' => $related->pluralLowerClass(),
+			'key' => $related->getKey()
+		];
+
+		try
+		{
+			return $this->getKeyedRoute("createBy", $routeData, false);
+		}
+		catch (Exception $e)
+		{
+			Ukn::e($e->getMessage() . ' Crea la route per ' . get_class($this) . ' o vieta l\'aggiunta automatica del puslante tramite il relationshipManager o il controller');
+
+			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * resolve and call getter function for possible related models
+	 *
+	 * @param  string  $relationship
+	 *
+	 * @return callable
+	 **/
+	public function getRelationshipPossibleValuesArray(string $relationship)
+	{
+		if ($relationship == 'parent')
+		{
+			if ((! isset($this->parentingTrait))&&(method_exists($this, 'parent') === false))
+				throw new Exception('Aggiungere ParentingTrait al model ' . class_basename($this));
+
+			return $this->getParentPossibleValuesArray();
+		}
+
+		$getterMethodName = 'getPossible' . ucfirst(Str::plural($relationship)) . 'ValuesArray';
+
+		if (method_exists($this, $getterMethodName))
+			return $this->$getterMethodName();
+
+		return $this->_getRelationshipPossibleValuesArray($relationship);
+	}
+
+	/**
+	 * resolve and call getter function for possible related models
+	 *
+	 * @param  string  $relationship
+	 *
+	 * @return callable
+	 **/
+	public function _getRelationshipPossibleValuesArray(string $relationship) : array
+	{
+		$relationModelClassBaseName = $this->getRelatedClassByRelationshipName($relationship);
+
+		$elements = $relationModelClassBaseName::all();
+
+		return $this->buildElementsArryForSelect($elements);
+	}
+
+	public function getRelatedClassByRelationshipName(string $relationship) : string
+	{
+		return get_class($this->{$relationship}()->getRelated());
+	}
+
+	/**
+	 * get edit relation pivot row link
+	 *
+	 * calculate route to edit pivot row taking current model class and retrieving correct route
+	 *
+	 * @param  Model  $model
+	 *
+	 * @return string
+	 **/
+	public function getRelationEditUrl(Model $model)
+	{
+		$routePieces = [
+			$this->getPluralCamelcaseClassBasename(),
+			$model->getPluralCamelcaseClassBasename(),
+			'edit'
+		];
+
+		return route(implode(".", $routePieces), [$this, $model]);
+	}
+
+	/**
+	 *
+	 **/
+	public function getParentingAttributes()
+	{
+		$attributes = $this->getAttributes();
+
+		if (isset($this->teaserFields))
+			return array_intersect_key($attributes, array_flip($this->teaserFields));
+
+		return $attributes;
+	}
 }

@@ -2,6 +2,9 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use function __;
+use function dd;
+
 trait CRUDArrayFieldsTrait
 {
 
@@ -36,10 +39,19 @@ trait CRUDArrayFieldsTrait
 	 **/
 	private function buildNameAndLabelArray(string $name, array $parameters)
 	{
-		return [
-				'name' => $name,
-				'label' => $parameters['label'] ?? __('fields.' . $name),
-			];
+		$result = [];
+
+		$result['name'] = $name;
+
+		if(isset($parameters['translationPrefix']))
+			$result['translationPrefix'] = $parameters['translationPrefix'];
+
+		if(! isset($parameters['label']))
+			$result['label'] = true;
+		else
+			$result['label'] = $parameters['label'];
+
+		return $result;
 	}
 
 	/**

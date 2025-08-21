@@ -4,17 +4,127 @@ namespace IlBronza\CRUD\Traits\Model;
 
 use Carbon\Carbon;
 use IlBronza\CRUD\Models\Casts\ExtraField;
+use IlBronza\CRUD\Models\Casts\ExtraFieldDossier;
 use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
+use IlBronza\CRUD\Models\Casts\Parameter;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+
+use Illuminate\Support\Str;
+
+use function array_filter;
+use function array_keys;
+use function class_basename;
+use function dd;
+use function event;
+use function explode;
+use function get_class;
+use function in_array;
+use function method_exists;
+use function stripos;
+use function strpos;
 
 trait CRUDModelExtraFieldsTrait
 {
-	abstract function getExtraFieldsClass() : string;
+	static ? array $historyFields = null;
+
+	public function getExtraFieldsRelatedModels() : array
+	{
+		$fields = $this->getExtraFieldsCasts();
+
+		$related = [];
+
+		foreach($fields as $attribute => $casting)
+		{
+			if(stripos($casting, 'ExtraFieldDossier') !== false)
+			{
+				$pieces = explode(':', $casting);
+				$_fields = explode(',', $pieces[1]);
+
+				if($dossierrow = ExtraFieldDossier::obtainDossierrow($this, $_fields[0], $_fields[1]))
+					$related[] = $dossierrow;
+			}
+			elseif(str_ends_with($casting, 'ExtraField'))
+				$related[] = $this->extraFields;
+
+			elseif(str_ends_with($casting, 'ExtraFieldDate'))
+				$related[] = $this->extraFields;
+
+			elseif(stripos($casting, 'Price') !== false)
+			{
+				$pieces = explode(':', $casting);
+				$_fields = explode(',', $pieces[1]);
+
+				$related[] = $this->providePriceByCollectionId(
+					$_fields[0]
+				);
+			}
+			elseif(stripos($casting, 'Parameter') !== false)
+				{
+					continue;
+					throw new \Exception($casting);
+				}
+
+				else
+					throw new \Exception($casting);
+		}
+
+		return array_unique($related, SORT_REGULAR);
+	}
+
+	public function getExtraFieldsCasts() : array
+	{
+		$result = array_filter($this->getCasts(), function ($item)
+		{
+			if (strpos($item, 'ExtraField') !== false)
+				return true;
+
+			if (strpos($item, 'Parameter') !== false)
+				return true;
+
+			return false;
+		});
+
+		if(! method_exists($this, 'getPriceExtraFieldsCasts'))
+			return $result;
+
+		$prices = $this->getPriceExtraFieldsCasts();
+
+		return $prices + $result;
+	}
+
+	public function update(array $attributes = [], array $options = [])
+	{
+		if (! $this->exists) {
+			return false;
+		}
+
+		foreach($attributes as $key => $value)
+			$this->$key = $value;
+
+		return $this->save($options);
+	}
+
+	abstract function getExtraFieldsClass() : ? string;
 
 	public function extraFields()
 	{
+		if($this instanceof Pivot)
+		{
+			$foreign = Str::snake(
+					class_basename($this)
+				) . '_id';
+
+			return $this->hasOne(
+				$this->getExtraFieldsClass(),
+				$foreign
+			);
+		}
+
 		return $this->hasOne(
 			$this->getExtraFieldsClass()
 		);
@@ -22,12 +132,24 @@ trait CRUDModelExtraFieldsTrait
 
 	public function getProjectExtraFieldsModel()
 	{
-		if($extraFields = $this->extraFields)
-			return $extraFields;
+		try
+		{
+			if($extraFields = $this->extraFields)
+				return $extraFields;
+		}
+		catch(\Exception $e)
+		{
+			dd($this->extraFields);
+		}
 
-		$extraFields = $this->extraFields()->make();
+		if(! $this->exists)
+			throw new \Exception('Extra fields creato prima della persistenza del model base ' . class_basename($this) . '. SALVA il modello base per prima cosa');
 
-		return $this->extraFields = $extraFields;
+		$extraFields = $this->extraFields()->create();
+
+		$this->setRelation('extraFields', $extraFields);
+
+		return $this->extraFields;
 	}
 
 	public function getCachedProjectExtraFieldsModel()
@@ -36,96 +158,105 @@ trait CRUDModelExtraFieldsTrait
 		// 	$this->getExtraFieldsClass()::staticCacheKey($this->getKey() . $this->updated_at),
 		// 	function ()
 		// 	{
-				return $this->getProjectExtraFieldsModel();
+		// return $this->getProjectExtraFieldsModel();
+		return $this->getProjectExtraFieldsModel();
 		// 	}
 		// );
 	}
 
 	public function getCachedProjectCustomExtraFieldsModel(string $customExtraAttributesModel)
 	{
-		return cache()->rememberForever(
-			$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
-			function () use($customExtraAttributesModel)
-			{
-				if($model = $this->$customExtraAttributesModel()->first())
-					return $model;
+		if($this->relationLoaded($customExtraAttributesModel))
+			return $this->{$customExtraAttributesModel};
 
-				$providerMethod = ExtraFieldsProvider::getExtraFieldsProviderMethod($customExtraAttributesModel);
+		// return cache()->rememberForever(
+		// 	$this->$customExtraAttributesModel()->make()::staticCacheKey($this->getKey() . $this->updated_at),
+		// 	function () use($customExtraAttributesModel)
+		// 	{
+		// 		// if($model = $this->$customExtraAttributesModel()->first())
+		// 		// {
+		// 		// 	return $model;
+		// 		// }
 
-				if(method_exists($this, $providerMethod))
-					return $this->$providerMethod();
+		$providerMethod = ExtraFieldsProvider::getExtraFieldsProviderMethod($customExtraAttributesModel);
 
-				throw new \Exception('Please declare ' . $providerMethod . ' inside ' . class_basename($this) . ' to provide custom extra fields');
-			}
-		);
+		if(method_exists($this, $providerMethod))
+			return $this->$providerMethod();
+
+		throw new \Exception('Please declare ' . $providerMethod . ' inside ' . class_basename($this) . ' to provide custom extra fields');
+		// 	}
+		// );
 	}
 
 	public function getCustomExtraAttribute(string $customExtraAttributesModel, string $attribute)
 	{
-        $projectExtraFieldsModel = $this->getCachedProjectCustomExtraFieldsModel($customExtraAttributesModel);
+		if(! $projectExtraFieldsModel = $this->getCachedProjectCustomExtraFieldsModel($customExtraAttributesModel))
+			return null;
 
-        return $projectExtraFieldsModel->$attribute;
+		return $projectExtraFieldsModel->$attribute;
 	}
 
 	public function getExtraAttribute(string $attribute)
 	{
-        $projectExtraFieldsModel = $this->getCachedProjectExtraFieldsModel();
+		$projectExtraFieldsModel = $this->getCachedProjectExtraFieldsModel();
 
-        return $projectExtraFieldsModel->$attribute;
+		return $projectExtraFieldsModel->$attribute;
 	}
 
 	public static function bootCRUDModelExtraFieldsTrait()
 	{
-		static::saving(function ($model) {
-
+		static::saving(function ($model)
+		{
 			$model->updated_at = Carbon::now();
 
-			foreach($model->casts as $attribute => $casting)
-				if(strpos($casting, "ExtraField") !== null)
-					unset($model->$attribute);
+			$keys = array_keys(
+				$model->getAttributes()
+			);
+
+			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
+			{
+				if(! in_array($attribute, $keys))
+					continue;
+
+				if(strpos($casting, 'CastFieldPrice') !== false)
+				{
+					$mutator = ExtraField::makeByCastAttribute($casting);
+					$mutator->set($model, $attribute, $model->$attribute, []);
+				}
+
+				$model->attributes[$attribute] = null;
+				$model->classCastCache[$attribute] = null;
+
+				unset($model->attributes[$attribute]);
+				unset($model->classCastCache[$attribute]);
+
+				$model->offsetUnset($attribute);
+			}
 		});
 
 		static::saved(function ($model) {
 
-			if(! $model->relationLoaded('extraFields'))
+			$relationsToSave = [];
+
+			if($model->relationLoaded('extraFields'))
+				if($model->extraFields)
+					$model->extraFields->save();
+
+			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
 			{
-				$model->getProjectExtraFieldsModel();
-				$model->extraFields;				
-			}
-
-			$relationsToSave = ['extraFields'];
-
-			foreach($model->casts as $attribute => $casting)
-			{
-				$pieces = explode(":", $casting);
-
-				if(! ($castingParameters = ($pieces[1] ?? null)))
+				if(! $extraFieldRelationName = ExtraField::getRelationName($casting))
 					continue;
 
-				$castingParametersArray = explode(",", $castingParameters);
+				if(! $model->relationLoaded($extraFieldRelationName))
+					continue;
 
-				if(! in_array($castingParametersArray[0], $relationsToSave))
-					$relationsToSave[] = $castingParametersArray[0];
+				if(! $model->$extraFieldRelationName)
+					continue;
+
+				$model->$extraFieldRelationName->save();
 			}
 
-			foreach($relationsToSave as $relationToSave)
-			{
-				if(($model->relationLoaded($relationToSave))&&($model->$relationToSave))
-					$model->$relationToSave->save();
-
-				elseif((! $model->relationLoaded($relationToSave))||(! $model->$relationToSave))
-				{
-					if($relationToSave == 'extraFields')
-						$model->getProjectExtraFieldsModel();
-
-					else
-						$model->provideExtraFieldCustomModel($relationToSave);
-				}
-				else
-				{
-					die($relationToSave);
-				}
-			}
+			event('adjustPricesEvent', $model);
 		});
 
 	}

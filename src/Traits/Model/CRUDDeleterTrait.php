@@ -10,17 +10,20 @@ trait CRUDDeleterTrait
 
     public function getDeletingRelationshipsField()
     {
-        if($this->deletingRelationships ?? false)
+        if((is_array($this->deletingRelationships))||($this->deletingRelationships ?? false))
             return $this->deletingRelationships;
 
         if(isset(static::$deletingRelationships))
             return static::$deletingRelationships;
 
-        throw new \Exception('Dichiara i campi static deletingRelationships nel model ' . class_basename($this));
+        throw new \Exception('Dichiara i campi static deletingRelationships nel model ' . get_class($this));
     }
 
     public function deleterDelete()
     {
+        if(method_exists($this, 'userCanDelete'))
+            $this->userCanDelete();
+
         foreach($this->getDeletingRelationshipsField() as $relationship)
         {
             $elements = $this->$relationship();
