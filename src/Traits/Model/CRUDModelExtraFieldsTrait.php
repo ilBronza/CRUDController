@@ -54,6 +54,15 @@ trait CRUDModelExtraFieldsTrait
 			elseif(str_ends_with($casting, 'ExtraFieldDate'))
 				$related[] = $this->extraFields;
 
+			elseif(stripos($casting, 'Price') !== false)
+			{
+				$pieces = explode(':', $casting);
+				$_fields = explode(',', $pieces[1]);
+
+				$related[] = $this->providePriceByCollectionId(
+					$_fields[0]
+				);
+			}
 			elseif(stripos($casting, 'Parameter') !== false)
 				{
 					continue;
@@ -233,14 +242,6 @@ trait CRUDModelExtraFieldsTrait
 				if($model->extraFields)
 					$model->extraFields->save();
 
-
-			//			{
-//				$model->getProjectExtraFieldsModel();
-//				$model->extraFields;
-//			}
-
-//			$relationsToSave[] = 'extraFields';
-
 			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
 			{
 				if(! $extraFieldRelationName = ExtraField::getRelationName($casting))
@@ -253,32 +254,9 @@ trait CRUDModelExtraFieldsTrait
 					continue;
 
 				$model->$extraFieldRelationName->save();
-
-//				$relationsToSave[] = $extraFieldRelationName;
 			}
 
-
-//			foreach($relationsToSave as $relationToSave)
-//			{
-//				if($model->relationLoaded($relationToSave))
-//					$model->$relationToSave->save();
-//
-//				elseif((! $model->relationLoaded($relationToSave))||(! $model->$relationToSave))
-//				{
-//					if($relationToSave == 'extraFields')
-//						$model->getProjectExtraFieldsModel();
-//
-////					else
-////						$model->provideExtraFieldCustomModel($relationToSave);
-//				}
-//				else
-//				{
-//					die($relationToSave);
-//				}
-//			}
-
 			event('adjustPricesEvent', $model);
-
 		});
 
 	}

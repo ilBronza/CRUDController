@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD;
 
+use Auth;
 use App\Http\Controllers\Controller;
 use Exception;
 use IlBronza\Buttons\Button;
@@ -13,6 +14,7 @@ use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 use IlBronza\CRUD\Traits\IlBronzaPackages\CRUDExtraButtonsTrait;
+use IlBronza\CRUD\Http\Controllers\Traits\ReturnBackTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
 use IlBronza\Form\Traits\ExtraViewsTrait;
 use IlBronza\UikitTemplate\Fetcher;
@@ -36,6 +38,7 @@ class CRUD extends Controller
 {
 	use CRUDExtraButtonsTrait;
 	use ExtraViewsTrait;
+	use ReturnBackTrait;
 
 	static $availableExtraViewsPositions = [
 		'outherTop',
@@ -174,62 +177,6 @@ class CRUD extends Controller
 		return request()->input('iframed', false);
 	}
 
-	public function setReturnUrlToPrevious()
-	{
-		return $this->setReturnUrl(
-			url()->previous()
-		);
-	}
-
-	public function setReturnUrl(string $url) : string
-	{
-		$classKey = static::getClassKey();
-		session([$classKey => $url]);
-
-		return $classKey;
-	}
-
-	public function manageReturnBack() : ?string
-	{
-		if (! $this->mustReturnBack())
-			return null;
-
-		return $this->setReturnUrlIfEmpty(
-			url()->previous()
-		);
-	}
-
-	public function mustReturnBack() : bool
-	{
-		return ! ! $this->returnBack;
-	}
-
-	public function setReturnUrlIfEmpty(string $url)
-	{
-		if (! $this->checkReturnUrl())
-			$this->setReturnUrl(
-				$url
-			);
-	}
-
-	public function checkReturnUrl() : bool
-	{
-		$classKey = static::getClassKey();
-		$url = session($classKey, null);
-
-		return ! ! $url;
-	}
-
-	public function getReturnUrl() : ?string
-	{
-		$classKey = static::getClassKey();
-
-		$url = session($classKey, null);
-		session()->forget($classKey);
-
-		return $url;
-	}
-
 	/**
 	 * get subject model class's basename
 	 *
@@ -333,6 +280,9 @@ class CRUD extends Controller
 			$defaults['showElement'] = $this->getShowUrl();
 
 		$defaults['buttonsNavbar'] = $this->getButtonsNavbar();
+
+		if($url = $this->getReturnUrl())
+			$defaults['cancelHref'] = $url;
 
 		$defaults['showTitle'] = $this->showtitle();
 

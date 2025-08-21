@@ -1,6 +1,6 @@
 <?php
 
-namespace IlBronza\CRUD\Http\Controllers\Traits;
+namespace IlBronza\CRUD\Http\Controllers\Traits\StandardTraits;
 
 use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
 use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
@@ -21,17 +21,17 @@ trait PackageStandardEditUpdateTrait
         return config($this->getBaseConfigName() . ".models.$this->configModelClassName.parametersFiles.edit");
     }
 
-    public function edit(string $type)
+    public function edit(string $model)
     {
-        $type = $this->findModel($type);
+        $model = $this->findModel($model);
 
-        return $this->_edit($type);
+        return $this->_edit($model);
     }
 
-    public function update(Request $request, string $type)
+    public function update(Request $request, string $model)
     {
-        $type = $this->findModel($type);
+        $model = $this->findModel($model);
 
-        return $this->_update($request, $type);
+        return $this->_update($request, $model);
     }
 }

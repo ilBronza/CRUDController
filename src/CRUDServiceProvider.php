@@ -13,6 +13,7 @@ use IlBronza\CRUD\Middleware\CRUDCanDelete;
 use IlBronza\CRUD\Middleware\CRUDCheckForcedUrlMiddleware;
 use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
+use IlBronza\CRUD\Middleware\CRUDReturnBackMiddleware;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\Middleware\IframeCheckerMiddleware;
 use IlBronza\CRUD\ResourceRegistrar;
@@ -36,15 +37,18 @@ class CRUDServiceProvider extends ServiceProvider
     {
         // $router = $this->app->make(Router::class);
 
-        $router->aliasMiddleware('IframeCheckerMiddleware', IframeCheckerMiddleware::class);
+	    $router->aliasMiddleware('IframeCheckerMiddleware', IframeCheckerMiddleware::class);
+	    $router->aliasMiddleware('CRUDReturnBackMiddleware', CRUDReturnBackMiddleware::class);
 
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
-        $router->pushMiddlewareToGroup('web', IframeCheckerMiddleware::class);
+	    $router->pushMiddlewareToGroup('web', IframeCheckerMiddleware::class);
+	    $router->pushMiddlewareToGroup('web', CRUDReturnBackMiddleware::class);
 
-        $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
+	    $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
+	    $router->middlewareGroup('web', [CRUDReturnBackMiddleware::class]);
 
         if(config('crud.useConcurrentRequestsAlert'))
             $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);

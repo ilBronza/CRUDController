@@ -52,6 +52,7 @@ class RelationshipParameters
 
 	public function getCardTitle()
 	{
+
 		if($this->translatedTitle)
 			return $this->translatedTitle;
 

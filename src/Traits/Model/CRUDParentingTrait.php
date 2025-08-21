@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
+use function dd;
+
 trait CRUDParentingTrait
 {
     public $parentingTrait = true;
@@ -63,9 +65,14 @@ trait CRUDParentingTrait
         return $this->recursiveChildren;
     }
 
-    public function recursiveChildren()
+    public function recursiveChildren(array $with = [])
     {
-        return $this->children()->with('recursiveChildren');
+        $return = $this->children()->with('recursiveChildren');
+
+		if($with)
+			$return->with($with);
+
+		return $return;
     }
 
     public function recursiveParents()
@@ -118,16 +125,24 @@ trait CRUDParentingTrait
         // return null;
     }
 
-    public function getTree()
+    public function getTree(array $with = [])
     {
         return cache()->remember(
-            $this->cacheKey('tree'),
+            $this->cacheKey('tree' . json_encode($with)),
             3600,
-            function()
+            function() use($with)
             {
-                $this->load('recursivechildren');
+			    $relations = ['recursiveChildren'];
 
-                return $this;
+				if($with)
+					$relations = array_merge($relations, $with);
+
+				foreach($with as $relation)
+					$relations[] = 'recursiveChildren.' . $relation;
+
+				$this->load($relations);
+
+				return $this;
             });
     }
 

@@ -2,7 +2,6 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
-use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
 use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
@@ -16,9 +15,7 @@ class CrudModelRenderer extends CrudModelFormHelper
 	public Form $form;
 	public $parametersFile;
 
-	static function buildRenderer(
-		Model $model,
-		FieldsetParametersFile $parametersFile,
+	static function buildRenderer(Model $model, FieldsetParametersFile $parametersFile,
 		// string $action,
 		// array $formOptions = []
 	) : static
@@ -42,9 +39,8 @@ class CrudModelRenderer extends CrudModelFormHelper
 	public function initializeFieldsetsProvider() : FieldsetsProvider
 	{
 		return ShowFieldsetsProvider::setFieldsetsParametersByFile(
-				$this->getFieldsetParametersFile(),
-				$this->getModel()
-			);
+			$this->getFieldsetParametersFile(), $this->getModel()
+		);
 	}
 
 	public function render() : View
@@ -52,18 +48,18 @@ class CrudModelRenderer extends CrudModelFormHelper
 		return $this->_render();
 	}
 
+	public function getCardClasses() : array
+	{
+		return config('form.editCardClasses');
+	}
+
 	public function _render()
 	{
 		$this->getFieldsetsProvider()->assignModelToFields();
 
-		$htmlClasses = [];
-
-		if($this->getForm())
-			$htmlClasses[] = $this->getForm()->getFormOrientationClass();
-
 		return view("crud::uikit.show", [
 			'_showView' => 'crud::uikit._show',
-			'htmlClasses' => implode(" ", $htmlClasses),
+			'htmlClasses' => $this->getForm()?->getHtmlClassesString(),
 			'modelInstance' => $this->getModel(),
 			'canEditModelInstance' => true,
 			'fieldsets' => $this->getFieldsetsProvider()->provideFieldsetsCollection()
@@ -75,6 +71,19 @@ class CrudModelRenderer extends CrudModelFormHelper
 		return $this->_renderTeaser();
 	}
 
+
+	// public function loadRelationshipsValues()
+	// {
+	// 	$extraTablerelatedFields = $this->getFieldsetsProvider()->getExtraTableRelationshipsFields();
+
+	// 	foreach($extraTablerelatedFields as $relation => $fieldParameters)
+	//     {
+	//         $elements = $this->getModel()->{$fieldParameters['relation']}()->allRelatedIds()->toArray();
+
+	//         $this->getModel()->{$relation} = $elements;
+	//     }
+	// }
+
 	public function _renderTeaser()
 	{
 		$this->getFieldsetsProvider()->assignModelToFields();
@@ -85,24 +94,6 @@ class CrudModelRenderer extends CrudModelFormHelper
 			'canEditModelInstance' => true,
 			'fieldsets' => $this->getFieldsetsProvider()->provideFieldsetsCollection()
 		]);
-	}
-
-
-	// public function loadRelationshipsValues()
-	// {
-	// 	$extraTablerelatedFields = $this->getFieldsetsProvider()->getExtraTableRelationshipsFields();
-
-	// 	foreach($extraTablerelatedFields as $relation => $fieldParameters)
-    //     {
-    //         $elements = $this->getModel()->{$fieldParameters['relation']}()->allRelatedIds()->toArray();
-
-    //         $this->getModel()->{$relation} = $elements;
-    //     }
-	// }
-
-	public function getCardClasses() : array
-	{
-		return config('form.editCardClasses');
 	}
 
 	public function getTitle() : string

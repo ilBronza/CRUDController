@@ -48,7 +48,7 @@ trait CRUDStoreTrait
 	 * @param Request $request, Model $modelInstance
 	 * @return Response redirect
 	 **/
-	public function store(Request $request)
+	public function store(Request $request, string $model = null)
 	{
 		return $this->_store($request);
 	}

@@ -267,4 +267,22 @@ trait CRUDNestableTrait
         return view('form::uikit.form', compact('form'));
     }
 
+	public function rebuildSortingIndex(Collection $elements = null) : Collection
+	{
+		if(! $elements)
+			$elements = $this->getBrothers();
+
+		$index = 1;
+
+		foreach($elements->sortBy([
+			['sorting_index', 'asc'],
+			['created_at', 'asc'],
+		]) as $element)
+		{
+			$element->sorting_index = $index ++;
+			$element->save();
+		}
+
+		return $elements;
+	}
 }

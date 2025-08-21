@@ -118,6 +118,9 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			$formOptions['title'] ?? $this->getTitle()
 		);
 
+		if($formOptions['cancelHref'] ?? false)
+			$this->form->setCancelHref($formOptions['cancelHref']);
+
 		if($formOptions['buttonsNavbar'] ?? false)
 			$this->form->setButtonsNavbar(
 				$formOptions['buttonsNavbar']

@@ -11,7 +11,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+use function htmlentities;
 use function route;
+use function trans;
 
 trait CRUDRelationshipModelTrait
 {
@@ -78,14 +80,21 @@ trait CRUDRelationshipModelTrait
 		}
 	}
 
+	public function _getCreateByRelatedText(Model $baseModel, Model $related = null)
+	{
+		return htmlentities(
+			trans('crud::crud.createRelatedBy', [
+			'by' => $baseModel->getTranslatedClassName(),
+			'related' => $related?->getTranslatedClassName()
+			])
+		);
+	}
+
 	public function _getCreateByRelatedButton(Model $baseModel, string $url, Model $related = null) : Button
 	{
 		return Button::create([
 			'href' => $url,
-			'translatedText' => trans('crud::crud.createRelatedBy', [
-				'by' => $baseModel->getName(),
-				'related' => $related?->getTranslatedClassName()
-			]),
+			'translatedText' => $this->_getCreateByRelatedText($baseModel, $related),
 			'icon' => 'plus'
 		]);
 	}
@@ -140,7 +149,7 @@ trait CRUDRelationshipModelTrait
 	{
 		if ($relationship == 'parent')
 		{
-			if (! isset($this->parentingTrait))
+			if ((! isset($this->parentingTrait))&&(method_exists($this, 'parent') === false))
 				throw new Exception('Aggiungere ParentingTrait al model ' . class_basename($this));
 
 			return $this->getParentPossibleValuesArray();

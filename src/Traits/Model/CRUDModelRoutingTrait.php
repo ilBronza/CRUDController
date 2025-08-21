@@ -6,6 +6,10 @@ use Exception;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+use function array_merge;
+use function config;
+use function route;
+
 trait CRUDModelRoutingTrait
 {
 	public $routeBasenamePrefix = null;
@@ -56,6 +60,23 @@ trait CRUDModelRoutingTrait
 		$routeBasename = $this->getRouteBasename();
 
 		return $routeBasename . '.' . $action;
+	}
+
+	public function getPlaceholderRoute(string $action, array $data = [])
+	{
+		$routeClassname = $this->getRouteClassname();
+
+		$routeName = $this->getKeyedRouteName($action);
+
+		$_data = [];
+
+		$_data[$routeClassname] = config('datatables.replace_model_id_string');
+
+		return route(
+			$routeName, array_merge(
+				$_data, $data
+			)
+		);
 	}
 
 	public function getKeyedRoute(string $action, array $data = [], bool $element = true)

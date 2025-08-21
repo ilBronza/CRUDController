@@ -284,6 +284,8 @@ class RelationshipParameters
 		if (request()->ajax())
 			return $this->table->renderPage();
 
+		$this->table->setScrollX(false);
+
 		$this->table->setAjaxTable();
 		$this->table->setCaption(false);
 

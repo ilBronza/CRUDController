@@ -44,7 +44,7 @@
 			{{ trans('crud::crud.activities.' . $activity['activity_description']) }}
 		</td>
 		<td>
-			{{ $activity['activity_causer'] }}
+			{{ $activity['activity_causer'] ?? null }}
 		</td>
 
 		@foreach($fields as $field => $true)
