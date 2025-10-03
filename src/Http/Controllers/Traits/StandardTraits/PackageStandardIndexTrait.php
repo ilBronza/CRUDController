@@ -12,8 +12,6 @@ trait PackageStandardIndexTrait
     use CRUDPlainIndexTrait;
     use CRUDIndexTrait;
 
-	public $scopes = [];
-
 	public $allowedMethods = ['index'];
 	protected string $indexFieldsArraySuffix = 'index';
 
@@ -24,7 +22,10 @@ trait PackageStandardIndexTrait
 
     function getIndexElementsScopesArray() : array
     {
-        return $this->scopes;
+    	if(isset($this->scopes))
+    		return $this->scopes;
+
+        return [];
     }
 
 	public function getIndexFieldsArraySuffix() : string

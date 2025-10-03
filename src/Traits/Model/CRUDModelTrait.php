@@ -78,11 +78,10 @@ trait CRUDModelTrait
 		if (! $nameField)
 			$nameField = $placeholder->getNameFieldName();
 
-		return self::select(
-			$nameField, $keyField
-		)->pluck(
-			$nameField, $keyField
-		)->toArray();
+		return self::select($nameField, $keyField)
+					->orderBy($nameField)
+					->pluck($nameField, $keyField)
+					->toArray();
 	}
 
 	public function getPluralTranslatedClassname()

@@ -33,7 +33,7 @@ trait CRUDNestableTrait
         return $modelInstance->getParentPossibleValuesArray();
     }
 
-    public function getStoreReoderUrl()
+    public function getStoreReorderUrl()
     {
         return $this->getRouteUrlByType('storeReorder');
     }
@@ -68,7 +68,7 @@ trait CRUDNestableTrait
         // );
 
         $result = [
-            'action' => $this->getStoreReoderUrl(),
+            'action' => $this->getStoreReorderUrl(),
             'reorderByUrl' => $this->getReorderByUrl($modelBasename),
             'editUrl' => $this->getEditReorderUrl([$modelBasename => '%s']),
             'createChildUrl' => $createChildUrl ?? null,

@@ -178,6 +178,9 @@ trait CRUDIndexTrait
 
 		$this->table->addBaseModelClass($this->getModelClass());
 
+		$this->table->addHtmlClass(Str::slug(get_class($this)));
+		$this->table->addHtmlClass(Str::slug(class_basename($this)));
+
 		$this->table->setPageLength(
 			$this->getPageLength()
 		);

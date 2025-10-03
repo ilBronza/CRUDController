@@ -169,7 +169,7 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		}
 
 		if((count($toRelate) == 1)&&($toRelate[0] == null))
-			return ;
+			return $this->getModel()->{$relationshipMethod}()->sync([]);
 
 		$this->getModel()->{$relationshipMethod}()->sync($toRelate);
 	}

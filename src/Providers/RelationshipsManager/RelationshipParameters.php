@@ -284,7 +284,7 @@ class RelationshipParameters
 		if (request()->ajax())
 			return $this->table->renderPage();
 
-		$this->table->setScrollX(false);
+		// $this->table->setScrollX(false);
 
 		$this->table->setAjaxTable();
 		$this->table->setCaption(false);
@@ -473,11 +473,14 @@ class RelationshipParameters
 		if ($this->hasCreateButton())
 		{
 			if ($this->isPolimorphicParentingRelationship())
+			{
 				$this->table->addButton(
 					$this->relatedModel->getCreateByPolimorphicRelatedButton(
 						$this->getParentModel()
 					)
 				);
+
+			}
 			else if ($this->isParentingRelationship())
 			{
 				$this->table->addButton(

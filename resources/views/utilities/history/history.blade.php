@@ -49,13 +49,15 @@
 
 		@foreach($fields as $field => $true)
 			<td>
-				@if(is_string($activity[$field] ?? null))
-					{{ $activity[$field] ?? null }}
-				@elseif(is_null($activity[$field] ?? null))
-
-				@else
-					{{ json_encode($activity[$field] ?? null) }}
-				@endif
+				@if(($activity[$field] ?? null) === false)
+					0
+				@elseif(isset($activity[$field]))
+					@if(is_string($activity[$field]))
+						{{ $activity[$field] }}
+					@else
+						{{ json_encode($activity[$field]) }}
+					@endif
+				@endif				
 			</td>
 		@endforeach
 
