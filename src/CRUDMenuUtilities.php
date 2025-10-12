@@ -12,7 +12,7 @@ class CRUDMenuUtilities
             return;
 
         $settings = $menu->provideButton([
-                'text' => 'generals.settings',
+                'text' => 'menu::menu.settings',
                 'name' => 'settings',
                 'icon' => 'gear',
                 'roles' => ['administrator']

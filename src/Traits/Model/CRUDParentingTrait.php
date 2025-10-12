@@ -12,6 +12,11 @@ trait CRUDParentingTrait
 {
     public $parentingTrait = true;
 
+	static function canHaveChildren() : bool
+	{
+		return config('products.models.order.canHaveChildren', false);
+	}
+
     public function replaceForeignRelationships()
     {
         throw new \Exception(

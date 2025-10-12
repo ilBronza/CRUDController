@@ -172,4 +172,9 @@ trait CRUDModelRoutingTrait
 		return $this->getKeyedRoute('destroy', $data);
 	}
 
+	public function getRestoreUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('restore', $data);
+	}
+
 }
