@@ -9,6 +9,11 @@ use function is_null;
 
 class ModelFinderHelper
 {
+	static function getFullQualifiedClassByClassName(string $modelClass) : string
+	{
+		return Relation::getMorphedModel($modelClass);
+	}
+
 	public static function getByClassKey(string $modelClass, string $key) : ?Model
 	{
 		$classname = Relation::getMorphedModel($modelClass);

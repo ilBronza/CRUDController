@@ -5,6 +5,8 @@ namespace IlBronza\CRUD\Traits;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+use function dd;
+
 trait CRUDUploadFileTrait
 {
 	//TODO deprecated
@@ -31,11 +33,13 @@ trait CRUDUploadFileTrait
 		//gestire la validazione del file come tipo file da array parameters?
 		$fieldName = str_replace("[]", "", $request->fieldname);
 
-		$field = $this->getFieldsetsProvider()->getFormFieldByName($fieldName);
+		$provider = $this->getFieldsetsProvider();
 
-		$field->setModel(
+		$provider->setModel(
 			$this->getModel()
 		);
+
+		$field = $provider->getFormFieldByName($fieldName);
 
 		// if(! $request->multiple)
 		if(! $field->isMultiple())

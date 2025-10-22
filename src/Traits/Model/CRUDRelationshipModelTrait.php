@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+use function class_basename;
 use function htmlentities;
 use function route;
 use function trans;
@@ -106,8 +107,21 @@ trait CRUDRelationshipModelTrait
 		return $this->_getCreateByRelatedButton($baseModel, $url, $related);
 	}
 
+	public function hasSameClass(Model $related) : bool
+	{
+		return class_basename($this) == class_basename($related);
+	}
+
+	public function getCreateByParentUrl()
+	{
+		return $this->getKeyedRoute("createByParent");
+	}
+
 	public function getCreateByRelatedUrl(Model $related) : string
 	{
+		if($this->hasSameClass($related))
+			return $related->getCreateByParentUrl();
+
 		$relatedRoutePrefix = $this->pluralLowerClass();
 		$routeName = $related->getKeyedRouteName("{$relatedRoutePrefix}.create");
 

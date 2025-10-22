@@ -16,6 +16,16 @@ trait CRUDModelTrait
 
 	use CRUDDeleterTrait;
 
+	static function createByName(string $name) : static
+	{
+		$model = static::make();
+
+		$model->name = $name;
+		$model->save();
+
+		return $model;		
+	}
+
 	public function getActivitylogOptions(): LogOptions
 	{
 		return LogOptions::defaults()->logAll()->dontSubmitEmptyLogs()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);

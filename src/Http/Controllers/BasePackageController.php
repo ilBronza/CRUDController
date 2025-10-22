@@ -26,10 +26,10 @@ class BasePackageController extends CRUD
 
     public function getModelConfigPrefix()
     {
-		if(isset(static::$modelConfigPrefix))
+    	if(isset(static::$modelConfigPrefix))
             return static::$modelConfigPrefix;
 
-		return $this->configModelClassName;
+    	return $this->configModelClassName;
     }
 
     public function getRouteBaseNamePrefix() : ? string
@@ -40,5 +40,5 @@ class BasePackageController extends CRUD
     public function setModelClass()
     {
         $this->modelClass = config("{$this->getPackageConfigName()}.models.{$this->getModelConfigPrefix()}.class");
-    }	
+    }
 }

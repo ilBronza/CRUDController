@@ -188,9 +188,9 @@ trait CRUDUpdateTrait
 	{
 		if($file = $this->getUpdateParametersClass())
 			return UpdateFieldsetsProvider::setFieldsetsParametersByFile(
-					$file,
-					$this->modelInstance
-				);
+				$file,
+				$this->modelInstance
+			);
 
 		return UpdateFieldsetsProvider::setFieldsetsParametersByArray(
 				$this->getFormFieldsets('edit'),
