@@ -34,12 +34,17 @@ trait CRUDParentingTrait
         return $this->{$this->getParentKeyName()};
     }
 
-    public function scopeRoot($query)
-    {
-        return $query->whereNull(static::getParentKeyName());
-    }
+	public function scopeRoot($query)
+	{
+		return $query->whereNull(static::getParentKeyName());
+	}
 
-    public function parent()
+	public function scopeOnlyChildre($query)
+	{
+		return $query->whereNotNull(static::getParentKeyName());
+	}
+
+	public function parent()
     {
         return $this->belongsTo(static::class, static::getParentKeyName());
     }

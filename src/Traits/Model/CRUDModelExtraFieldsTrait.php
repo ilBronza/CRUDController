@@ -218,18 +218,11 @@ trait CRUDModelExtraFieldsTrait
 				if(! in_array($attribute, $keys))
 					continue;
 
-				// try
-				// {
-					if(strpos($casting, 'CastFieldPrice') !== false)
-					{
-						$mutator = ExtraField::makeByCastAttribute($casting);
-						$mutator->set($model, $attribute, $model->$attribute, []);
-					}					
-				// }
-				// catch(\Exception $e)
-				// {
-				// 	dd($model->getExtraFieldsCasts());
-				// }
+				if(strpos($casting, 'CastFieldPrice') !== false)
+				{
+					$mutator = ExtraField::makeByCastAttribute($casting);
+					$mutator->set($model, $attribute, $model->$attribute, []);
+				}
 
 				$model->attributes[$attribute] = null;
 				$model->classCastCache[$attribute] = null;
@@ -260,7 +253,14 @@ trait CRUDModelExtraFieldsTrait
 				if(! $model->$extraFieldRelationName)
 					continue;
 
-				$model->$extraFieldRelationName->save();
+				try
+				{
+					$model->$extraFieldRelationName->save();
+				}
+				catch(\Throwable $e)
+				{
+					dd($extraFieldRelationName);
+				}
 			}
 
 			event('adjustPricesEvent', $model);

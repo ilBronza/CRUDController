@@ -12,7 +12,7 @@ return [
 	'hours' => 'H:i',
 	'human' => 'd m Y',
 	'humanFull' => 'd m Y H:i',
-	'humanShort' => 'd m \'y',
+	'humanShort' => 'd-m-y',
 	'humanShortDayTime' => 'd/m H:i',
 	'text' => 'l d M \'y',
 	'humanSeparated' => 'd/m/Y',

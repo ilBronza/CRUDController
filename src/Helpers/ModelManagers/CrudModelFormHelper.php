@@ -150,9 +150,10 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		if($formOptions['saveAndCopy'] ?? false)
 			$this->form->addSaveAndCopyButton();
 
-		$this->form->setIntro(
-			$this->getIntro()
-		);
+		if($intro = $this->getIntro())
+			$this->form->setIntro(
+				$intro
+			);
 
 		$this->form->setModel(
 			$this->getModel()

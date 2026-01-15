@@ -7,7 +7,9 @@ use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\ShowFieldsetsProvider;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use function method_exists;
 
 class CrudModelRenderer extends CrudModelFormHelper
 {
@@ -59,6 +61,7 @@ class CrudModelRenderer extends CrudModelFormHelper
 
 		return view("crud::uikit.show", [
 			'_showView' => 'crud::uikit._show',
+			'navbar' => $this->form->getButtonsNavbar(),
 			'htmlClasses' => $this->getForm()?->getHtmlClassesString(),
 			'modelInstance' => $this->getModel(),
 			'canEditModelInstance' => true,
@@ -98,11 +101,23 @@ class CrudModelRenderer extends CrudModelFormHelper
 
 	public function getTitle() : string
 	{
+		if (method_exists($this->getModel(), 'getShowTitle'))
+		{
+			if($title = $this->getModel()->getShowTitle())
+				if(is_string($title))
+					return $title;
+
+			Log::critical('forse qualcosa non va con "if($title = $this->getModel()->getShowTitle())"');
+		}
+
 		return $this->getTranslationByKey('cardTitleShow', ['element' => $this->getModel()?->getName()]);
 	}
 
-	public function getIntro() : string
+	public function getIntro() : ?string
 	{
-		return $this->getTranslationByKey('cardIntroShow' . get_class($this->getModel()));
+		if (method_exists($this->getModel(), 'cardIntroShow'))
+			return $this->getModel()->cardIntroShow();
+
+		return $this->getTranslationByKey('cardIntroShow' . $this->getModel()->getCamelcaseClassBasename());
 	}
 }

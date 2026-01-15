@@ -33,12 +33,12 @@ trait PackageStandardIndexTrait
 		return $this->indexFieldsArraySuffix;
 	}
 
-    public function getIndexFieldsArray() : array
-    {
-	    return $this->getFieldsArrayByType(
-		    $this->getIndexFieldsArraySuffix()
-	    );
-    }
+	public function getIndexFieldsArray() : array
+	{
+		return $this->getFieldsArrayByType(
+			$this->getIndexFieldsArraySuffix()
+		);
+	}
 
 	public function getFieldsArrayByType(string $type) : array
 	{

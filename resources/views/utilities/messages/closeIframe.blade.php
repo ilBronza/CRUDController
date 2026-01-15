@@ -7,9 +7,19 @@
 
 	<script type="text/javascript">
 
-		@if(isset($reloadRows))
+		@if(isset($reloadRows)&& isset($callertablename))
         window.parent.reloadTableRows("#{{ $callertablename }}", {!! $reloadRows->toJson() !!});
 		@endif
+
+				console.log('effettuo il reload di una riga specifica');
+
+		@if($callertablename = session()->pull('callertablename', false))
+				console.log('qua');
+			@if($callerrowid = session()->pull('callerrowid'))
+            	console.log('altrettanto');
+        		window.parent.reloadTableRows("#{{ $callertablename }}", ["{{ $callerrowid }}"]);
+            @endif
+        @endif
 
 		@if($postTableToUrl ?? false)
         window.parent.postTableToUrl("#{{ $callertablename }}", "{{ $postTableToUrl }}");

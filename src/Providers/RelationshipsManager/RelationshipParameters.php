@@ -43,6 +43,7 @@ class RelationshipParameters
 	public array $buttons = [];
 
 	public bool $onlyButtonsDom = false;
+	public ? bool $footerFilters;
 
 	public $mustPrintIntestation = true;
 
@@ -51,6 +52,7 @@ class RelationshipParameters
 	public $extraVariables;
 	public $translatedTitle;
 	public $buttonsMethods = [];
+
 
 	//relation-specific custom view name
 	public $elementGetterMethod;
@@ -293,7 +295,21 @@ class RelationshipParameters
 
 		$this->table->setMustPrintIntestation($this->mustPrintIntestation);
 
+		$this->table->setScrollY(false);
+
+		$this->table->setFooterFilters(
+			$this->hasFooterFilters()
+		);
+
 		$this->manageTableButtons();
+	}
+
+	public function hasFooterFilters() : bool
+	{
+		if(isset($this->footerFilters))
+			return $this->footerFilters;
+
+		return config('datatables.footerFilters');
 	}
 
 	/**

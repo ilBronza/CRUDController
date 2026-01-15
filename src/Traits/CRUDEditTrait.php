@@ -160,6 +160,7 @@ trait CRUDEditTrait
 		 * creare qua un trait per gestire i parametri extra in generale
 		 * e usare le extraViews positions in modo univoco dappertutto
 		 */
+
 		$editParameters = $this->shareExtraParameters();
 
 		if(request()->ajax())

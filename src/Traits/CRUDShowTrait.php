@@ -152,10 +152,15 @@ trait CRUDShowTrait
 
 		$this->modelFormHelper = CrudModelRenderer::buildRenderer(
 			$this->getModel(), $this->getShowParametersClass(), null, // $this->getUpdateModelAction(),
-			null //$this->provideFormDefaultSettings()
+			null // $this->provideFormDefaultSettings()
 		);
 
 		$this->manageBeforeShow();
+
+		if($navbar = $this->provideFormDefaultSettings()['buttonsNavbar'])
+			$this->modelFormHelper->form->setButtonsNavbar(
+				$navbar
+			);
 
 		if ($this->isInTeaserMode())
 			return $this->modelFormHelper->renderTeaser();

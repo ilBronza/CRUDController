@@ -2,11 +2,12 @@
 
 namespace IlBronza\CRUD;
 
-use Auth;
 use App\Http\Controllers\Controller;
+use Auth;
 use Exception;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelFormHelper;
+use IlBronza\CRUD\Http\Controllers\Traits\ReturnBackTrait;
 use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
@@ -14,7 +15,6 @@ use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 use IlBronza\CRUD\Traits\IlBronzaPackages\CRUDExtraButtonsTrait;
-use IlBronza\CRUD\Http\Controllers\Traits\ReturnBackTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
 use IlBronza\Form\Traits\ExtraViewsTrait;
 use IlBronza\UikitTemplate\Fetcher;
@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Log;
-
 use function config;
 use function dd;
 use function get_class;
@@ -405,13 +404,30 @@ class CRUD extends Controller
 			return config('app.name');
 
 		$pagetTitleParameters = request()->route()->parameters();
-		$pagetTitleParameters['model'] = $this->getModel()?->getName();
+
+		if($model = $this->getModel())
+			$pagetTitleParameters['model'] = $model->getName();
+		else
+		{
+			foreach(request()->route()->parameters as $name => $parameter)
+			{
+				if($parameter instanceOf Model)
+				{
+					$pagetTitleParameters['model'] = $parameter->getName();					
+					$pagetTitleParameters[$name] = $parameter->getName();
+				}
+				else
+					$pagetTitleParameters[$name] = $parameter;				
+			}
+		}
 
 		if($this->parentModel ?? null)
 			$pagetTitleParameters['parentModel'] = $this->parentModel->getName();
 
 		if (method_exists($this, 'getPackageConfigName'))
+		{
 			return trans($this->getPackageConfigName() . '::routes.' . $routeName, $pagetTitleParameters);
+		}
 
 		// Log::critical('dichiara getPackageConfigName per il controller ' . get_class($this));
 

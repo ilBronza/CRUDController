@@ -2,92 +2,23 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\CRUD\Traits\PackagedClassesTrait;
+
 use function config;
 
 trait PackagedModelsTrait
 {
-	/**
-	 * 
-	 * static $modelConfigPrefix 
-	 * 
-	 * is the name of the array key
-	 * that define the correct config property
-	 * for this model
-	 * 
-	 * ex. 
-	 * static $modelConfigPrefix = 'destinationReferent';
-	 * 
-	 **/
-	static function getModelConfigPrefix()
-	{
-		return static::$modelConfigPrefix;
-	}
-
-	/**
-	 * 
-	 * static $packageConfigPrefix 
-	 * 
-	 * is the name of the array key
-	 * that define the correct config property
-	 * for this whole package
-	 * 
-	 * ex. 
-	 * static $packageConfigPrefix = 'clients';
-	 * 
-	 **/
-	static function getPackageConfigPrefix()
-	{
-		return static::$packageConfigPrefix;
-	}
-
-	static function gpc() : string
-	{
-		return static::getProjectClassName();
-	}
-
-	static function getProjectClassName() : string
-	{
-		try
-		{
-			return static::getClassname();
-		}
-		catch(\Throwable $e)
-		{
-			dd("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
-		}
-	}
+	use PackagedClassesTrait;
 
 	public function getRouteBaseNamePrefix() : ? string
 	{
 		return config(static::getPackageConfigPrefix() . '.routePrefix');
 	}
 
-	public static function getConfigByKey(string $key)
-	{
-		return config(static::getConfigParameterKey($key));
-	}
-
-	public static function getConfigParameterKey(string $key) : string
-	{
-		return implode(".", [
-			static::getPackageConfigPrefix(),
-			'models',
-			static::getModelConfigPrefix(),
-			$key
-		]);
-	}
-
 	public function getTable() : string
 	{
 		return config(
 			static::getConfigParameterKey('table')
-		);
-	}
-
-	public static function getClassname() : string
-	{
-		return config(
-			static::getConfigParameterKey('class')
 		);
 	}
 

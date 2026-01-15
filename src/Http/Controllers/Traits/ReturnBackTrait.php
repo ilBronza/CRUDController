@@ -14,7 +14,7 @@ trait ReturnBackTrait
 {
 	public function getReturnBackKey() : string
 	{
-		return RouteHelper::getReturnBackKey($this);
+		return RouteHelper::getReturnBackKey($this->getModel());
 	}
 
 	public function setReturnUrlToPrevious()
@@ -37,11 +37,9 @@ trait ReturnBackTrait
 	{
 		$classKey = $this->getReturnBackKey();
 
-		return session($classKey, null);
-//		$url = session($classKey, null);
-//		session()->forget($classKey);
+		$result = session($classKey, null);
 
-//		return $url;
+		return $result;
 	}
 
 	public function setReturnUrl(string $url) : string

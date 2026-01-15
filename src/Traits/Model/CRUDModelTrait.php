@@ -8,7 +8,6 @@ use Spatie\Activitylog\LogOptions;
 trait CRUDModelTrait
 {
 	static $teaserFields = [];
-	public ?string $translationFolderPrefix = null;
 
 	use CRUDModelRoutingTrait;
 	use CRUDModelButtonsTrait;
@@ -29,11 +28,6 @@ trait CRUDModelTrait
 	public function getActivitylogOptions(): LogOptions
 	{
 		return LogOptions::defaults()->logAll()->dontSubmitEmptyLogs()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
-	}
-
-	public function getTranslatedClassname()
-	{
-		return trans('crudModels.' . $this->getCamelcaseClassBasename());
 	}
 
 	public function printJsonFieldHtml($array)
@@ -94,13 +88,6 @@ trait CRUDModelTrait
 					->toArray();
 	}
 
-	public function getPluralTranslatedClassname()
-	{
-		$plural = $this->getPluralCamelcaseClassBasename();
-
-		return trans($this->getTranslationsFileName() . '.' . $plural);
-	}
-
 	public static function getPluralCamelcaseClassBasename()
 	{
 		return Str::plural(static::getCamelcaseClassBasename());
@@ -109,31 +96,6 @@ trait CRUDModelTrait
 	public static function getCamelcaseClassBasename()
 	{
 		return lcfirst(class_basename(static::class));
-	}
-
-	public function getTranslationsFileName()
-	{
-		if ($this->translationsFilename ?? false)
-			return $this->translationsFilename;
-
-		$plural = $this->getPluralCamelcaseClassBasename();
-
-		if ($prefix = ($this->getTranslationsFolderPrefix()))
-			return $prefix . '::' . $plural;
-
-		return $plural;
-	}
-
-	public function getTranslationsFolderPrefix() : ?string
-	{
-		return $this->translationFolderPrefix;
-	}
-
-	public static function getTranslation(string $string, array $parameters = [])
-	{
-		$fileString = static::pluralLowerClass() . '.' . $string;
-
-		return trans($fileString, $parameters);
 	}
 
 	public static function pluralLowerClass()

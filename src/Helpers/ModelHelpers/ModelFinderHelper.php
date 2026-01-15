@@ -21,7 +21,10 @@ class ModelFinderHelper
 		if(is_null($classname))
 			$classname = $modelClass;
 
-		return $classname::gpc()::find($key);
+		if(method_exists($classname::make(), 'gpc'))
+			return $classname::gpc()::find($key);
+
+		return $classname::find($key);
 	}
 
 	public static function getByClassSlug(string $modelClass, string $slug) : ?Model

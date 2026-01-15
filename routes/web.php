@@ -1,5 +1,6 @@
 <?php
 
+use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -44,6 +45,7 @@ Route::group([
 		Route::post('leave-page', 'ConcurrentUriController@leavePage')->name('concurrentUri.leavePage');
 	}
 );
+
 Route::group([
 		'middleware' => ['web'],
 		'prefix' => 'files-manager',
@@ -52,5 +54,16 @@ Route::group([
 	function()
 	{
 		Route::get('show-media/{media}', 'ShowMediaController@show')->name('media.show');
+	}
+);
+
+Route::group([
+		'middleware' => ['web'],
+		'prefix' => 'history',
+		'as' => 'history.'
+	],
+	function()
+	{
+		Route::get('show-by-field/class/{model}/key/{key}/field/{field}', [HistoryByFieldController::class, 'show'])->name('historyByField');
 	}
 );

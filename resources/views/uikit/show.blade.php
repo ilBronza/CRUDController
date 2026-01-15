@@ -4,7 +4,8 @@
 
 @include('uikittemplate::utilities.__extraViews', ['position' => 'top'])
 
-<div class="uk-card uk-card-default show-{{ strtolower(class_basename($modelInstance)) }}">
+
+    <div class="uk-card uk-card-default show-{{ strtolower(class_basename($modelInstance)) }}">
 
     <div class="uk-card-header">
         <div uk-grid>
@@ -22,7 +23,7 @@
 
                 </span>
 
-                @if((isset($backToListUrl))||(isset($showButtons)))
+            @if(($navbar)||(isset($backToListUrl))||(isset($showButtons)))
                     <nav
                         class="uk-navbar-container"
                         uk-navbar
@@ -31,9 +32,11 @@
                         uk-sticky
                         @endif
                         >
+
                         <div class="uk-navbar-left">
                             <ul class="uk-navbar-nav">
-                                @isset($backToListUrl)
+
+                            @isset($backToListUrl)
                                 <li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
                                 @endisset
 
@@ -49,6 +52,10 @@
                     </nav>
                 @endif
             </div>
+
+            @if($navbar)
+                {!! $navbar->render() !!}
+            @endif
 
             @if($showEditLink)
                 @include('crud::utilities.editLink', ['element' => $modelInstance])

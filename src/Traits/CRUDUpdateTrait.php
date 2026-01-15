@@ -28,9 +28,6 @@ trait CRUDUpdateTrait
 
 	public function checkIfUserCanUpdate()
 	{
-		// if(\Auth::id() == 259569)
-		// 	dd($this->modelInstance);
-
 		if(! $this->modelInstance->userCanUpdate(Auth::user()))
 			abort(403);
 

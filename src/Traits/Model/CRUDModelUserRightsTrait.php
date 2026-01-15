@@ -50,10 +50,10 @@ trait CRUDModelUserRightsTrait
 		if ($user->hasRole('administrator'))
 			return true;
 
-		if(! $roles = $this->getConfigByKey('roles.show.any', []))
+		if((! method_exists($this, 'getConfigByKey'))||(! $roles = $this->getConfigByKey('roles.show.any', [])))
 			$roles = config(static::getPackageConfigPrefix() . '.roles', []);
 
-		if(($roles)&&($user->hasAnyRole($roles)))
+		if((count($roles) == 0)||($user->hasAnyRole($roles)))
 			return true;
 
 		return null;

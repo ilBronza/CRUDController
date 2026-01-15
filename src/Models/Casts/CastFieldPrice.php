@@ -48,9 +48,20 @@ class CastFieldPrice implements CastsAttributes
 
 	public function set($model, string $key, $value, array $attributes)
 	{
+		if(! $value)
+		{
+			if(! $price = $model->getPriceByCollectionId($this->getCollectionId()))
+				return;
+
+			$price->setMeasurementUnit($this->getMeasurementUnit(), false);
+			$price->price = $value;
+			return $price->save();
+		}
+
 		$price = $model->providePriceByCollectionId($this->getCollectionId());
 		$price->setMeasurementUnit($this->getMeasurementUnit(), false);
 		$price->price = $value;
+		$price->save();
 	}
 
 	static function staticSet(string $type = null, $model, string $key, $value)
@@ -70,9 +81,14 @@ class CastFieldPrice implements CastsAttributes
 			return null;
 
 		if($model->relationLoaded($this->getCollectionId()))
-			return $model->{$this->getCollectionId()}->price;
+		{
+			$price = $model->getRelation($this->getCollectionId());
 
-		return $model->providePriceByCollectionId($this->getCollectionId())?->price;
+			return $price?->price;
+		}
+
+//		return $model->providePriceByCollectionId($this->getCollectionId())?->price;
+		return $model->getPriceByCollectionId($this->getCollectionId())?->price;
 	}
 
 }
