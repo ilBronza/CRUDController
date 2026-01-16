@@ -41,6 +41,9 @@ return [
 		'created_by' => 'Creato da',
 		'deleted_by' => 'Cancellato da',
 		'restored_by' => 'Ripristinato da'
-	]
+	],
+
+	    'backToList' => 'Torna A Lista',
+
 ];
 
