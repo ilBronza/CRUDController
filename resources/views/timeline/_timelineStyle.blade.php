@@ -20,4 +20,15 @@
 			margin:0;
 		}
 
+		.vis-labelset
+        {
+			width: 200px;
+		}
+
+		.vis-inner
+        {
+			padding: 0!important;
+			width: 100%;
+		}
+
 	</style>

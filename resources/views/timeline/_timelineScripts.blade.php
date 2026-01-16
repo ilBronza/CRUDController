@@ -3,19 +3,25 @@
     window.timelineLinkIframe = function(link)
     {
         const faIcon = link.faIcon ?? 'link';
-        const titleString = link.title ? ' title="${link.title}"' : '';
+        const textString = link.text ? link.text : '';
+        const titleString = link.text ? ' title="${link.text}"' : '';
+        const marginClass = link.text ? ' uk-margin-left ' : '';
+        const classString = "uk-button uk-button-default uk-button-small";
 
-        return `<div class="uk-inline" uk-lightbox onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"> <a data-type="iframe" href="${link.url}" ${titleString}><i class="fa fa-${faIcon}"></i></a></div>`;
+        return `<div class="uk-inline ${marginClass}" uk-lightbox onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"> <a class="${classString}" data-type="iframe" href="${link.url}" ${titleString}>${textString}<i class="fa fa-${faIcon}"></i></a></div>`;
     }
 
     window.timelineLinkTarget = function(link, target)
     {
         const faIcon = link.faIcon ?? 'link';
-        const titleString = link.title ? ' title="${link.title}"' : '';
+        const textString = link.text ? link.text : '';
+        const titleString = link.text ? ' title="${link.text}"' : '';
+        const marginClass = link.text ? ' uk-margin-left ' : '';
+        const classString = "uk-button uk-button-default uk-button-small";
 
         const targetAttr = target ? ` target="${target}"` : '';
 
-        return `<div class="uk-inline" onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"><a href="${link.url}" ${titleString} ${targetAttr}><i class="fa fa-${faIcon}"></i></a></div>`;
+        return `<div class="uk-inline ${marginClass}" onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"><a class="${classString}" href="${link.url}" ${titleString} ${targetAttr}>${textString}<i class="fa fa-${faIcon}"></i></a></div>`;
     }
 
     window.addEventListener('sis-lightboxClosed', function() {
@@ -31,6 +37,32 @@
     var items = new vis.DataSet([]);
     var groups = new vis.DataSet([]);
     var timeline = null;
+
+    // Delegated handler for group buttons/links rendered by groupTemplate
+    // Registered once to avoid duplicate listeners after repeated fetches.
+    if (container) {
+        container.addEventListener('click', function (e) {
+            const el = e.target.closest('.timeline-group-action');
+            if (!el) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const action = el.dataset.action;
+            const payloadRaw = el.dataset.payload;
+            let payload = null;
+
+            try {
+                payload = payloadRaw ? JSON.parse(payloadRaw) : null;
+            } catch (err) {
+                payload = payloadRaw;
+            }
+
+            window.dispatchEvent(new CustomEvent('timeline-group-action', {
+                detail: { action, payload }
+            }));
+        }, true);
+    }
 
     window.onTimelineEndResize = function (item)
     {
@@ -86,17 +118,53 @@
 
             wrapper.innerHTML = `<strong ${tooltip}>${item.title}</strong> ${linksHtml} <small>${item.description}</small>${item.content ?? ''}`;
 
-            if(item.progress)
-            {
-                const progress = document.createElement('progress');
+            // if(item.progress)
+            // {
+            //     const progress = document.createElement('progress');
+			//
+            //     progress.className = 'uk-progress';
+            //     progress.value = item.progress;
+            //     progress.max = 100;
+			//
+            //     wrapper.appendChild(progress);
+            // }
 
-                progress.className = 'uk-progress';
-                progress.value = item.progress;
-                progress.max = 100;
+            return wrapper;
+        },
 
-                wrapper.appendChild(progress);
+        groupTemplate: function(group) {
+            // Allows HTML in group labels (buttons/links). Uses delegated click handler below.
+            const wrapper = document.createElement('div');
+            wrapper.className = 'timeline-group-label uk-flex uk-flex-between uk-padding-small';
 
+            const title = group.content ?? group.title ?? group.label ?? '';
+
+            // You can add per-group actions via `group.actions` (array)
+            let actionsHtml = '';
+
+            if (Array.isArray(group.actions) && group.actions.length) {
+                actionsHtml = group.actions.map(a => {
+                    const icon = a.faIcon ?? 'bolt';
+                    const text = a.text ?? '';
+                    const titleAttr = a.title ? ` title="${a.title}"` : '';
+                    const data = a.payload ? ` data-payload='${JSON.stringify(a.payload).replace(/'/g, "&apos;")}'` : '';
+                    const href = a.url ? ` href="${a.url}"` : '';
+                    const target = a.target ? ` target="${a.target}"` : '';
+                    const rel = a.target ? ' rel="noopener"' : '';
+
+                    // If url is provided, render as link; otherwise render as button with data-action
+                    if (a.url) {
+                        return `<a class="uk-button uk-button-default uk-button-small timeline-group-action" data-action="${a.action ?? 'open'}"${href}${target}${rel}${titleAttr}${data} onclick="event.stopPropagation();">${text} <i class="fa fa-${icon}"></i></a>`;
+                    }
+
+                    return `<button type="button" class="uk-button uk-button-default uk-button-small timeline-group-action" data-action="${a.action ?? 'action'}"${titleAttr}${data} onclick="event.stopPropagation();">${text} <i class="fa fa-${icon}"></i></button>`;
+                }).join('');
             }
+
+            wrapper.innerHTML = `
+                <div class="timeline-group-title">${title}</div>
+                <div class="timeline-group-actions uk-grid-small uk-child-width-auto" uk-grid>${actionsHtml}</div>
+            `;
 
             return wrapper;
         },
@@ -224,26 +292,65 @@
                     const days = millis / (1000 * 60 * 60 * 24);
 
                     const width = container ? (container.clientWidth || container.offsetWidth || 1) : 1;
-                    const daysPerPixel = days / width; // e.g. 0.02 ≈ 1 day every 50px
+                    const daysPerPixel = days / width; // e.g. 0.02 ≈ 1 day every 50px;
 
-                    if (daysPerPixel > 0.01) {
-                        // zoomed out: show days only
+                    // Zoom thresholds (daysPerPixel):
+                    // - zoomed in: hours
+                    // - slight zoom out: days (step 1)
+                    // - more zoom out: days (weekly ticks)
+                    // - zoomed out: months (abbreviated)
+                    // - extreme: years
+                    if (daysPerPixel > 1) {
+                        // extreme zoomed out: show years
                         timeline.setOptions({
-                            timeAxis: {scale: 'day', step: 1}
+                            timeAxis: { scale: 'year', step: 1 },
+                            format: {
+                                minorLabels: { year: 'YY' },
+                                majorLabels: { year: 'YYYY' }
+                            }
+                        });
+                    } else if (daysPerPixel > 0.35) {
+                        // zoomed out: show months (abbreviated)
+                        timeline.setOptions({
+                            timeAxis: { scale: 'month', step: 1 },
+                            format: {
+                                minorLabels: { month: 'MMM' },
+                                majorLabels: { month: 'MMM YY' }
+                            }
+                        });
+                    } else if (daysPerPixel > 0.023) {
+                        // more zoomed out: show weekly ticks (keeps weekday context without clutter)
+                        timeline.setOptions({
+                            timeAxis: { scale: 'day', step: 7 },
+                            format: {
+                                minorLabels: { day: 'ddd D' },
+                                majorLabels: { day: 'MMM YY' }
+                            }
+                        });
+                    } else if (daysPerPixel > 0.012) {
+                        // slight zoom out: show daily ticks (you still see weekdays)
+                        timeline.setOptions({
+                            timeAxis: { scale: 'day', step: 1 },
+                            format: {
+                                minorLabels: { day: 'ddd D' },
+                                majorLabels: { day: 'MMM YY' }
+                            }
                         });
                     } else {
-                        // zoomed in: show hours again
+                        // zoomed in: show hours
                         timeline.setOptions({
-                            timeAxis: {scale: 'hour', step: 4}
+                            timeAxis: { scale: 'hour', step: 4 },
+                            format: {
+                                minorLabels: {
+                                    minute: 'HH:mm',
+                                    hour: 'HH:mm'
+                                },
+                                majorLabels: {
+                                    hour: 'ddd D MMM'
+                                }
+                            }
                         });
                     }
-
-                    // if (daysPerPixel > 0.02) {
-                    //     // optional CSS class for other zoomed-out tweaks
-                    //     container.classList.add('timeline-zoomed-out');
-                    // } else {
-                    //     container.classList.remove('timeline-zoomed-out');
-                    // }
                 }
             });
         }

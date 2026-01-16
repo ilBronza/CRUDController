@@ -15,10 +15,9 @@ trait GanttTimelineTrait
 		]);
 	}
 
-	public function getGanttUrl() : string
+	public function getGanttUrl(string $option = null) : string
 	{
-		return $this->getKeyedRoute('timelineContainer');
+		return $this->getKeyedRoute('timelineContainer', ['option' => $option]);
 	}
-
 
 }
