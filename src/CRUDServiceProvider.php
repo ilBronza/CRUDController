@@ -38,16 +38,28 @@ class CRUDServiceProvider extends ServiceProvider
         // $router = $this->app->make(Router::class);
 
 	    $router->aliasMiddleware('IframeCheckerMiddleware', IframeCheckerMiddleware::class);
+
+
+
+
+
 	    $router->aliasMiddleware('CRUDReturnBackMiddleware', CRUDReturnBackMiddleware::class);
+        $router->pushMiddlewareToGroup('web', CRUDReturnBackMiddleware::class);
+
+
 
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
 
 	    $router->pushMiddlewareToGroup('web', IframeCheckerMiddleware::class);
-	    $router->pushMiddlewareToGroup('web', CRUDReturnBackMiddleware::class);
 
 	    $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
+        $router->pushMiddlewareToGroup('web', CRUDCheckForcedUrlMiddleware::class);
+
+
+
+
 	    $router->middlewareGroup('web', [CRUDReturnBackMiddleware::class]);
 
         if(config('crud.useConcurrentRequestsAlert'))
@@ -155,6 +167,10 @@ class CRUDServiceProvider extends ServiceProvider
         $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);
         $router->aliasMiddleware('CRUDParseAjaxBooleansAndNull', CRUDParseAjaxBooleansAndNull::class);
         $router->aliasMiddleware('CRUDParseComasAndDots', CRUDParseComasAndDots::class);
+
+
+        $router->aliasMiddleware('CRUDNormalizeEmptyArrays', CRUDNormalizeEmptyArrays::class);
+        $router->pushMiddlewareToGroup('web', CRUDNormalizeEmptyArrays::class);
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 

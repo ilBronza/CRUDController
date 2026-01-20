@@ -5,7 +5,7 @@ namespace IlBronza\CRUD\Traits\Model;
 use App\Models\Referent;
 use Exception;
 use IlBronza\Buttons\Button;
-use IlBronza\Ukn\Facades\Ukn;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;

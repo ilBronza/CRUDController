@@ -23,6 +23,8 @@ trait ModelManagersSettersAndGettersTraits
 
 	public function setFieldsetParametersFile(FieldsetParametersFile $parametersFile)
 	{
+		view()->share('fieldsetParametersFile', get_class($parametersFile));
+
 		$this->parametersFile = $parametersFile;
 
 		$this->parametersFile->setModelManager($this);

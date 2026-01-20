@@ -9,7 +9,7 @@ use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTra
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
-use IlBronza\Ukn\Facades\Ukn;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;

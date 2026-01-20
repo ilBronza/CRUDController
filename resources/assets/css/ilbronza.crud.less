@@ -2,6 +2,7 @@
  * Nestable
  */
 
+
 .dd { position: relative; display: block; margin: 0; padding: 0; max-width: 600px; list-style: none; font-size: 13px; line-height: 20px; }
 
 .dd-list { display: block; position: relative; margin: 0; padding: 0; list-style: none; }
@@ -79,3 +80,21 @@
 /**
  * END Nestable
  */
+
+
+.fieldcontainer.ib-repeatable
+{
+    .uk-form-controls {
+        position: relative;
+        padding-right: 44px;
+
+        .ib-repeatable-delete-wrap {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+}

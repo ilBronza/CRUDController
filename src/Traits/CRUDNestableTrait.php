@@ -4,7 +4,7 @@ namespace IlBronza\CRUD\Traits;
 
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Form;
-use IlBronza\Ukn\Facades\Ukn;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;

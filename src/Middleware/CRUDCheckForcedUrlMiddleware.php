@@ -5,7 +5,7 @@ namespace IlBronza\CRUD\Middleware;
 use Carbon\Carbon;
 use Closure;
 use IlBronza\CRUD\CRUDRoutingHelper;
-use IlBronza\Ukn\Facades\Ukn;
+use IlBronza\Ukn\Ukn;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
