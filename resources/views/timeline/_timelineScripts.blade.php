@@ -1,5 +1,7 @@
 <script type="text/javascript">
 
+    window.timelineDefaultTitle = 'N.D.';
+
     window.timelineLinkIframe = function(link)
     {
         const faIcon = link.faIcon ?? 'link';
@@ -7,8 +9,13 @@
         const titleString = link.text ? ' title="${link.text}"' : '';
         const marginClass = link.text ? ' uk-margin-left ' : '';
         const classString = "uk-button uk-button-default uk-button-small";
+        const extraClasses = Array.isArray(link.htmlClasses) ? ' ' + link.htmlClasses.join(' ') : '';
 
-        return `<div class="uk-inline ${marginClass}" uk-lightbox onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"> <a class="${classString}" data-type="iframe" href="${link.url}" ${titleString}>${textString}<i class="fa fa-${faIcon}"></i></a></div>`;
+        return `<div class="uk-inline ${marginClass}" uk-lightbox onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();">
+    <a class="${classString}${extraClasses}" data-type="iframe" href="${link.url}" ${titleString}>
+        ${textString}<i class="fa fa-${faIcon}"></i>
+    </a>
+</div>`;
     }
 
     window.timelineLinkTarget = function(link, target)
@@ -18,10 +25,15 @@
         const titleString = link.text ? ' title="${link.text}"' : '';
         const marginClass = link.text ? ' uk-margin-left ' : '';
         const classString = "uk-button uk-button-default uk-button-small";
+        const extraClasses = Array.isArray(link.htmlClasses) ? ' ' + link.htmlClasses.join(' ') : '';
 
         const targetAttr = target ? ` target="${target}"` : '';
 
-        return `<div class="uk-inline ${marginClass}" onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();"><a class="${classString}" href="${link.url}" ${titleString} ${targetAttr}>${textString}<i class="fa fa-${faIcon}"></i></a></div>`;
+        return `<div class="uk-inline ${marginClass}" onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();">
+    <a class="${classString}${extraClasses}" href="${link.url}" ${titleString} ${targetAttr}>
+        ${textString}<i class="fa fa-${faIcon}"></i>
+    </a>
+</div>`;
     }
 
     window.addEventListener('sis-lightboxClosed', function() {
@@ -96,8 +108,43 @@
 
         template: function (item) {
             const wrapper = document.createElement('div');
+            // Save state of missing title before fallback
+            const hadMissingTitle = (!item.title || item.title === '');
+            // Fallback title from window if item.title is missing
+            if (hadMissingTitle && typeof window.timelineDefaultTitle !== 'undefined')
+            {
+                item.title = window.timelineDefaultTitle;
+            }
 
             wrapper.className = 'timeline-item';
+
+            // Apply background color if provided by backend
+            if (item.style && item.style.backgroundColor)
+                wrapper.style.backgroundColor = item.style.backgroundColor;
+
+            // Apply text color if provided, otherwise compute contrast color
+            if (item.style && item.style.textColor)
+                wrapper.style.color = item.style.textColor;
+            else if (wrapper.style.backgroundColor)
+            {
+                // compute readable text color based on background
+                const bg = wrapper.style.backgroundColor;
+
+                // extract rgb values
+                const rgb = bg.match(/\d+/g);
+                if (rgb && rgb.length >= 3)
+                {
+                    const r = parseInt(rgb[0], 10);
+                    const g = parseInt(rgb[1], 10);
+                    const b = parseInt(rgb[2], 10);
+
+                    // perceived luminance (WCAG-ish)
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+
+                    // dark text on light bg, light text on dark bg
+                    wrapper.style.color = luminance > 160 ? '#000000' : '#ffffff';
+                }
+            }
 
             let linksHtml = '';
 
@@ -114,18 +161,49 @@
 
                     }).join('');
 
+            // Add rightLinksHtml
+            let rightLinksHtml = '';
+
+            if (Array.isArray(item.rightLinks))
+                rightLinksHtml = item.rightLinks.map(function(link)
+                {
+                    if (link.target === 'iframe')
+                        return window.timelineLinkIframe(link);
+
+                    if (link.target)
+                        return window.timelineLinkTarget(link, link.target);
+
+                    return window.timelineLinkTarget(link, false);
+                }).join('');
+
             const tooltip = item.popupTitle ? ` uk-tooltip="${item.popupTitle}"` : '';
 
-            wrapper.innerHTML = `<strong ${tooltip}>${item.title}</strong> ${linksHtml} <small>${item.description}</small>${item.content ?? ''}`;
+            wrapper.innerHTML = `
+                <strong ${tooltip}>${item.title}</strong>
+                ${linksHtml}
+                <div class="uk-inline uk-float-right">
+                    ${rightLinksHtml}
+                </div>
+                <small>${item.description}</small>
+                ${item.content ?? ''}
+            `;
+
+            // If title was missing, mark first button as danger
+            if (hadMissingTitle)
+            {
+                const firstButton = wrapper.querySelector('.uk-button, button');
+                if (firstButton)
+                    firstButton.classList.add('uk-button-danger');
+            }
 
             // if(item.progress)
             // {
             //     const progress = document.createElement('progress');
-			//
+            //
             //     progress.className = 'uk-progress';
             //     progress.value = item.progress;
             //     progress.max = 100;
-			//
+            //
             //     wrapper.appendChild(progress);
             // }
 
@@ -135,7 +213,7 @@
         groupTemplate: function(group) {
             // Allows HTML in group labels (buttons/links). Uses delegated click handler below.
             const wrapper = document.createElement('div');
-            wrapper.className = 'timeline-group-label uk-flex uk-flex-between uk-padding-small';
+            wrapper.className = 'timeline-group-label uk-padding-small';
 
             const title = group.content ?? group.title ?? group.label ?? '';
 
@@ -154,17 +232,90 @@
 
                     // If url is provided, render as link; otherwise render as button with data-action
                     if (a.url) {
-                        return `<a class="uk-button uk-button-default uk-button-small timeline-group-action" data-action="${a.action ?? 'open'}"${href}${target}${rel}${titleAttr}${data} onclick="event.stopPropagation();">${text} <i class="fa fa-${icon}"></i></a>`;
+                        return `<a class="uk-button uk-button-default uk-button-small" ${href}${target}${rel}${titleAttr}${data}>${text} <i class="fa fa-${icon}"></i></a>`;
                     }
 
                     return `<button type="button" class="uk-button uk-button-default uk-button-small timeline-group-action" data-action="${a.action ?? 'action'}"${titleAttr}${data} onclick="event.stopPropagation();">${text} <i class="fa fa-${icon}"></i></button>`;
                 }).join('');
             }
 
+            // --- Group summary (computed from items) ---
+            const groupItems = items.get().filter(item => item.group === group.id);
+
+            const owners = new Set();
+            let totalSeconds = 0;
+            let firstStart = null;
+            let lastEnd = null;
+            let missingOperatorCount = 0;
+
+            groupItems.forEach(item => {
+                // distinct owner (future-proof: ownerId from backend)
+                owners.add(item.ownerId ?? item.title ?? '__unknown__');
+
+                if (!item.title || item.title === '')
+                    missingOperatorCount++;
+
+                const start = new Date(item.start);
+                const end = new Date(item.end);
+
+                if (!firstStart || start < firstStart)
+                    firstStart = start;
+
+                if (!lastEnd || end > lastEnd)
+                    lastEnd = end;
+
+                totalSeconds += (end - start) / 1000;
+            });
+
+            const totalHours = (totalSeconds / 3600).toFixed(2);
+
+            const formatDate = d =>
+                d ? `${d.toLocaleDateString()} ${d.toLocaleTimeString().slice(0,5)}` : '—';
+
             wrapper.innerHTML = `
-                <div class="timeline-group-title">${title}</div>
-                <div class="timeline-group-actions uk-grid-small uk-child-width-auto" uk-grid>${actionsHtml}</div>
-            `;
+				<div class="uk-flex uk-flex-middle uk-flex-between uk-margin-small-bottom">
+					<div class="timeline-group-title">${title}</div>
+
+					<div class="timeline-group-actions uk-grid-small uk-child-width-auto" uk-grid>
+                        <button
+                            type="button"
+                            class="uk-button uk-button-default uk-button-small timeline-group-summary-toggle"
+                            uk-toggle="target: #group-summary-${group.id}"
+                            data-group-id="${group.id}"
+                        >
+                            <i class="fa-solid fa-toggle-on"></i>
+                        </button>
+						${actionsHtml}
+					</div>
+				</div>
+
+                <div
+                    id="group-summary-${group.id}"
+                    class="timeline-group-summary uk-text-small uk-text-muted"
+                    hidden
+                >
+                    <div><strong>Operators:</strong> ${owners.size}</div>
+                    <div><strong>Total time:</strong> ${totalHours} h</div>
+                    <div><strong>From:</strong> ${formatDate(firstStart)}</div>
+                    <div><strong>To:</strong> ${formatDate(lastEnd)}</div>
+                    <div><strong>Missing operator:</strong> ${missingOperatorCount}</div>
+                </div>
+`;
+
+            // Recalculate group height after UIkit toggle animation
+            const toggleBtn = wrapper.querySelector('.timeline-group-summary-toggle');
+
+            if (toggleBtn)
+            {
+                toggleBtn.addEventListener('click', function () {
+                    // UIkit default toggle animation ~200ms
+                    setTimeout(function () {
+                        if (window.timeline && typeof window.timeline.redraw === 'function') {
+                            window.timeline.redraw();
+                        }
+                    }, 220);
+                });
+            }
 
             return wrapper;
         },

@@ -11,6 +11,11 @@ trait HasColorTrait
 		return static::$backgroundHexField;
 	}
 
+	public function getBackgroundColor() : ? string
+	{
+		return $this->getHexBackgroundColor();
+	}
+
 	public function getHexBackgroundColor() : ? string
 	{
 		return $this->{static::getBackgroundColorFieldName()};

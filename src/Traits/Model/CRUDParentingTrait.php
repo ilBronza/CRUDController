@@ -232,11 +232,12 @@ trait CRUDParentingTrait
             });
     }
 
-    public function getElementsFlatTree(int $level = 0, string $name = null)
+    public function getElementsFlatTree(int $level = 0, string $name = null, bool $includeSelf = true)
     {
         $result = collect();
 
-        $result->push($this);
+        if($includeSelf)
+            $result->push($this);
 
         foreach($this->recursiveChildren as $child)
             $result = $result->merge(
@@ -302,6 +303,35 @@ trait CRUDParentingTrait
 
         return implode("|", $pieces);
 
+    }
+
+    public function getSelectTreeArray(
+        string $labelField = 'name',
+        string $indentToken = '-',
+        int $level = 0,
+        bool $includeSelf = true
+    ) : array
+    {
+        $result = [];
+
+        if ($includeSelf) {
+            $result[$this->getKey()] =
+                str_repeat($indentToken, $level) . $this->{$labelField};
+        }
+
+        // assicurati che i figli siano caricati
+        $this->loadMissing('recursiveChildren');
+
+        foreach ($this->recursiveChildren as $child) {
+            $result += $child->getSelectTreeArray(
+                $labelField,
+                $indentToken,
+                $level + 1,
+                true
+            );
+        }
+
+        return $result;
     }
 
     public function getRecursiveParentsString()

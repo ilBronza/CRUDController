@@ -6,12 +6,17 @@ use Illuminate\Http\Request;
 
 trait CRUDFlatSortingTrait
 {
-	public function storeMassReorder(Request $request)
+	public function validateRequest(Request $request)
 	{
 		$request->validate([
 			'indexes' => 'array|required',
 			'indexes.*' => 'string|max:36'
-		]);
+		]);		
+	}
+
+	public function storeMassReorder(Request $request)
+	{
+		$this->validateRequest($request);
 
 		$sortingIndexes = $request->indexes;
 

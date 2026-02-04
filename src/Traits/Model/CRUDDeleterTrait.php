@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\CRUD\Helpers\RouteHelpers\RouteHelper;
 use IlBronza\CRUD\Traits\Model\CRUDModelUsesTrait;
 
 trait CRUDDeleterTrait

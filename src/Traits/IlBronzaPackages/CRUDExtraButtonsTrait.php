@@ -54,6 +54,8 @@ trait CRUDExtraButtonsTrait
 	{
 		$buttonsNavbar = $this->getButtonsNavbar();
 
+		$buttonsNavbar->setUsesCache(false);
+
 		$buttonsNavbar->addButton($button);
 
 		return $buttonsNavbar;

@@ -33,9 +33,10 @@ trait ReturnBackTrait
 		return !! $url;
 	}
 
-	public function getReturnUrl() : ?string
+	public function getReturnUrl(string $classKey = null) : ?string
 	{
-		$classKey = $this->getReturnBackKey();
+		if(! $classKey)
+			$classKey = $this->getReturnBackKey();
 
 		$result = session($classKey, null);
 

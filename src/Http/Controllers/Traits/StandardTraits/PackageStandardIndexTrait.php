@@ -47,7 +47,7 @@ trait PackageStandardIndexTrait
 		if(! $class = config($configString))
 			throw new \Exception("Fields group class not found for {$configString}");
 
-		return $class::getFieldsGroup();
+		return $class::getTracedFieldsGroup();
 	}
 
 	public function getRelatedFieldsArray()

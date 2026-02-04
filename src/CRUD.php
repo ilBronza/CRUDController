@@ -24,6 +24,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Log;
 use function config;
+use function d;
 use function dd;
 use function get_class;
 use function implode;
@@ -71,6 +72,8 @@ class CRUD extends Controller
 	public $modelClass;
 	public $neededTraits = ['IlBronza\CRUD\Traits\Model\CRUDModelTrait'];
 	public $extraViews = [];
+
+	public ? string $pageTitle;
 
 	//general parameters
 	public $pageLength;
@@ -448,6 +451,8 @@ class CRUD extends Controller
 	{
 		if((! $pageTitle)&&(! $pageTitle = $this->calculatePageTitle()))
 			return null;
+
+		$this->pageTitle = $pageTitle;
 
 		app('uikittemplate')->setPageTitle($pageTitle);
 	}

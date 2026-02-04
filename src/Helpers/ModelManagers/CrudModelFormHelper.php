@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
+use App\Http\Controllers\Controller;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
 use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
@@ -18,6 +19,8 @@ abstract class CrudModelFormHelper implements CrudModelManager
 
 	public $model;
 	public $fieldsetsProvider;
+
+	public Controller $controller;
 
 	abstract function getCardClasses() : array;
 
@@ -47,6 +50,23 @@ abstract class CrudModelFormHelper implements CrudModelManager
 	public function getForm() : Form
 	{
 		return $this->form;
+	}
+
+	public function setController(Controller $controller) : self
+	{
+		$this->controller = $controller;
+
+//		$this->getForm()->importExtraViewsFromClass($controller);
+
+		return $this;
+	}
+
+	public function getController() : ? Controller
+	{
+		if(! isset($this->controller))
+			return null;
+
+		return $this->controller;
 	}
 
 	public function setFormFieldsets() : Form
@@ -79,6 +99,9 @@ abstract class CrudModelFormHelper implements CrudModelManager
 
 	public function getTranslationByKey(string $key, array $parameters = []) : string
 	{
+		if(! method_exists($this->getModel(), 'getTranslationsFileName'))
+			return trans('crud::crud.' . $key, $parameters);
+
 		$translationFileName = $this->getModel()->getTranslationsFileName();
 
 		if(trans()->has($string = $translationFileName . '.' . $key))

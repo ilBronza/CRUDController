@@ -155,6 +155,8 @@ trait CRUDShowTrait
 			null // $this->provideFormDefaultSettings()
 		);
 
+		$this->modelFormHelper->setController($this);
+
 		$this->manageBeforeShow();
 
 		if($navbar = $this->provideFormDefaultSettings()['buttonsNavbar'])

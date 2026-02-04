@@ -40,6 +40,18 @@ trait CRUDModelTrait
 		return $this->getName();
 	}
 
+	static function getCachedNameById(string $id)
+	{
+		return cache()->remember(
+			static::staticCacheKey('getNameById' . $id),
+			3600,
+			function() use($id)
+			{
+				return static::find($id)?->getName();
+			}
+		);
+	}
+
 	public function getName() : ?string
 	{
 		$nameField = $this->getNameFieldName();

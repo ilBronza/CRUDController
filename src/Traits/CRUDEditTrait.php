@@ -151,6 +151,7 @@ trait CRUDEditTrait
 		);
 
 		$this->setPagetitle();
+
 		$this->checkIfUserCanUpdate();
 
 		if($this->requestHasRefreshRow())
@@ -174,6 +175,8 @@ trait CRUDEditTrait
 			$this->getUpdateModelAction(),
 			$this->provideFormDefaultSettings()
 		);
+
+		$this->modelFormHelper->setController($this);
 
 		$this->shareEditButtons();
 		$this->loadEditExtraViews();

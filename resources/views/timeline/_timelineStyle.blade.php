@@ -31,4 +31,11 @@
 			width: 100%;
 		}
 
+        .timeline-group-summary {
+            flex-basis: 100%;
+        }
+
+        .timeline-group-summary {
+            width: 100%;
+        }
 	</style>

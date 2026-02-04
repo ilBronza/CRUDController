@@ -116,6 +116,8 @@ trait CRUDCreateTrait
 			$this->provideFormDefaultSettings(),
 		);
 
+		$this->modelFormHelper->setController($this);
+
 		$this->manageBeforeCreate();
 
 		return $this->modelFormHelper->render();

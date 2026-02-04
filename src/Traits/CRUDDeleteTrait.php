@@ -2,9 +2,10 @@
 
 namespace IlBronza\CRUD\Traits;
 
-use Illuminate\Http\Request;
 use Auth;
+use IlBronza\CRUD\Helpers\RouteHelpers\RouteHelper;
 use IlBronza\Form\Facades\Form;
+use Illuminate\Http\Request;
 
 trait CRUDDeleteTrait
 {
@@ -20,7 +21,7 @@ trait CRUDDeleteTrait
 
 	public function getDeletedRedirectUrl()
 	{
-		if($url = $this->getReturnUrl())
+		if($url = $this->getReturnUrl($this->deletionReturnBackKey ?? null))
 			return $url;
 
 		// if($url = $this->getAfterDeleteRoute())
@@ -65,6 +66,8 @@ trait CRUDDeleteTrait
 
 	public function _destroy($modelInstance)
 	{
+		$this->deletionReturnBackKey = RouteHelper::getReturnBackKey($modelInstance);
+
 		$modelInstance->deleterDelete();
 
 		return $this->returnDeletionResponse($modelInstance);
