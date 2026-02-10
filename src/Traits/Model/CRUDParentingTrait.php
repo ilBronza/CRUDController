@@ -39,7 +39,7 @@ trait CRUDParentingTrait
 		return $query->whereNull(static::getParentKeyName());
 	}
 
-	public function scopeOnlyChildre($query)
+	public function scopeOnlyChildren($query)
 	{
 		return $query->whereNotNull(static::getParentKeyName());
 	}

@@ -2,10 +2,9 @@
 
 namespace IlBronza\CRUD\Middleware;
 
-use Illuminate\Support\Facades\Route;
 use Closure;
-
-use function define;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 
 class IframeCheckerMiddleware
 {
@@ -19,10 +18,16 @@ class IframeCheckerMiddleware
     public function handle($request, Closure $next, ... $allowedMethods)
     {
 		if((( isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe'))||($request->has('iframe'))||($request->has('iframed')))
-			define('__ib_IFRAMED__', true);
+        {
+            View::share('ib_IFRAMED', true);
+            // define('__ib_IFRAMED__', true);
+        }
 
 		else
-			define("__ib_IFRAMED__", false);
+        {
+            View::share('ib_IFRAMED', false);
+            // define("__ib_IFRAMED__", false);            
+        }
 
 		return $next($request);
     }
