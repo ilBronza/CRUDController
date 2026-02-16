@@ -1,3 +1,32 @@
+
+<div id="timeline-item-modal-template" hidden>
+    <div class="uk-modal" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+
+            <div class="uk-card uk-card-small">
+                <div class="uk-card-header">
+                    <h2 class="uk-modal-title"></h2>
+                </div>
+                <div class="uk-card-body">
+                    <div class="timeline-modal-content"></div>
+                </div>        
+                <div class="uk-card-footer">
+                    <dl class="uk-column-1-3">
+                        <dt>Start</dt>
+                        <dd class="start"></dd>
+                        <dt>End</dt>
+                        <dd class="end"></dd>
+                        <dt>Days</dt>
+                        <dd class="days"></dd>
+                    </dl>
+                </div>        
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script type="text/javascript">
 
     window.timelineDefaultTitle = 'N.D.';
@@ -22,7 +51,7 @@
     {
         const faIcon = link.faIcon ?? 'link';
         const textString = link.text ? link.text : '';
-        const titleString = link.text ? ' title="${link.text}"' : '';
+        const titleString = link.text ? ` title="${link.text}"` : '';
         const marginClass = link.text ? ' uk-margin-left ' : '';
         const classString = "uk-button uk-button-default uk-button-small";
         const extraClasses = Array.isArray(link.htmlClasses) ? ' ' + link.htmlClasses.join(' ') : '';
@@ -34,13 +63,118 @@
         ${textString}<i class="fa fa-${faIcon}"></i>
     </a>
 </div>`;
-    }
+    };
+
+    window.timelineLinkForm = function(link)
+    {
+        const faIcon = link.faIcon ?? 'link';
+        const textString = link.text ? link.text : '';
+        const titleString = link.text ? ` title="${link.text}"` : '';
+        const marginClass = link.text ? ' uk-margin-left ' : '';
+        const classString = "uk-button uk-button-default uk-button-small";
+        const extraClasses = Array.isArray(link.htmlClasses) ? ' ' + link.htmlClasses.join(' ') : '';
+        const csrfToken = (typeof window.csrfToken !== 'undefined') ? window.csrfToken : (document.querySelector('meta[name="csrf-token"]')?.content || '');
+        const method = link.method || 'POST';
+
+        return `<form method="POST" action="${link.url}" class="uk-inline ${marginClass}" style="display:inline" onclick="event.stopPropagation();" onmousedown="event.stopPropagation();" onpointerdown="event.stopPropagation();">
+    <input type="hidden" name="_token" value="${csrfToken}">
+    <input type="hidden" name="_method" value="${method}">
+    <input type="hidden" name="closeIframe" value="1">
+    <button type="submit" class="${classString}${extraClasses}" ${titleString}>
+        ${textString}<i class="fa fa-${faIcon}"></i>
+    </button>
+</form>`;
+    };
+
+    window.openTimelineItemLinksModal = function(button)
+    {
+        const itemId = button.dataset.itemId;
+        if (!itemId) return;
+
+        const item = items.get(itemId);
+        if (!item) return;
+
+        const template = document.getElementById('timeline-item-modal-template');
+        if (!template) return;
+
+        const clone = template.firstElementChild.cloneNode(true);
+        const modalId = 'timeline-modal-' + Date.now();
+        clone.id = modalId;
+
+        const modalContent = clone.querySelector('.timeline-modal-content');
+        const modalTitleEl = clone.querySelector('.uk-modal-title');
+
+        modalTitleEl.textContent = item.title ?? window.timelineDefaultTitle;
+
+        let html = '';
+
+        const renderLink = function(link) {
+            if (link.method === 'DELETE')
+                return window.timelineLinkForm(link);
+
+            if (link.target === 'iframe')
+                return window.timelineLinkIframe(link);
+
+            if (link.target)
+                return window.timelineLinkTarget(link, link.target);
+
+            return window.timelineLinkTarget(link, false);
+        };
+
+        if (Array.isArray(item.links)) {
+            html += item.links.map(renderLink).join('');
+        }
+
+        if (Array.isArray(item.rightLinks) && item.rightLinks.length) {
+            html += '<div class="uk-margin-top">';
+            html += item.rightLinks.map(renderLink).join('');
+            html += '</div>';
+        }
+
+        if (item.description)
+            html += `<div class="uk-margin-top"><small>${item.description}</small></div>`;
+
+        if (item.content)
+            html += `<div class="uk-margin-top">${item.content}</div>`;
+
+        modalContent.innerHTML = html;
+
+        // --- Compute precise start/end and inject into footer ---
+        const startDate = item.start ? new Date(item.start) : null;
+        const endDate   = item.end ? new Date(item.end) : null;
+
+        const formatDateTime = function(d) {
+            if (!d) return '—';
+            const date = d.toLocaleDateString('it-IT');
+            const time = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            return date + ' ' + time;
+        };
+
+        const startEl = clone.querySelector('.start');
+        const endEl   = clone.querySelector('.end');
+        const daysEl  = clone.querySelector('.days');
+
+        if (startEl) startEl.textContent = formatDateTime(startDate);
+        if (endEl)   endEl.textContent   = formatDateTime(endDate);
+        if (daysEl)  daysEl.textContent  = '';
+
+        document.body.appendChild(clone);
+
+        const modal = UIkit.modal('#' + modalId);
+        modal.show();
+
+        clone.addEventListener('hidden', function () {
+            modal.$destroy(true);
+            clone.remove();
+        });
+    };
 
     window.addEventListener('sis-lightboxClosed', function() {
         window.fetchTimeline();
     });
 
     const API_URL = "{{ $apiEndpoint }}";
+    const UPDATE_URL = "{{ $timelineUpdateRoute ?? '' }}";
 
     // DOM element where the Timeline will be attached
     var container = document.getElementById('timelinecontainer');
@@ -49,6 +183,127 @@
     var items = new vis.DataSet([]);
     var groups = new vis.DataSet([]);
     var timeline = null;
+
+
+    // --- LIVE button inside timeline-item on hover (direct binding) ---
+    let liveItemTimer = null;
+    let liveItemHideTimer = null;
+
+    function attachLiveHoverHandlers()
+    {
+        document.querySelectorAll('#timelinecontainer .timeline-item').forEach(function(itemEl)
+        {
+            itemEl.addEventListener('pointerenter', function(ev)
+            {
+                clearTimeout(liveItemTimer);
+                clearTimeout(liveItemHideTimer);
+
+                const contentEl = itemEl.closest('.vis-item')?.querySelector('.vis-item-content');
+                if (!contentEl) return;
+
+                const rect = contentEl.getBoundingClientRect();
+                const initialOffsetX = ev.clientX - rect.left;
+
+                liveItemTimer = setTimeout(function()
+                {
+                    if (contentEl.querySelector('.timeline-live-inline')) return;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'uk-button uk-button-danger uk-button-small timeline-live-inline';
+                    btn.innerHTML = '<i class="fa fa-link"></i>';
+
+                    if (!itemEl.dataset.itemId) return;
+                    btn.dataset.itemId = itemEl.dataset.itemId;
+
+                    btn.style.position = 'absolute';
+                    btn.style.zIndex = '30';
+                    btn.style.pointerEvents = 'auto';
+
+                    btn.onclick = function(e)
+                    {
+                        e.stopPropagation();
+                        window.openTimelineItemLinksModal(btn);
+                    };
+
+                    btn.onmousedown = function(e){ e.stopPropagation(); };
+                    btn.onpointerdown = function(e){ e.stopPropagation(); };
+
+                    // prevent flicker when hovering the button itself
+                    btn.addEventListener('pointerenter', function()
+                    {
+                        clearTimeout(liveItemHideTimer);
+                    });
+
+                    btn.addEventListener('pointerleave', function()
+                    {
+                        clearTimeout(liveItemHideTimer);
+
+                        liveItemHideTimer = setTimeout(function()
+                        {
+                            if (btn)
+                                btn.remove();
+                        }, 700);
+                    });
+
+                    // ensure positioning context
+                    if (getComputedStyle(contentEl).position === 'static')
+                        contentEl.style.position = 'relative';
+
+                    contentEl.appendChild(btn);
+
+                    // position once based on cursor X inside vis-item-content, clamped to visible width
+                    const contentWidth = contentEl.offsetWidth;
+                    const btnWidth = 28; // approx width for small uk-button with icon
+
+                    let computedLeft = initialOffsetX + 10;
+
+                    // prevent overflow on the right
+                    if (computedLeft + btnWidth > contentWidth)
+                        computedLeft = contentWidth - btnWidth - 4;
+
+                    // prevent negative overflow on the left
+                    if (computedLeft < 2)
+                        computedLeft = 2;
+
+                    btn.style.left = computedLeft + 'px';
+                    btn.style.top = '2px';
+
+                }, 250);
+            });
+            itemEl.addEventListener('pointerleave', function(e)
+            {
+                const contentEl = itemEl.closest('.vis-item')?.querySelector('.vis-item-content');
+                if (!contentEl) return;
+
+                const btn = contentEl.querySelector('.timeline-live-inline');
+
+                // if moving toward the button, do not trigger hide
+                if (btn && e.relatedTarget && btn.contains(e.relatedTarget))
+                    return;
+
+                clearTimeout(liveItemHideTimer);
+
+                liveItemHideTimer = setTimeout(function()
+                {
+                    const currentBtn = contentEl.querySelector('.timeline-live-inline');
+                    if (currentBtn)
+                        currentBtn.remove();
+                }, 700);
+            });
+        });
+    }
+
+    // Attach after each render/update
+    if (container)
+    {
+        const observer = new MutationObserver(function()
+        {
+            attachLiveHoverHandlers();
+        });
+
+        observer.observe(container, { childList: true, subtree: true });
+    }
 
     // Delegated handler for group buttons/links rendered by groupTemplate
     // Registered once to avoid duplicate listeners after repeated fetches.
@@ -76,17 +331,18 @@
         }, true);
     }
 
-    window.onTimelineEndResize = function (item)
-    {
-        fetch(API_URL, {
-            method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({item: item})
-        }).catch(console.error);
-    };
+window.onTimelineEndResize = function (item)
+{
+    fetch(UPDATE_URL, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({item: item})
+    }).catch(console.error);
+};
 
-    var options = {
-        stack: true,
+var options = {
+    stack: true,
+    showTooltips: false,
 
         locale: 'it',
         format: {
@@ -118,32 +374,36 @@
 
             wrapper.className = 'timeline-item';
 
-            // Apply background color if provided by backend
-            if (item.style && item.style.backgroundColor)
-                wrapper.style.backgroundColor = item.style.backgroundColor;
+            // Add dynamic itemType as CSS class (if provided by backend JSON)
+            if (item.itemType)
+                wrapper.classList.add(item.itemType);
 
-            // Apply text color if provided, otherwise compute contrast color
-            if (item.style && item.style.textColor)
-                wrapper.style.color = item.style.textColor;
-            else if (wrapper.style.backgroundColor)
+            wrapper.dataset.itemId = item.id;
+
+            // --- Move style from vis-item to wrapper ---
+            if (item.style)
             {
-                // compute readable text color based on background
-                const bg = wrapper.style.backgroundColor;
-
-                // extract rgb values
-                const rgb = bg.match(/\d+/g);
-                if (rgb && rgb.length >= 3)
+                // If style is a CSS string (default vis behavior)
+                if (typeof item.style === 'string')
                 {
-                    const r = parseInt(rgb[0], 10);
-                    const g = parseInt(rgb[1], 10);
-                    const b = parseInt(rgb[2], 10);
-
-                    // perceived luminance (WCAG-ish)
-                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
-
-                    // dark text on light bg, light text on dark bg
-                    wrapper.style.color = luminance > 160 ? '#000000' : '#ffffff';
+                    wrapper.style.cssText += item.style;
+                    item.style = null; // prevent vis from applying it to .vis-item
                 }
+                // If style is an object coming from backend
+                else if (typeof item.style === 'object')
+                {
+                    if (item.style.backgroundColor)
+                        wrapper.style.backgroundColor = item.style.backgroundColor;
+
+                    if (item.style.textColor)
+                        wrapper.style.color = item.style.textColor;
+                }
+            }
+
+            // --- Fallback background color if none provided ---
+            if (!wrapper.style.backgroundColor) {
+                wrapper.style.backgroundColor = '#607d8b'; // default fallback color
+                wrapper.style.color = '#ffffff';
             }
 
             let linksHtml = '';
@@ -176,16 +436,11 @@
                     return window.timelineLinkTarget(link, false);
                 }).join('');
 
-            const tooltip = item.popupTitle ? ` uk-tooltip="${item.popupTitle}"` : '';
+                const tooltip = item.popupTitle ? ` uk-tooltip="${item.popupTitle}"` : '';
 
             wrapper.innerHTML = `
                 <strong ${tooltip}>${item.title}</strong>
-                ${linksHtml}
-                <div class="uk-inline uk-float-right">
-                    ${rightLinksHtml}
-                </div>
-                <small>${item.description}</small>
-                ${item.content ?? ''}
+
             `;
 
             // If title was missing, mark first button as danger
