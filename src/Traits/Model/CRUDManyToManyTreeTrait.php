@@ -78,7 +78,7 @@ trait CRUDManyToManyTreeTrait
     public function descendants(string $mainComponentName = null)
     {
         $result = $this->belongsToMany(
-            self::class,
+            static::class,
             $this->getManyToManyRelationTable(),
             $this->getManyToManyParentKeyName(),
             $this->getManyToManyChildKeyName()

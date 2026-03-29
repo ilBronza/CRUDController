@@ -128,7 +128,7 @@ trait CRUDShowTrait
 		if (! $modelInstance)
 			abort(404);
 
-		if (! $this->getShowParametersClass())
+		if (! $this->getShowParametersClass($modelInstance))
 			return $this->_oldShow($modelInstance);
 
 		$this->setModel($modelInstance);

@@ -8,6 +8,18 @@ use Illuminate\Support\Str;
 
 trait IsTimelineItemTrait
 {
+	public function getTimelineUpdateUrl() : ? string
+	{
+		try
+		{
+			return $this->getKeyedRoute('asTimelineItem.update');			
+		}
+		catch(\Exception $e)
+		{
+			return null;
+		}
+	}
+
 	public function getTimelineItemId(? TimelineGroupInterface $groupModel) : string
 	{
 		return $this->getKey();
@@ -15,12 +27,20 @@ trait IsTimelineItemTrait
 
 	public function getTimelineItemStartsAt(? TimelineGroupInterface $groupModel) : Carbon
 	{
-		return $this->getStartsAt();
+		return $this->getStartsAt() ?? Carbon::now();
+	}
+
+	public function getTimelineItemType(? TimelineGroupInterface $groupModel) : string
+	{
+		if(! $groupModel)
+			return class_basename($this);
+
+		return class_basename($this) . '-' . class_basename($groupModel);
 	}
 
 	public function getTimelineItemEndsAt(? TimelineGroupInterface $groupModel) : Carbon
 	{
-		return $this->getEndsAt();
+		return $this->getEndsAt() ?? Carbon::now()->addDays(3);
 	}
 
 	public function getTimelineItemProgress(? TimelineGroupInterface $groupModel) : float
@@ -62,6 +82,13 @@ trait IsTimelineItemTrait
 			class_basename($this)
 		];
 	}
+
+	public function getTimelineItemUpdateUrl(? TimelineGroupInterface $groupModel) : ? string
+	{
+		return $this->getUpdateUrl();
+	}
+
+
 
 	// public function getTimelineGroupHtmlClasses(? TimelineGroupInterface $groupModel) : array
 	// {

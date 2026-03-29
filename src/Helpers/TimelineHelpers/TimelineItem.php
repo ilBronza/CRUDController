@@ -7,9 +7,12 @@ use Carbon\Carbon;
 class TimelineItem
 {
 	public string $id;
-	public string $group;
+	public ? string $group;
 	public string $title;
+	public string $itemType;
+	public string $style;
 	public string $popupTitle;
+	public ?string $updateUrl;
 	public ? string $description;
 
 	public array $links = [];
@@ -20,5 +23,6 @@ class TimelineItem
 	public Carbon $start;
 	public Carbon $end;
 
-	public float $progress;
+	public ? float $progress;
+
 }

@@ -6,6 +6,11 @@ trait HasColorTrait
 {
 	static $backgroundHexField = 'hex_rgba';
 
+	public function getBackgroundColorByName() : string
+	{
+		return sprintf('#%06X', crc32($this->getName()) & 0xFFFFFF);
+	}
+
 	static function getBackgroundColorFieldName() : string
 	{
 		return static::$backgroundHexField;

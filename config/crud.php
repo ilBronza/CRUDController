@@ -41,5 +41,7 @@ return [
     		'keywords',
     		'description'
     	]
-    ]
+    ],
+
+    'timelineZoom' => 60, // giorni visibili allo zoom iniziale
 ];

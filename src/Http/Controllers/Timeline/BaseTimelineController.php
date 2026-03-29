@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Http\Controllers\Timeline;
 use IlBronza\CRUD\CRUD;
 use IlBronza\CRUD\Helpers\TimelineHelpers\TimelineGroupCreatorHelper;
 use IlBronza\CRUD\Helpers\TimelineHelpers\TimelineItemCreatorHelper;
+use IlBronza\Products\Models\Orders\Orderrow;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -15,15 +16,26 @@ abstract class BaseTimelineController extends CRUD
 
 	abstract public function getEndpoint() : string;
 
+	public function getTimelineUpdateRoute() : string
+	{
+		$placeholder = Orderrow::gpc()::make();
+		$placeholder->id = config('datatables.replace_model_id_string');
+
+		return $placeholder->getTimelineUpdateUrl();
+	}
+
 	public function returnGanttContainer()
 	{
 		$apiEndpoint = $this->getEndpoint();
+		$timelineUpdateRoute = $this->getTimelineUpdateRoute();
 
 		$modelInstance = $this->getModel();
 
 		$buttons = $this->getButtons();
 
-		return view('crud::timeline.timeline', compact( 'apiEndpoint', 'modelInstance', 'buttons'));
+		$zoom = $this->zoom ?? config('crud.timelineZoom', 14);
+
+		return view('crud::timeline.timeline', compact( 'apiEndpoint', 'timelineUpdateRoute', 'modelInstance', 'buttons', 'zoom'));
 	}
 
 	public function getOptionMethod(string $option) : string

@@ -3,6 +3,7 @@
 
 return [
 	'emptyValueLabel' => 'Svuota il valore di :field',
-	'gantt' => 'Gantt'
+	'gantt' => 'Gantt',
+	'calendar' => 'Calendario'
 ];
 

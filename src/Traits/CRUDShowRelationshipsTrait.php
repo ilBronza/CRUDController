@@ -116,39 +116,44 @@ trait CRUDShowRelationshipsTrait
 		if($this->hasDisabledRelationshipsManager())
 			return null;
 
-		if($this->getRelationshipsManagerClass())
+		if($this->getModel()->getRelationshipsManagerClass())
 			return $this->useRelationshipsManager();
-		else
-			echo "
-		<script>console.log('GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers');</script>
-		<!--GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers -->";
 
-		// ['account', 'roles', 'permissions', 'images']
-		$relationships = $this->getShowRelationships();
+		// return $this->getModel()->getRelationshipsManagerClass();
 
-		// $user->load(['account', 'roles', 'permissions', 'images'])
-		$this->modelInstance->load($relationships);
+		// if($this->getRelationshipsManagerClass())
+		// 	return $this->useRelationshipsManager();
+		// else
+		// 	echo "
+		// <script>console.log('GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers');</script>
+		// <!--GESTIRE CON NUOVO RELATIOSHIPS MANAGER QUESTI CAMPI: showMethodRelationships, editableMethodRelationships, relationshipsControllers -->";
 
-		$this->relationshipsTableNames = [];
-		$this->relationshipsElements = [];
+		// // ['account', 'roles', 'permissions', 'images']
+		// $relationships = $this->getShowRelationships();
 
-		//['account', 'roles', 'permissions', 'images']
-		foreach($relationships as $name)
-		{
-			$relatedElements = $this->modelInstance->{$name};
+		// // $user->load(['account', 'roles', 'permissions', 'images'])
+		// $this->modelInstance->load($relationships);
 
-			if(! $relatedElements)
-				continue;
+		// $this->relationshipsTableNames = [];
+		// $this->relationshipsElements = [];
 
-			if($this->relationNeedsTable($relatedElements))
-				$this->addRelationshipTable($relatedElements, $name);
-			else
-				$this->addRelationshipElement($relatedElements, $name);
-		}
+		// //['account', 'roles', 'permissions', 'images']
+		// foreach($relationships as $name)
+		// {
+		// 	$relatedElements = $this->modelInstance->{$name};
 
-		view()->share('relationshipsElements', $this->relationshipsElements);
-		view()->share('relationshipsTableNames', $this->relationshipsTableNames);
-		view()->share('relationships', $relationships);
+		// 	if(! $relatedElements)
+		// 		continue;
+
+		// 	if($this->relationNeedsTable($relatedElements))
+		// 		$this->addRelationshipTable($relatedElements, $name);
+		// 	else
+		// 		$this->addRelationshipElement($relatedElements, $name);
+		// }
+
+		// view()->share('relationshipsElements', $this->relationshipsElements);
+		// view()->share('relationshipsTableNames', $this->relationshipsTableNames);
+		// view()->share('relationships', $relationships);
 	}
 
 

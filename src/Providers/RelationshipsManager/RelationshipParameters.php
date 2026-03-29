@@ -6,7 +6,7 @@ use Exception;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
-
+use Illuminate\Support\Str;
 use function class_basename;
 use function config;
 use function dd;
@@ -255,12 +255,6 @@ class RelationshipParameters
 	 **/
 	public function setTable()
 	{
-//		if (request()->rowId)
-//			if ($this->name != 'quantities')
-//				return;
-//
-//		dd('qwe');
-
 		$parameters = [
 			'name' => $this->getTableName(),
 			'fieldsGroups' => $this->getTableFieldsGroups(),
@@ -270,7 +264,8 @@ class RelationshipParameters
 			'modelClass' => $this->getRelatedModelClass(),
 			'reloadButton' => $this->getHasReloadButton(),
 			'copyButton' => $this->getHasCopyButton(),
-			'csvButton' => $this->getHasCsvButton()
+			'csvButton' => $this->getHasCsvButton(),
+			'id' => Str::slug($this->getName())
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
@@ -336,10 +331,12 @@ class RelationshipParameters
 
 		if ($this->fieldsGroupsParametersFile ?? false)
 		{
+			app('uikittemplate')->addFieldsGroupsNames($this->fieldsGroupsParametersFile);
+
 			$helper = new $this->fieldsGroupsParametersFile();
 
 			return [
-				'base' => $helper->getFieldsGroup()
+				'base' => $helper->getFieldsGroup($this->getParentModel())
 			];
 		}
 

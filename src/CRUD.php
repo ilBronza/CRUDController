@@ -193,7 +193,11 @@ class CRUD extends Controller
 	{
 		$query = $this->getFindModelQuery($key, $relations);
 
-		return $query->find($key);
+		$result = $query->find($key);
+
+		$this->setModel($result);
+
+		return $result;
 	}
 
 	public function getFindModelQuery(string $key, array $relations = []) : Builder

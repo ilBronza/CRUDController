@@ -62,6 +62,14 @@ trait PackagedClassesTrait
 		}
 	}
 
+	public static function getCompulsoryConfigByKey(string $key) : string
+	{
+		if($result = static::getConfigByKey($key))
+			return $result;
+
+		throw new \Exception('Manca la configurazione per ' . static::getConfigParameterKey($key));
+	}
+
 	public static function getConfigByKey(string $key)
 	{
 		return config(static::getConfigParameterKey($key));

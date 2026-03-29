@@ -175,6 +175,7 @@
 
     const API_URL = "{{ $apiEndpoint }}";
     const UPDATE_URL = "{{ $timelineUpdateRoute ?? '' }}";
+    const TIMELINE_ZOOM_DAYS = {{ $zoom ?? config('crud.timelineZoom', 14) }};
 
     // DOM element where the Timeline will be attached
     var container = document.getElementById('timelinecontainer');
@@ -334,10 +335,17 @@
 window.onTimelineEndResize = function (item)
 {
     fetch(UPDATE_URL, {
-        method: 'PATCH',
+        method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({item: item})
-    }).catch(console.error);
+        body: JSON.stringify({_method: 'PUT', item: item})
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success === true && data.message && typeof window.addSuccessNotification === 'function') {
+            window.addSuccessNotification(data.message);
+        }
+    })
+    .catch(console.error);
 };
 
 var options = {
@@ -673,7 +681,25 @@ var options = {
         // Create the timeline only once; subsequent calls only update datasets
         if (!timeline)
         {
-            timeline = new vis.Timeline(container, items, groups, options);
+            // Calcola finestra iniziale PRIMA di creare la timeline (evita il fit automatico di vis.js)
+            var zoomDays = typeof TIMELINE_ZOOM_DAYS !== 'undefined' ? TIMELINE_ZOOM_DAYS : 14;
+            var zoomMs = zoomDays * 24 * 60 * 60 * 1000;
+            var itemIds = items.getIds();
+            var windowStart, windowEnd;
+            if (itemIds.length > 0) {
+                var minStart = Infinity;
+                itemIds.forEach(function(id) {
+                    var it = items.get(id);
+                    if (it.start) { var s = new Date(it.start).getTime(); if (s < minStart) minStart = s; }
+                });
+                windowStart = new Date(minStart !== Infinity ? minStart : Date.now());
+            } else {
+                windowStart = new Date();
+            }
+            windowEnd = new Date(windowStart.getTime() + zoomMs);
+
+            var timelineOptions = Object.assign({}, options, { start: windowStart, end: windowEnd });
+            timeline = new vis.Timeline(container, items, groups, timelineOptions);
 
             addWeekendBackgrounds(timeline, items);
 

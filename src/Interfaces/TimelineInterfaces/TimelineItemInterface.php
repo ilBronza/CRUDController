@@ -9,6 +9,7 @@ interface TimelineItemInterface
 {
 	public function getTimelineItemId(? TimelineGroupInterface $groupModel) : string;
 	public function getTimelineItemGroupId(? TimelineGroupInterface $groupModel) : string;
+	public function getTimelineItemType(? TimelineGroupInterface $groupModel) : string;
 
 	public function getTimelineItemStartsAt(? TimelineGroupInterface $groupModel) : Carbon;
 	public function getTimelineItemEndsAt(? TimelineGroupInterface $groupModel) : Carbon;
@@ -25,6 +26,8 @@ interface TimelineItemInterface
 	public function getTimelineItemHtmlClasses(? TimelineGroupInterface $groupModel) : array;
 
 	// public function getTimelineItemHtmlClasses(? TimelineGroupInterface $groupModel) : array;
+
+	public function getTimelineItemUpdateUrl(? TimelineGroupInterface $groupModel) : ? string;
 
 	public function getTimelineItemActions(? TimelineGroupInterface $groupModel) : array;
 	public function getTimelineItemRightLinks(? TimelineGroupInterface $groupModel) : array;

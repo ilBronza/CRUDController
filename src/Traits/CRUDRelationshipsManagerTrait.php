@@ -6,11 +6,14 @@ trait CRUDRelationshipsManagerTrait
 {
 	public function setRelationshipsManager(string $type = 'show')
 	{
-		if(! $this->getRelationshipsManagerClass())
+		if(! $relationshipManagerClass = $this->getModel()->getRelationshipsManagerClass())
 			return false;
 
+		// if(! $this->getRelationshipsManagerClass())
+		// 	return false;
+
 		if(empty($this->relationshipManager))
-			$this->relationshipManager = new ($this->getRelationshipsManagerClass())($type, $this->modelInstance);
+			$this->relationshipManager = new ($relationshipManagerClass)($type, $this->modelInstance);
 
 		return $this->relationshipManager;
 

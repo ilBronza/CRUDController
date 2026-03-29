@@ -19,6 +19,7 @@ class TimelineItemCreatorHelper
 
 		$item->start = $model->getTimelineItemStartsAt($groupModel);
 		$item->end = $model->getTimelineItemEndsAt($groupModel);
+		$item->itemType = $model->getTimelineItemType($groupModel);
 
 		$item->progress = $model->getTimelineItemProgress($groupModel);
 

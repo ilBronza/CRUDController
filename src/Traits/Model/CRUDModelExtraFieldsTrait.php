@@ -253,14 +253,14 @@ trait CRUDModelExtraFieldsTrait
 				if(! $model->$extraFieldRelationName)
 					continue;
 
-				try
-				{
+				// try
+				// {
 					$model->$extraFieldRelationName->save();
-				}
-				catch(\Throwable $e)
-				{
-					dd($extraFieldRelationName);
-				}
+				// }
+				// catch(\Throwable $e)
+				// {
+				// 	dd($extraFieldRelationName);
+				// }
 			}
 
 			event('adjustPricesEvent', $model);

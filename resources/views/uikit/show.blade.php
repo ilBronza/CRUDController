@@ -23,7 +23,7 @@
 
                 </span>
 
-            @if(($navbar)||(isset($backToListUrl))||(isset($showButtons)))
+            @if((isset($navbar))||(isset($backToListUrl))||(isset($showButtons)))
                     <nav
                         class="uk-navbar-container"
                         uk-navbar
@@ -53,7 +53,7 @@
                 @endif
             </div>
 
-            @if($navbar)
+            @if(isset($navbar))
                 {!! $navbar->render() !!}
             @endif
 

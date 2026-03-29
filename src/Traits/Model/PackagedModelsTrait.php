@@ -39,4 +39,24 @@ trait PackagedModelsTrait
     {
     	return trans($this->getTranslationFilePrefix() . $this->getCamelcaseClassBasename());
     }
+
+    public function getRelationshipsManagerClass() : ? string
+    {
+		return $this->getConfigByKey('relationshipsManagerClasses.show');
+    }
+
+	public function getEditParametersFile() : string
+	{
+		return $this->getCompulsoryConfigByKey('parametersFiles.edit');
+	}
+
+	public function getShowParametersFile() : string
+	{
+		return $this->getCompulsoryConfigByKey('parametersFiles.show');
+	}
+
+	public function getUpdateParametersFile() : string
+	{
+		return $this->getCompulsoryConfigByKey('parametersFiles.update');
+	}
 }

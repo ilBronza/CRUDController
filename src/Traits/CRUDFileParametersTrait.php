@@ -42,8 +42,17 @@ trait CRUDFileParametersTrait
 		return new $file();
 	}
 
-	public function getShowParametersClass() : ? FieldsetParametersFile
+	public function getShowParametersClass($passedModel = null) : ? FieldsetParametersFile
 	{
+		if(($model = $this->getModel())||($model = $passedModel))
+		{
+			$file = $model->getShowParametersFile();
+
+			return new $file($model);
+		}
+
+		dd('Adattare il nuovo sistema con i metodi dei singoli files');
+
 		if($file = $this->getParametersFileByType('show'))
 			return new $file();
 
@@ -78,6 +87,15 @@ trait CRUDFileParametersTrait
 
 	public function getEditParametersClass() : FieldsetParametersFile
 	{
+		if($model = $this->getModel())
+		{
+			$file = $model->getEditParametersFile();
+
+			return new $file($model);
+		}
+
+		dd('Adattare il nuovo sistema con i metodi dei singoli files');
+
 		if($file = $this->getParametersFileByType('edit'))
 			return new $file();
 
@@ -88,6 +106,16 @@ trait CRUDFileParametersTrait
 
 	public function getUpdateParametersClass() : ? FieldsetParametersFile
 	{
+		if($model = $this->getModel())
+		{
+			if(! $file = $model->getEditParametersFile())
+				$file = $model->getUpdateParametersFile();
+
+			return new $file($model);
+		}
+
+		dd('Adattare il nuovo sistema con i metodi dei singoli files');
+
 		if($file = $this->getParametersFileByType('update', $strict = true))
 			return new $file();
 
