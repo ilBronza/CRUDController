@@ -2,6 +2,28 @@
 
 return [
     //
+	/*
+	 * Ricerca AJAX per contesto: la chiave (es. production) va passata come `field` nella POST
+	 * insieme a `q` (testo cercato). I modelli sono risolti da alias morph, FQCN, o tentativo App\Models\* .
+	 *
+	 * 'ajaxSearchFields' => [
+	 *     'production' => [
+	 *         'models' => [
+	 *             'product' => ['name', 'description', 'notes'],
+	 *             'order' => ['name', 'description'],
+	 *         ],
+	 *         'per_model_limit' => 20,
+	 *         'total_limit' => 100,
+	 *     ],
+	 * ],
+	 */
+	'ajaxSearchFields' => [],
+
+	'ajaxSearch' => [
+		'per_model_limit' => 20,
+		'total_limit' => 100,
+	],
+
 	'realtionshipManagers' => [
 		'active' => true,
 		'selectRowCheckboxes' => false,

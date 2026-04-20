@@ -60,6 +60,7 @@ class CRUD extends Controller
 	public $modelFormHelper;
 	public Collection $fetchers;
 	public $debug = false;
+	public bool|string $caption;
 
 	public bool $showTitle = true;
 
@@ -137,7 +138,10 @@ class CRUD extends Controller
 	public function getModelClass() : string
 	{
 		if (! $this->modelClass)
+		{
+			dd($this);
 			throw new Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
+		}
 
 		return $this->modelClass;
 	}

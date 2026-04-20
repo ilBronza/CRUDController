@@ -153,9 +153,14 @@ trait CRUDCacheTrait
 		if ($this->relationLoaded($relation))
 			return $this->$relation;
 
-		$relatedClass = $this->$relation()->getRelated();
-		$foreignKeyName = $this->$relation()->getForeignKeyName();
-		$foreignKey = $this->$foreignKeyName;
+		if(! $relatedClass = $this->$relation()->getRelated())
+			return null;
+
+		if(! $foreignKeyName = $this->$relation()->getForeignKeyName())
+			return null;
+
+		if(! $foreignKey = $this->$foreignKeyName)
+			return null;
 
 		return $relatedClass::findCached($foreignKey);
 	}

@@ -17,7 +17,6 @@ use function is_null;
 trait CRUDIndexTrait
 {
 	public int $fixedColumnLeft = 0;
-	public string $caption;
 
 	public function getFixedColumnLeft() : int
 	{
@@ -122,7 +121,7 @@ trait CRUDIndexTrait
 
 	public function beforeRenderIndex() {}
 
-	public function getCaption() : ?string
+	public function getCaption() : null|bool|string
 	{
 		if (isset($this->caption))
 			return $this->caption;
@@ -135,7 +134,10 @@ trait CRUDIndexTrait
 
 	public function manageTableCaption()
 	{
-		if ($caption = $this->getCaption())
+		if($this->getCaption() === false)
+			$this->getTable()->setCaption(false);
+
+		else if ($caption = $this->getCaption())
 			$this->getTable()->setCaption($caption);
 	}
 

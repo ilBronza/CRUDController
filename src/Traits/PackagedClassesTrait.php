@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\Helpers\CompulsoryConfigHelper;
+
 trait PackagedClassesTrait
 {
 	/**
@@ -64,10 +66,11 @@ trait PackagedClassesTrait
 
 	public static function getCompulsoryConfigByKey(string $key) : string
 	{
-		if($result = static::getConfigByKey($key))
-			return $result;
-
-		throw new \Exception('Manca la configurazione per ' . static::getConfigParameterKey($key));
+		return CompulsoryConfigHelper::getForPackagedModel(
+			static::getPackageConfigPrefix(),
+			static::getModelConfigPrefix(),
+			$key
+		);
 	}
 
 	public static function getConfigByKey(string $key)

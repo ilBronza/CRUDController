@@ -3,7 +3,7 @@
 namespace IlBronza\CRUD\Traits;
 
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
-
+use IlBronza\Ukn\Ukn;
 use function dd;
 
 trait CRUDFileParametersTrait
@@ -87,14 +87,26 @@ trait CRUDFileParametersTrait
 
 	public function getEditParametersClass() : FieldsetParametersFile
 	{
-		if($model = $this->getModel())
+		if(method_exists($this, 'getOverriddenEditParametersFile'))
 		{
-			$file = $model->getEditParametersFile();
+			$file = $this->getOverriddenEditParametersFile();
 
-			return new $file($model);
+			return new $file($this->getModel());
 		}
 
-		dd('Adattare il nuovo sistema con i metodi dei singoli files');
+		try
+		{
+			if($model = $this->getModel())
+			{
+				$file = $model->getEditParametersFile();
+
+				return new $file($model);
+			}			
+		}
+		catch(\Exception $e)
+		{
+			Ukn::w('Adattare il nuovo sistema con i metodi dei singoli files: ' . $e->getMessage());
+		}
 
 		if($file = $this->getParametersFileByType('edit'))
 			return new $file();
@@ -106,15 +118,27 @@ trait CRUDFileParametersTrait
 
 	public function getUpdateParametersClass() : ? FieldsetParametersFile
 	{
-		if($model = $this->getModel())
+		if(method_exists($this, 'getOverriddenEditParametersFile'))
 		{
-			if(! $file = $model->getEditParametersFile())
-				$file = $model->getUpdateParametersFile();
+			$file = $this->getOverriddenEditParametersFile();
 
-			return new $file($model);
+			return new $file($this->getModel());
 		}
 
-		dd('Adattare il nuovo sistema con i metodi dei singoli files');
+		try
+		{
+			if($model = $this->getModel())
+			{
+				if(! $file = $model->getEditParametersFile())
+					$file = $model->getUpdateParametersFile();
+
+				return new $file($model);
+			}
+		}
+		catch(\Exception $e)
+		{
+			Ukn::w('Adattare il nuovo sistema con i metodi dei singoli files: ' . $e->getMessage());
+		}
 
 		if($file = $this->getParametersFileByType('update', $strict = true))
 			return new $file();

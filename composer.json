@@ -18,7 +18,10 @@
     "autoload": {
         "psr-4": {
             "IlBronza\\CRUD\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -32,7 +35,8 @@
                 "IlBronza\\CRUD\\ConcurrentUriServiceProvider"
             ],
             "aliases": {
-                "CRUD": "IlBronza\\CRUD\\Facades\\CRUD"
+                "CRUD": "IlBronza\\CRUD\\Facades\\CRUD",
+                "CrudAjaxSearch": "IlBronza\\CRUD\\CrudAjaxSearch"
             }
         }
     }

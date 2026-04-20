@@ -1,5 +1,6 @@
 <?php
 
+use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,3 +68,7 @@ Route::group([
 		Route::get('show-by-field/class/{model}/key/{key}/field/{field}', [HistoryByFieldController::class, 'show'])->name('historyByField');
 	}
 );
+
+Route::post('crud/ajax-search', AjaxSearchController::class)
+	->middleware('web')
+	->name('crud.ajaxSearch');
