@@ -162,6 +162,8 @@ class CRUDServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        require_once __DIR__ . '/helpers.php';
+
         $router = $this->app['router'];
         $router->aliasMiddleware('CRUDAllowedMethods', CRUDAllowedMethods::class);
         $router->aliasMiddleware('CRUDCanDelete', CRUDCanDelete::class);

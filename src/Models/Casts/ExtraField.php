@@ -57,8 +57,8 @@ class ExtraField implements CastsAttributes
 
     public function __construct(string $extraModelClassname = null, string $extraFieldName = null)
     {
-	    $this->extraModelClassname = $extraModelClassname;
-	    $this->extraFieldName = $extraFieldName;
+        $this->extraModelClassname = $extraModelClassname;
+        $this->extraFieldName = $extraFieldName;
     }
 
     /**
