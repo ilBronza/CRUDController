@@ -170,7 +170,9 @@ trait CRUDUpdateEditorTrait
 	private function manageUpdateGeneric(Request $request)
 	{
 		$this->modelInstance = CrudModelUpdaterEditor::saveByRequest(
-			$this->getModel(), $this->getUpdateParametersClass(), $request
+			$this->getModel(),
+			$this->getUpdateParametersClass(),
+			$request
 		);
 
 		$updateParameters['success'] = true;

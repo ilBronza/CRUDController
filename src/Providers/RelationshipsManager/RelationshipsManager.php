@@ -83,6 +83,9 @@ abstract class RelationshipsManager
 		$this->model = $model;
 		$this->modelKey = $modelKey;
 
+		app('uikittemplate')->addRelationsManagerNames(get_class($this));
+
+
 		if(! $relation)
 			return $this->instantiateAllRelations();
 

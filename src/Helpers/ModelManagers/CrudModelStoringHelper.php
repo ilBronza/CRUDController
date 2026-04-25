@@ -335,10 +335,6 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 			unset($bindableFieldsNames[$requestName]);
 		}
 
-		if(! $model->exists)
-			$model->save();
-
-
 		foreach($bindableFieldsNames as $requestName => $attributeName)
 			$this->bindParameter($requestName, $attributeName, $parameters);
 

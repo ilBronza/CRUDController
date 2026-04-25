@@ -8,14 +8,13 @@ use IlBronza\CRUD\Models\Casts\ExtraFieldDossier;
 use IlBronza\CRUD\Models\Casts\ExtraFieldJson;
 use IlBronza\CRUD\Models\Casts\Parameter;
 use IlBronza\CRUD\Providers\ExtraFields\ExtraFieldsProvider;
+use IlBronza\Products\Casts\CalculatedTotalsExtraField;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-
 use Illuminate\Support\Str;
-
 use function array_filter;
 use function array_keys;
 use function class_basename;
@@ -244,6 +243,11 @@ trait CRUDModelExtraFieldsTrait
 
 			foreach($model->getExtraFieldsCasts() as $attribute => $casting)
 			{
+				if(is_subclass_of(
+						explode(':', $casting, 2)[0],
+						CalculatedTotalsExtraField::class))
+					continue;
+
 				if(! $extraFieldRelationName = ExtraField::getRelationName($casting))
 					continue;
 
@@ -253,14 +257,14 @@ trait CRUDModelExtraFieldsTrait
 				if(! $model->$extraFieldRelationName)
 					continue;
 
-				// try
-				// {
+				try
+				{
 					$model->$extraFieldRelationName->save();
-				// }
-				// catch(\Throwable $e)
-				// {
-				// 	dd($extraFieldRelationName);
-				// }
+				}
+				catch(\Throwable $e)
+				{
+					dd($casting, $extraFieldRelationName);
+				}
 			}
 
 			event('adjustPricesEvent', $model);

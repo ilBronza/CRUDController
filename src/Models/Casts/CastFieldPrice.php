@@ -58,7 +58,15 @@ class CastFieldPrice implements CastsAttributes
 			return $price->save();
 		}
 
-		$price = $model->providePriceByCollectionId($this->getCollectionId());
+		try
+		{
+			$price = $model->providePriceByCollectionId($this->getCollectionId());			
+		}
+		catch(\Throwable $e)
+		{
+			dd($model, $model->getCasts(),  $key, $value, $attributes);
+		}
+
 		$price->setMeasurementUnit($this->getMeasurementUnit(), false);
 		$price->price = $value;
 		$price->save();
