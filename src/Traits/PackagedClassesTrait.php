@@ -60,7 +60,7 @@ trait PackagedClassesTrait
 		}
 		catch(\Throwable $e)
 		{
-			throw new \Exception("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class'));
+			throw new \Exception("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class') . ' per ' . static::class);
 		}
 	}
 

@@ -54,10 +54,12 @@ trait CRUDParentingTrait
         return $this->parent;
     }
 
-    public function associateParent(Model $parent)
+    public function associateParent(Model $parent) : static
     {
         $this->parent()->associate($parent);
         $this->save();
+
+        return $this;
     }
 
     public function children()
