@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Traits;
 use Auth;
 use DB;
 use Exception;
+use IlBronza\Buttons\Button;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -17,6 +18,16 @@ use function is_null;
 trait CRUDIndexTrait
 {
 	public int $fixedColumnLeft = 0;
+
+	public function allowMassDeleting() : bool
+	{
+		return (bool) ($this->allowMassDeleting ?? false);
+	}
+
+	public function mustShowRowSelectCheckboxes() : bool
+	{
+		return $this->allowMassDeleting() || (bool) ($this->rowSelectCheckboxes ?? false);
+	}
 
 	public function getFixedColumnLeft() : int
 	{
@@ -117,6 +128,23 @@ trait CRUDIndexTrait
 
 	public function addIndexButtons() {}
 
+	public function addMassDeleteButton()
+	{
+		if(! $this->allowMassDeleting())
+			return;
+
+		$button = Button::create([
+			'href' => 'javascript:void(0)',
+			'text' => 'crud::buttons.massDeleteSelected',
+			'icon' => 'trash'
+		]);
+
+		$button->setHtmlClass('uk-button uk-button-danger ib-table-action-button');
+		$button->setData('route', $this->getRouteUrlByType('bulkDelete'));
+
+		$this->table->addButton($button);
+	}
+
 	public function addPostFieldsToTable() {}
 
 	public function beforeRenderIndex() {}
@@ -148,6 +176,9 @@ trait CRUDIndexTrait
 
 	public function _index(Request $request, string $tableName = null, array $fieldsGroupsNames = null, callable $elementsGetter = null, bool $selectRow = false, array $tableVariables = [], string $baseModel = null)
 	{
+		if ($this->allowMassDeleting())
+			$this->rowSelectCheckboxes = true;
+
 		if (! $tableName)
 			$tableName = $this->getTableName();
 
@@ -166,7 +197,7 @@ trait CRUDIndexTrait
 				return $elementsGetter();
 
 			return $this->getIndexElements();
-		}, $selectRow ? : $this->getRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass()
+		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass()
 		);
 
 		if ($request->isMethod('post'))
@@ -363,6 +394,8 @@ trait CRUDIndexTrait
 		}
 
 		$this->manageReorderButton();
+
+		$this->addMassDeleteButton();
 
 		$this->addIndexButtons();
 	}

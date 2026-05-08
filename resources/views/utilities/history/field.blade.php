@@ -9,32 +9,29 @@
 
 <div class="uk-card uk-card-primary uk-card-small history-for-model-field">
 	<div class="uk-card-header">
-		{{ $model->getName() }} - Storico del campo {{ trans('fields.' . $field) }}
+		{{ trans('crud::history.cardTitle', ['model' => $model->getName(), 'field' => trans('fields.' . $field)]) }}
 	</div>
 	<div class="uk-card-body">
-		
+
 		<table class="history uk-table uk-table-striped uk-table-hover">
 			<tr>
 				<th>
-					Id
+					{{ trans('crud::history.columnId') }}
 				</th>
 				<th>
-					Data
+					{{ trans('crud::history.columnDate') }}
 				</th>
 				<th>
-					Azione
+					{{ trans('crud::history.columnAction') }}
 				</th>
 				<th>
-					Operatore
+					{{ trans('crud::history.columnOperator') }}
 				</th>
 				<th>
-					{{ trans('fields.oldValue') }} - {{ trans('fields.' . $field) }}
+					{{ trans('crud::history.summaryPreviousValue') }}
 				</th>
 				<th>
-					{{ trans('fields.' . $field) }}
-				</th>
-				<th>
-					Json
+					{{ trans('crud::history.summaryNewValue') }}
 				</th>
 			</tr>
 
@@ -54,13 +51,18 @@
 					{{ $activity['activity_causer'] ?? null }}
 				</td>
 				<td>
-					{{ $activity['old'] ?? null }}
+					@if($activity['old_logged'])
+						{{ $activity['old'] }}
+					@else
+						<span class="uk-text-muted">{{ $activity['old'] }}</span>
+					@endif
 				</td>
 				<td>
-					{{ $activity['value'] ?? null }}
-				</td>
-				<td>
-					{{ $activity['json'] ?? null }}
+					@if($activity['value_logged'])
+						{{ $activity['value'] }}
+					@else
+						<span class="uk-text-muted">{{ $activity['value'] }}</span>
+					@endif
 				</td>
 
 			</tr>
@@ -68,7 +70,7 @@
 
 		</table>
 	</div>
-	
+
 </div>
 
 @endsection

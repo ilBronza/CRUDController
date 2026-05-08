@@ -121,6 +121,9 @@ class CRUDServiceProvider extends ServiceProvider
                 Route::put($childUrl . '/{' . $singularChild . ':' . $childKey . '}',       $controller . '@update')    ->name($nameString . '.update')->middleware($middleware);
 
                 Route::delete($childUrl . '/{' . $singularChild . ':' . $childKey . '}',    $controller . '@destroy')   ->name($nameString . '.destroy')->middleware($middleware);
+
+                // Bulk actions
+                Route::post($childUrl . '/bulk-delete',                                     $controller . '@bulkDelete')->name($nameString . '.bulkDelete')->middleware($middleware);
             });
         });
 

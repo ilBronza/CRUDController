@@ -65,4 +65,22 @@ class ResourceRegistrar extends BaseResourceRegistrar
 
         return $this->router->put($uri, $action);
     }
+
+    /**
+     * Add the bulk delete method for a resourceful route.
+     *
+     * @param  string  $name
+     * @param  string  $base
+     * @param  string  $controller
+     * @param  array   $options
+     * @return \Illuminate\Routing\Route
+     */
+    // public function addResourceBulkDelete($name, $base, $controller, $options)
+    // {
+    //     $uri = $this->getResourceUri($name).'/bulk-delete';
+
+    //     $action = $this->getResourceAction($name, $controller, 'bulkDelete', $options);
+
+    //     return $this->router->post($uri, $action);
+    // }
 }

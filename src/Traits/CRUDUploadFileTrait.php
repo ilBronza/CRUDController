@@ -41,9 +41,13 @@ trait CRUDUploadFileTrait
 
 		$field = $provider->getFormFieldByName($fieldName);
 
+		$collectionName = method_exists($field, 'getMediaCollection')
+			? $field->getMediaCollection()
+			: $fieldName;
+
 		// if(! $request->multiple)
 		if(! $field->isMultiple())
-			$this->getModel()->clearMediaCollection($fieldName);
+			$this->getModel()->clearMediaCollection($collectionName);
 
 		//gestire update or store :-/
 		//gestire index
@@ -51,7 +55,7 @@ trait CRUDUploadFileTrait
 
 		$file = $this->getModel()->addMediaFromRequest('file')
 			->toMediaCollection(
-				$fieldName,
+				$collectionName,
 				$field->getDisk()
 			);
 
@@ -67,6 +71,19 @@ trait CRUDUploadFileTrait
 
 		if(! $field->isMultiple())
 		{
+			$shouldPersist = method_exists($field, 'shouldPersistToModelAttribute')
+				? $field->shouldPersistToModelAttribute()
+				: true;
+
+			if(! $shouldPersist)
+				return [
+					'success' => true,
+					'filename' => $file->name,
+					'fileurl' => $file->getServeImageUrl(),
+					'deleteurl' => $this->getModel()->getDeleteMediaUrlByKey($file->getKey()),
+					'thumburl' => $thumbUrl
+				];
+
 			if(! $attributeName)
 				$attributeName = $fieldName;
 

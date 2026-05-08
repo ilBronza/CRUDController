@@ -5,13 +5,18 @@
     <div class="uk-card-header">
         @lang('crud::crud.sortElements')
     </div>
+
+    @if($pageTitle ?? null)
+    <h1>{!! $pageTitle !!}</h1>
+    @endif
+
     <div class="uk-card-header">
         <menu id="nestable-menu">
             <button class="uk-button uk-button-primary" data-action="expand-all">@lang('crud::nestable.expandAll')</button>
             <button class="uk-button uk-button-secondary" data-action="collapse-all">@lang('crud::nestable.collapseExpandAll')</button>
 
             @if($parentUrl)
-            <a class="uk-button uk-button-danger" href="{{ $parentUrl }}">@lang('crud::nestable.backToParentElement', ['elementName' => $modelInstance->parent->getName()])</a>
+            <a class="uk-button uk-button-danger" href="{{ $parentUrl }}">@lang('crud::nestable.backToParentElement', ['elementName' => $modelInstance->parent->getNestableName()])</a>
             @endif
 
             @if($rootUrl)
@@ -80,6 +85,18 @@ $(document).ready(function()
                 type : 'POST',
                 success : function(response, message, jqXhr)
                 {
+                    // Global event you can listen to from anywhere.
+                    // Fires after the server has accepted the new order.
+                    $(document).trigger('crud:nestableReordered', [{
+                        element_id: element_id,
+                        parent_id: parent_id,
+                        siblings: siblings,
+                        response: response,
+                        sourceList: sourceList,
+                        destinationList: destinationList,
+                        position: position
+                    }]);
+
                     if(response.success == true)
                         window.addSuccessNotification(response.message);
                         // window.addSuccessNotification(element_id + " {{ __('crud::nestable.nestableElementMovedTo') }} " + parent_id);
@@ -89,11 +106,68 @@ $(document).ready(function()
                 },
                 error : function(response, message, xhr)
                 {
+                    $(document).trigger('crud:nestableReorderFailed', [{
+                        element_id: element_id,
+                        parent_id: parent_id,
+                        siblings: siblings,
+                        response: response,
+                        sourceList: sourceList,
+                        destinationList: destinationList,
+                        position: position
+                    }]);
                     alert(response.responseText);
                     window.location.reload();
                 }
             });
         }, 1000);
+    });
+});
+</script>
+
+<script>
+$(function () {
+    /**
+     * If a child is nested under a parent, remove the parent's name
+     * from the child's displayed name (only in the UI).
+     */
+    $(document).on('crud:nestableReordered', function (e, payload) {
+        if (!payload || !payload.element_id)
+            return;
+
+        // Moved element (child)
+        var $childItem = $('#' + payload.element_id);
+        if (!$childItem.length)
+            return;
+
+        // New parent (closest dd-item ancestor)
+        var $parentItem = $childItem.parent().closest('.dd-item');
+        if (!$parentItem.length)
+            return;
+
+        var $childContent = $childItem.children('.dd-content').first();
+        var $parentContent = $parentItem.children('.dd-content').first();
+
+        if (!$childContent.length || !$parentContent.length)
+            return;
+
+        var childName = $.trim($childContent.clone().children().remove().end().text());
+        var parentName = $.trim($parentContent.clone().children().remove().end().text());
+
+        if (!childName || !parentName)
+            return;
+
+        // Remove parentName anywhere in childName (case-insensitive), then clean separators/spaces.
+        var escapedParent = parentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var re = new RegExp(escapedParent, 'ig');
+
+        var newChildName = $.trim(childName.replace(re, ''));
+        newChildName = newChildName
+            .replace(/^[\s\-–—:|>]+/, '')
+            .replace(/[\s\-–—:|>]+$/, '')
+            .replace(/\s{2,}/g, ' ');
+
+        if (newChildName && newChildName !== childName)
+            $childContent.contents().filter(function () { return this.nodeType === 3; }).first().replaceWith(newChildName);
     });
 });
 </script>

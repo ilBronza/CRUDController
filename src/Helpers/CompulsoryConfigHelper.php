@@ -11,6 +11,9 @@ class CompulsoryConfigHelper
 		if($result = config($configKey))
 			return $result;
 
+		if(is_array($result))
+			return $result;
+
 		throw new \Exception('Manca la configurazione per ' . $configKey);
 	}
 

@@ -112,6 +112,11 @@ trait CRUDModelExtraFieldsTrait
 
 	public function extraFields()
 	{
+		$extraFieldsClass = $this->getExtraFieldsClass();
+
+		if(! $extraFieldsClass)
+			throw new \Exception('dichiara getExtraFieldsClass in ' . get_class($this));
+
 		if($this instanceof Pivot)
 		{
 			$foreign = Str::snake(

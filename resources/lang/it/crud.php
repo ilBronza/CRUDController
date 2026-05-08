@@ -30,6 +30,7 @@ return [
 	'clearCache' => 'Pulisci cache',
 	'serverClearCache' => 'Pulisci server Cache',
 	'elementSuccesfullyDeleted' => ':element cancellato con successo',
+	'elementsSuccesfullyDeleted' => ':elements elementi cancellati con successo',
 	'cardTitleShow' => 'Mostra :element',
 	'createRelatedBy' => 'Crea :related per :by',
 	'activities' => [

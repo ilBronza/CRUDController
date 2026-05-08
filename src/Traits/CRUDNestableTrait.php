@@ -172,7 +172,18 @@ trait CRUDNestableTrait
             }
         }
  
-        return $return->sortBy('sorting_index');     
+        return $return->sortBy(function ($element) {
+            $sortingIndex = $element->sorting_index ?? null;
+
+            $name = $element->name
+                ?? (method_exists($element, 'getName') ? $element->getName() : null)
+                ?? '';
+
+            return [
+                $sortingIndex === null ? PHP_INT_MAX : (int) $sortingIndex,
+                Str::lower((string) $name),
+            ];
+        });
     }
 
     private function removeLeadingControlCharacter(string $elementId = null)

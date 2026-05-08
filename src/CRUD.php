@@ -83,6 +83,7 @@ class CRUD extends Controller
 	public $avoidShowButton = false;
 	public $showFormIntro = true;
 	public $rowSelectCheckboxes = false;
+	public bool $allowMassDeleting = false;
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
@@ -110,8 +111,12 @@ class CRUD extends Controller
 
 		$this->middleware('CRUDAllowedMethods:' . implode(",", $this->getAllowedMethods()));
 
-		if ((in_array('destroy', $this->getAllowedMethods())) || (in_array('forceDelete', $this->getAllowedMethods())))
-			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete']);
+		if (
+			(in_array('destroy', $this->getAllowedMethods())) ||
+			(in_array('forceDelete', $this->getAllowedMethods())) ||
+			(in_array('bulkDelete', $this->getAllowedMethods()))
+		)
+			$this->middleware('CRUDCanDelete:' . $this->getModelClass())->only(['destroy', 'forceDelete', 'bulkDelete']);
 
 		if (config('crud.useConcurrentRequestsAlert'))
 			$this->middleware(CRUDConcurrentUrlAlert::class);
