@@ -124,53 +124,94 @@ $(document).ready(function()
 });
 </script>
 
+@if(($replaceName ?? false) === true)
 <script>
 $(function () {
     /**
-     * If a child is nested under a parent, remove the parent's name
-     * from the child's displayed name (only in the UI).
+     * Call this directly on the child dd-item:
+     * $('#' + elementId).ibNestableStripParentName();
      */
+    $.fn.ibNestableStripParentName = function () {
+        return this.each(function () {
+            var $childItem = $(this);
+            if (!$childItem.length)
+                return;
+
+            var $childContent = $childItem.children('.dd-content').first();
+            if (!$childContent.length)
+                return;
+
+            // Get only the text node (ignore appended links like "reorderBy", "edit", etc.)
+            var childName = $.trim($childContent.clone().children().remove().end().text());
+
+            if (!childName)
+                return;
+
+            // Collect all ancestor names (parent, grandparent, ...) and strip them all.
+            // We keep the order root -> leaf just for determinism.
+            var $ancestors = $childItem.parents('.dd-item');
+            if (!$ancestors.length)
+                return;
+
+            var newChildName = childName;
+            $($ancestors.get().reverse()).each(function () {
+                var $ancestor = $(this);
+                var $ancestorContent = $ancestor.children('.dd-content').first();
+                if (!$ancestorContent.length)
+                    return;
+
+                var ancestorName = $.trim($ancestorContent.clone().children().remove().end().text());
+                if (!ancestorName)
+                    return;
+
+                var escaped = ancestorName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                var re = new RegExp(escaped, 'ig');
+                newChildName = $.trim(newChildName.replace(re, ''));
+            });
+
+            newChildName = newChildName
+                .replace(/^[\s\-–—:|>]+/, '')
+                .replace(/[\s\-–—:|>]+$/, '')
+                .replace(/\s{2,}/g, ' ');
+
+            if (newChildName && newChildName !== childName)
+                $childContent.contents().filter(function () { return this.nodeType === 3; }).first().replaceWith(newChildName);
+        });
+    };
+
+    var applyStripParentNameTopDown = function ($root) {
+        var $container = $root && $root.length ? $root : $('#nestablelist');
+
+        // Traverse parent -> children to avoid inconsistencies.
+        var visit = function ($item) {
+            $item.ibNestableStripParentName();
+
+            // Direct children only (avoid accidentally skipping levels)
+            var $children = $item.find('> ol.dd-list > li.dd-item');
+            if ($children.length) {
+                $children.each(function () {
+                    visit($(this));
+                });
+            }
+        };
+
+        $container.find('> ol.dd-list > li.dd-item').each(function () {
+            visit($(this));
+        });
+    };
+
     $(document).on('crud:nestableReordered', function (e, payload) {
         if (!payload || !payload.element_id)
             return;
 
-        // Moved element (child)
-        var $childItem = $('#' + payload.element_id);
-        if (!$childItem.length)
-            return;
-
-        // New parent (closest dd-item ancestor)
-        var $parentItem = $childItem.parent().closest('.dd-item');
-        if (!$parentItem.length)
-            return;
-
-        var $childContent = $childItem.children('.dd-content').first();
-        var $parentContent = $parentItem.children('.dd-content').first();
-
-        if (!$childContent.length || !$parentContent.length)
-            return;
-
-        var childName = $.trim($childContent.clone().children().remove().end().text());
-        var parentName = $.trim($parentContent.clone().children().remove().end().text());
-
-        if (!childName || !parentName)
-            return;
-
-        // Remove parentName anywhere in childName (case-insensitive), then clean separators/spaces.
-        var escapedParent = parentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        var re = new RegExp(escapedParent, 'ig');
-
-        var newChildName = $.trim(childName.replace(re, ''));
-        newChildName = newChildName
-            .replace(/^[\s\-–—:|>]+/, '')
-            .replace(/[\s\-–—:|>]+$/, '')
-            .replace(/\s{2,}/g, ' ');
-
-        if (newChildName && newChildName !== childName)
-            $childContent.contents().filter(function () { return this.nodeType === 3; }).first().replaceWith(newChildName);
+        $('#' + payload.element_id).ibNestableStripParentName();
     });
+
+    // Apply on page load to all items (top-down).
+    applyStripParentNameTopDown($('#nestablelist'));
 });
 </script>
+@endif
 
 
 <script type="text/javascript">

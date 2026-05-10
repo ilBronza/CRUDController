@@ -146,7 +146,9 @@ trait CRUDNestableTrait
 
         $nestableElementViewName = $this->getNestableElementViewName();
 
-        return view('crud::nestable.index', compact('replaceElementUrl', 'nestableElementViewName', 'modelInstance', 'createChildUrl', 'editUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'maxDepth'));
+        $replaceName = $this->replaceName ?? false;
+
+        return view('crud::nestable.index', compact('replaceElementUrl', 'nestableElementViewName', 'modelInstance', 'createChildUrl', 'editUrl', 'rootUrl', 'parentUrl', 'reorderByUrl', 'elements', 'action', 'replaceName', 'maxDepth'));
     }
 
     //https://stackoverflow.com/questions/2915748/convert-a-series-of-parent-child-relationships-into-a-hierarchical-tree

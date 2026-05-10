@@ -105,7 +105,8 @@ trait CRUDFileParametersTrait
 		}
 		catch(\Exception $e)
 		{
-			Ukn::w('Adattare il nuovo sistema con i metodi dei singoli files: ' . $e->getMessage());
+			if(\Auth::id() == 1)
+				Ukn::w('Adattare il nuovo sistema con i metodi dei singoli files: ' . $e->getMessage());
 		}
 
 		if($file = $this->getParametersFileByType('edit'))
