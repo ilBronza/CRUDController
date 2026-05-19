@@ -29,7 +29,7 @@ trait CRUDUpdateTrait
 	public function checkIfUserCanUpdate()
 	{
 		if(! $this->modelInstance->userCanUpdate(Auth::user()))
-			abort(403);
+			abort(403, 'User can\'t update');
 
 		if(Auth::id() == 1)
 			return true;
@@ -41,7 +41,7 @@ trait CRUDUpdateTrait
 			return true;
 
 		if(! $this->modelInstance->userCanUpdate($user))
-			abort(403);
+			abort(403, 'User can\'t update');
 	}
 
 	/**

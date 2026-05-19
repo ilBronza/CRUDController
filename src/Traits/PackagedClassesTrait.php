@@ -47,21 +47,14 @@ trait PackagedClassesTrait
 
 	public static function getClassname() : string
 	{
-		return config(
+		return cconfig(
 			static::getConfigParameterKey('class')
 		);
 	}
 
 	static function getProjectClassName() : string
 	{
-		try
-		{
-			return static::getClassname();
-		}
-		catch(\Throwable $e)
-		{
-			throw new \Exception("Manca la dichiarazione in config. " . $e->getMessage() . ' -> ' . static::getConfigParameterKey('class') . ' per ' . static::class);
-		}
+		return static::getClassname();
 	}
 
 	public static function getCompulsoryConfigByKey(string $key) : string

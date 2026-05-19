@@ -7,6 +7,7 @@ use IlBronza\CRUD\CRUDRoutingHelper;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
+use IlBronza\CRUD\Commands\MakeArchiveMigrationCommand;
 use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
@@ -138,7 +139,8 @@ class CRUDServiceProvider extends ServiceProvider
         $this->commands([
             ControllerCrudParametersTraitCommand::class,
             CrudBelongsToController::class,
-            CrudController::class
+            CrudController::class,
+            MakeArchiveMigrationCommand::class,
         ]);
 
         Response::macro('success', function (string $message = null) {

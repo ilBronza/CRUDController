@@ -19,6 +19,8 @@ trait CRUDIndexTrait
 {
 	public int $fixedColumnLeft = 0;
 
+	public ?bool $bulkEdit = null;
+
 	public function allowMassDeleting() : bool
 	{
 		return (bool) ($this->allowMassDeleting ?? false);
@@ -197,7 +199,7 @@ trait CRUDIndexTrait
 				return $elementsGetter();
 
 			return $this->getIndexElements();
-		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass()
+		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit
 		);
 
 		if ($request->isMethod('post'))

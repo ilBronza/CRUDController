@@ -80,6 +80,7 @@ class CRUD extends Controller
 	public $pageLength;
 	public $returnBack = false;
 	public $avoidBackToList = false;
+	public bool $showBackToList = true;
 	public $avoidShowButton = false;
 	public $showFormIntro = true;
 	public $rowSelectCheckboxes = false;
@@ -144,7 +145,6 @@ class CRUD extends Controller
 	{
 		if (! $this->modelClass)
 		{
-			dd($this);
 			throw new Exception('public $modelClass non dichiarato nella classe estesa ' . get_class($this));
 		}
 
@@ -310,9 +310,12 @@ class CRUD extends Controller
 		return $this->overrideWithCustomSettingsToDefaults($defaults);
 	}
 
-	public function avoidBackToList()
+	public function avoidBackToList() : bool
 	{
-		return $this->avoidBackToList;
+		if ($this->avoidBackToList)
+			return true;
+
+		return ! $this->showBackToList;
 	}
 
 	public function avoidShowButton() : bool

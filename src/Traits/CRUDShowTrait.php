@@ -198,7 +198,7 @@ trait CRUDShowTrait
 
 		view()->share('showEditLink', $this->showEditLink());
 
-		if ((in_array('index', $this->allowedMethods)) && (! $this->avoidBackToList))
+		if ((in_array('index', $this->allowedMethods)) && (! $this->avoidBackToList()))
 			view()->share('backToListUrl', $this->getIndexUrl());
 	}
 

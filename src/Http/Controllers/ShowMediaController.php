@@ -12,7 +12,7 @@ class ShowMediaController extends Controller
 		$media = Media::with('model')->find($media);
 
 		if(! $media->model->userCanSee())
-			abort(403);
+			abort(403, 'User can not see this element');
 
 		return response()->file($media->getPath());
 	}

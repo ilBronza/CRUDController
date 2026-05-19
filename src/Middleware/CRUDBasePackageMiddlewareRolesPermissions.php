@@ -28,7 +28,7 @@ abstract class CRUDBasePackageMiddlewareRolesPermissions
         }
 
         if (! $this->userHasAnyConfiguredRole($user, $roles)) {
-            abort(403);
+            abort(403, 'User does not have the right roles: ' . json_encode($roles));
         }
 
         return $next($request);
@@ -83,11 +83,10 @@ abstract class CRUDBasePackageMiddlewareRolesPermissions
             return [];
         }
 
-        return normalizeRoles($roles);
-        // return array_values(array_filter(array_map(
-        //     static fn (string $role) => trim($role),
-        //     $roles
-        // )));
+        return array_values(array_filter(array_map(
+            static fn (string $role) => trim($role),
+            $roles
+        )));
     }
 
     /**

@@ -98,10 +98,11 @@ trait CRUDEditTrait
 		if((isset($this->editButtons))&&(count($this->editButtons)))
 			view()->share('buttons', $this->editButtons);
 
-		if($button = $this->getBackToListButton())
-			$this->addNavbarButton(
-				$button
-			);
+		if(! $this->avoidBackToList())
+			if($button = $this->getBackToListButton())
+				$this->addNavbarButton(
+					$button
+				);
 	}
 
 	public function addEditExtraViews()

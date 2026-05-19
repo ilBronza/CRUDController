@@ -97,6 +97,9 @@ trait CRUDModelUserRightsTrait
 		if (! $user)
 			$user = Auth::user();
 
+		if($user->isSuperadmin())
+			return true;
+
 		try
 		{
 			/**
