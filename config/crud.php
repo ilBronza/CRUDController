@@ -66,4 +66,8 @@ return [
     ],
 
     'timelineZoom' => 60, // giorni visibili allo zoom iniziale
+
+	'calendar' => [
+		'nextDayThreshold' => '10:00:00',
+	],
 ];

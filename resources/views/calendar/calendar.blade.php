@@ -13,12 +13,9 @@
 
             let isDragging = false;
 
-            const now = new Date();
-            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                initialDate: lastMonth, // 👈 mese scorso
+                nextDayThreshold: @json(config('crud.calendar.nextDayThreshold')),
                 height: 'auto',
 				locale: 'it',
                 firstDay: 1,
