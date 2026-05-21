@@ -69,5 +69,11 @@ return [
 
 	'calendar' => [
 		'nextDayThreshold' => '10:00:00',
+		'monthTimeline' => [
+			'minWidthPercent' => 3,
+			'fillOpacity' => 0.35,
+			'trackColor' => '#e9ecef',
+			'timeColumnWidth' => '3.25rem',
+		],
 	],
 ];

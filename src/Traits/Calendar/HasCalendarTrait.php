@@ -32,12 +32,32 @@ trait HasCalendarTrait
 
 	public function getCalendarColor() : ? string
 	{
-		return null;
+		return config('products.models.order.calendar.colors.ok');
+	}
+
+	public function getCalendarBackgroundColor() : ? string
+	{
+		return 'white';
+	}
+
+	public function getCalendarHtmlClasses() : array
+	{
+		$result = [];
+
+		if($this->getCalendarDateEnd()->day != $this->getCalendarDateStart()->day)
+			$result = ['overnight'];
+
+		return $result;
 	}
 
 	public function getCalendarTitle() : string
 	{
 		return $this->getTitle();
+	}
+
+	public function getCalendarStatus() : ? string
+	{
+		return null;
 	}
 
 	public function toCalendarEvent(): array
@@ -52,12 +72,15 @@ trait HasCalendarTrait
 			'allDay' => false,
 
 			'color' => $this->getCalendarColor(),
+			'backgroundColor' => $this->getCalendarBackgroundColor(),
+			'classNames' => $this->getCalendarHtmlClasses(),
 
 			'url' => $this->getEditUrl(),
 
 			'extendedProps' => [
 				'type' => static::class,
 				'model_id' => $this->getKey(),
+				'status' => $this->getCalendarStatus(),
 			],
 		];
 	}}

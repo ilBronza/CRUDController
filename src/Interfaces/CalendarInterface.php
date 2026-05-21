@@ -9,4 +9,12 @@ interface CalendarInterface
 {
 	public function getCalendarDateStart() : ? Carbon;
 	public function getCalendarDateEnd() : ? Carbon;
+
+	public function getCalendarColor() : ?string;
+
+	public function getCalendarBackgroundColor() : ?string;
+
+	public function getCalendarHtmlClasses() : array;
+
+	public function getCalendarStatus() : ?string;
 }

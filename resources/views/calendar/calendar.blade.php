@@ -4,14 +4,233 @@
 	<div id="order-calendar"></div>
 
 	<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+	<style>
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline {
+			position: relative;
+			overflow: hidden;
+			background-color: {{ config('crud.calendar.monthTimeline.trackColor', '#e9ecef') }} !important;
+			border-color: #dee2e6 !important;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline .fc-event-main {
+			background-color: transparent;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: var(--fc-event-time-left, 0%);
+			width: var(--fc-event-time-width, 100%);
+			background-color: var(--fc-event-time-fill, currentColor);
+			opacity: var(--fc-event-time-fill-opacity, 0.35);
+			z-index: 0;
+			pointer-events: none;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event .fc-event-main {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 0.35em;
+			width: 100%;
+			min-width: 0;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event .fc-event-time {
+			flex: 0 0 {{ config('crud.calendar.monthTimeline.timeColumnWidth', '3.25rem') }};
+			width: {{ config('crud.calendar.monthTimeline.timeColumnWidth', '3.25rem') }};
+			min-width: {{ config('crud.calendar.monthTimeline.timeColumnWidth', '3.25rem') }};
+			text-align: right;
+			font-variant-numeric: tabular-nums;
+			white-space: nowrap;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event .fc-event-title {
+			flex: 1 1 auto;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline .fc-event-main,
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline .fc-event-title,
+		.fc-dayGridMonth-view .fc-daygrid-event.fc-month-time-timeline .fc-event-time {
+			position: relative;
+			z-index: 1;
+		}
+
+		#order-calendar .fc-timegrid-event .fc-event-main {
+			display: flex;
+			align-items: center;
+			gap: 0.35em;
+		}
+
+		#order-calendar .fc-event.overnight {
+			border-right: 3px solid #495057 !important;
+		}
+	</style>
 	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/it.global.min.js"></script>
 	<script>
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('order-calendar');
+            const monthTimelineConfig = @json(config('crud.calendar.monthTimeline'));
 
             let isDragging = false;
+
+            const parseDayStart = function (dateStr) {
+                const parts = dateStr.split('-').map(Number);
+                return new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0);
+            };
+
+            const parseDayEnd = function (dateStr) {
+                const parts = dateStr.split('-').map(Number);
+                return new Date(parts[0], parts[1] - 1, parts[2] + 1, 0, 0, 0, 0);
+            };
+
+            const applyMonthTimelineLayout = function (info) {
+                if (info.view.type !== 'dayGridMonth') {
+                    return;
+                }
+
+                const event = info.event;
+
+                if (event.allDay || !event.start) {
+                    return;
+                }
+
+                const dayCell = info.el.closest('.fc-daygrid-day');
+                const dayDateStr = dayCell && dayCell.getAttribute('data-date');
+
+                if (!dayDateStr) {
+                    return;
+                }
+
+                const dayStart = parseDayStart(dayDateStr);
+                const dayEnd = parseDayEnd(dayDateStr);
+                const dayMs = dayEnd - dayStart;
+
+                let segStart = new Date(event.start);
+                let segEnd = event.end ? new Date(event.end) : new Date(segStart.getTime() + 60 * 60 * 1000);
+
+                if (segStart < dayStart) {
+                    segStart = dayStart;
+                }
+
+                if (segEnd > dayEnd) {
+                    segEnd = dayEnd;
+                }
+
+                if (segEnd <= segStart) {
+                    return;
+                }
+
+                let leftPct = ((segStart - dayStart) / dayMs) * 100;
+                let widthPct = ((segEnd - segStart) / dayMs) * 100;
+                const minWidth = monthTimelineConfig.minWidthPercent ?? 3;
+
+                if (widthPct < minWidth) {
+                    widthPct = minWidth;
+
+                    if (leftPct + widthPct > 100) {
+                        leftPct = 100 - widthPct;
+                    }
+                }
+
+                const fillColor = event.borderColor || event.color || event.textColor || '';
+
+                info.el.classList.add('fc-month-time-timeline');
+                info.el.style.setProperty('--fc-event-time-left', leftPct + '%');
+                info.el.style.setProperty('--fc-event-time-width', widthPct + '%');
+                info.el.style.setProperty('--fc-event-time-fill-opacity', monthTimelineConfig.fillOpacity ?? 0.35);
+
+                if (fillColor) {
+                    info.el.style.setProperty('--fc-event-time-fill', fillColor);
+                }
+            };
+
+            const normalizeCalendarStatusClass = function (status) {
+                return String(status)
+                    .trim()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            };
+
+            const applyEventStatusToDot = function (info) {
+                const status = info.event.extendedProps && info.event.extendedProps.status;
+
+                if (!status) {
+                    return;
+                }
+
+                const statusClass = normalizeCalendarStatusClass(status);
+
+                if (statusClass) {
+                    info.el.classList.add(statusClass);
+                }
+
+                let dot = info.el.querySelector('.fc-daygrid-event-dot');
+
+                if (!dot && info.el.classList.contains('fc-daygrid-event')) {
+                    dot = document.createElement('div');
+                    dot.className = 'fc-daygrid-event-dot';
+
+                    const fillColor = info.event.borderColor || info.event.color;
+
+                    if (fillColor) {
+                        dot.style.borderColor = fillColor;
+                    }
+
+                    const main = info.el.querySelector('.fc-event-main');
+
+                    if (main) {
+                        info.el.insertBefore(dot, main);
+                    } else {
+                        info.el.prepend(dot);
+                    }
+                }
+
+                if (!dot) {
+                    return;
+                }
+
+                if (statusClass) {
+                    dot.classList.add(statusClass);
+                }
+
+                dot.setAttribute('uk-tooltip', status);
+            };
+
+            const bindDayNumberClicks = function () {
+                if (calendarEl.dataset.dayNumbersBound) {
+                    return;
+                }
+
+                calendarEl.dataset.dayNumbersBound = '1';
+
+                calendarEl.addEventListener('click', function (e) {
+                    const dayNumber = e.target.closest('.fc-daygrid-day-number');
+
+                    if (!dayNumber) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const dayCell = dayNumber.closest('.fc-daygrid-day');
+                    const dateStr = dayCell.getAttribute('data-date');
+
+                    calendar.changeView('timeGridDay', dateStr);
+                });
+            };
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -22,6 +241,16 @@
                 selectable: true,
                 selectMirror: true,
                 slotDuration: '00:30:00',
+                views: {
+                    dayGridMonth: {
+                        eventDisplay: 'block',
+                        eventTimeFormat: {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        }
+                    }
+                },
 
                 events: {
                     url: '{{ $actionUrl }}',
@@ -56,27 +285,10 @@
                     UIkit.modal('#calendar-new-event-modal').show();
                     calendar.unselect();
                 },
-				eventDidMount: function () {
-                    document
-                        .querySelectorAll('.fc-daygrid-day-number')
-                        .forEach(function (el) {
-
-                            if (el.dataset.bound) {
-                                return;
-                            }
-
-                            el.dataset.bound = true;
-
-                            el.addEventListener('click', function (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                const dayCell = el.closest('.fc-daygrid-day');
-                                const dateStr = dayCell.getAttribute('data-date');
-
-                                calendar.changeView('timeGridDay', dateStr);
-                            });
-                        });
+				eventDidMount: function (info) {
+                    applyMonthTimelineLayout(info);
+                    applyEventStatusToDot(info);
+                    bindDayNumberClicks();
                 },
 				eventClick: function(info) {
                     // Evita la navigazione standard del link di FullCalendar
