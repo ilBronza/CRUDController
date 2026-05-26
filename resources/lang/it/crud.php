@@ -45,6 +45,8 @@ return [
 	],
 
 	    'backToList' => 'Torna A Lista',
+	'clientTestEnvironmentBanner' => 'Ambiente di test cliente: :label',
+	'clientTestEnvironmentBannerDefault' => 'istanza remota di prova',
 
 ];
 

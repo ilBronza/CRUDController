@@ -8,6 +8,8 @@ return [
 	'add' => 'Add :what',
 	'showElement' => 'Show :element',
 	'backToList' => 'Go to List',
+	'clientTestEnvironmentBanner' => 'Client test environment: :label',
+	'clientTestEnvironmentBannerDefault' => 'remote trial instance',
 	'showElementPage' => 'Show Element :element',
 	'editElement' => 'Edit :element',
 	'singleModel_categories' => 'Category',
