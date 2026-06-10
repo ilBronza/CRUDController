@@ -25,4 +25,9 @@ class CrudRequestHelper
 	{
 		return $request->input('ib-editor-read', false);
 	}
+
+	static function isEditorBatchReadRequest(Request $request) : bool
+	{
+		return $request->boolean('ib-editor-read-batch');
+	}
 }

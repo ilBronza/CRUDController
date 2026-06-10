@@ -19,6 +19,7 @@ trait CRUDUpdateTrait
 {
 	use CRUDValidateTrait;
 	use CRUDUpdateEditorTrait;
+	use CRUDUpdateEditorBatchReadTrait;
 
 	public function getAfterUpdateRoute()
 	{
@@ -252,6 +253,9 @@ trait CRUDUpdateTrait
 //		if($this->hasEditorUpdateRequest($request))
 		if(CrudRequestHelper::isEditorUpdateRequest($request))
 			return $this->_updateEditor($request);
+
+		if(CrudRequestHelper::isEditorBatchReadRequest($request))
+			return $this->returnFieldsFromEditor($request);
 
 		if(CrudRequestHelper::isEditorReadRequest($request))
 			return $this->returnFieldFromEditor($request);
