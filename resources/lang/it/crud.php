@@ -46,7 +46,7 @@ return [
 
 	    'backToList' => 'Torna A Lista',
 	'clientTestEnvironmentBanner' => 'Ambiente di test cliente: :label',
-	'clientTestEnvironmentBannerDefault' => 'istanza remota di prova',
+	'clientTestEnvironmentBannerDefault' => 'Si possono sminchiare i dati con serenità. Le immagini ed i files mancano ed è normale.',
 
 ];
 

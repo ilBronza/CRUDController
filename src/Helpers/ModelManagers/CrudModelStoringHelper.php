@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelAssociatorHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
+use IlBronza\FormField\Fields\FileFormField;
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
@@ -87,6 +88,13 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 			}
 
 			$formField = FormField::createFromArray($fieldParameters);
+
+			if($this->shouldSkipModelAttributeBind($fieldParameters))
+			{
+				unset($parameters[$fieldName]);
+
+				continue;
+			}
 
 			//avoid repopulation of disabled fields or non compiled fields
 			if(isset($parameters[$fieldName]))
@@ -303,6 +311,22 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		return array_key_exists($attributeName, $extraFields);
 	}
 
+	/**
+	 * File fields use media library (dropzone); with persist false they must not map to a DB column.
+	 */
+	public function shouldSkipModelAttributeBind(array $fieldParameters) : bool
+	{
+		if(($fieldParameters['type'] ?? null) !== 'file')
+			return false;
+
+		$formField = FormField::createFromArray($fieldParameters);
+
+		if($formField instanceof FileFormField)
+			return ! $formField->shouldPersistToModelAttribute();
+
+		return true;
+	}
+
 	public function bindParameter($requestName, $attributeName, $parameters)
 	{
 		if(array_key_exists($requestName, $parameters))
@@ -323,12 +347,18 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 	public function bindParameters(array $parameters) : Model
 	{
 		$bindableFieldsNames = $this->getFieldsetsProvider()->getBindableAttributeFieldsNames();
+		$allFields = $this->getFieldsetsProvider()->getAllFieldsArray();
 
 		$model = $this->getModel();
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
 		{
 			if($this->mustBeSetAfterStoring($attributeName))
+				continue;
+
+			$fieldParameters = $allFields[$requestName] ?? [];
+
+			if($this->shouldSkipModelAttributeBind($fieldParameters))
 				continue;
 
 			$this->bindParameter($requestName, $attributeName, $parameters);
@@ -340,7 +370,14 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 		}
 
 		foreach($bindableFieldsNames as $requestName => $attributeName)
+		{
+			$fieldParameters = $allFields[$requestName] ?? [];
+
+			if($this->shouldSkipModelAttributeBind($fieldParameters))
+				continue;
+
 			$this->bindParameter($requestName, $attributeName, $parameters);
+		}
 
 		$model->save();
 

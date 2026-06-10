@@ -6,5 +6,6 @@ return [
 	'uploadNewImage' => 'Carica immagine',
 	'bulkEdit' => 'Modifica multipla',
 	'massDeleteSelected' => 'Elimina selezionati',
+	'duplicate' => 'Duplica',
 ];
 

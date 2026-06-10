@@ -76,13 +76,13 @@ trait CRUDUploadFileTrait
 				: true;
 
 			if(! $shouldPersist)
-				return [
+				return array_merge([
 					'success' => true,
 					'filename' => $file->name,
 					'fileurl' => $file->getServeImageUrl(),
 					'deleteurl' => $this->getModel()->getDeleteMediaUrlByKey($file->getKey()),
 					'thumburl' => $thumbUrl
-				];
+				], $this->getFileUploadDateResponseExtra($field, $file));
 
 			if(! $attributeName)
 				$attributeName = $fieldName;
@@ -91,12 +91,28 @@ trait CRUDUploadFileTrait
 			$this->getModel()->save();			
 		}
 
-		return [
+		return array_merge([
 			'success' => true,
 			'filename' => $file->name,
 			'fileurl' => $file->getServeImageUrl(),
 			'deleteurl' => $this->getModel()->getDeleteMediaUrlByKey($file->getKey()),
 			'thumburl' => $thumbUrl
-		];
+		], $this->getFileUploadDateResponseExtra($field, $file));
+	}
+
+	protected function getFileUploadDateResponseExtra($field, $file) : array
+	{
+		if(! method_exists($field, 'shouldShowDate') || ! $field->shouldShowDate())
+			return [];
+
+		if(! method_exists($field, 'formatMediaUploadedAt'))
+			return [];
+
+		$formatted = $field->formatMediaUploadedAt($file);
+
+		if(! $formatted)
+			return [];
+
+		return ['fileuploadedat' => $formatted];
 	}
 }
