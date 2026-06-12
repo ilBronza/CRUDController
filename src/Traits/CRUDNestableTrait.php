@@ -127,10 +127,65 @@ trait CRUDNestableTrait
             $this->modelInstance
         );
 
-        return $this->parseTree(
-            $flatElements,
-            ($this->modelInstance)? $this->modelInstance->getKey() : null
-        );
+        $rootParentId = ($this->modelInstance)? $this->modelInstance->getKey() : null;
+
+        $tree = $this->parseTree($flatElements, $rootParentId);
+
+        return $this->parseOrphanSubtrees($tree, $flatElements);
+    }
+
+    protected function parseOrphanSubtrees(Collection $tree, Collection $remaining) : Collection
+    {
+        while ($remaining->isNotEmpty())
+        {
+            $progress = false;
+
+            foreach ($remaining as $id => $element)
+            {
+                $parentKey = $element->{$element->getParentKeyName()};
+
+                if ($parentKey !== null && $this->collectionContainsElementKey($remaining, $parentKey))
+                    continue;
+
+                $remaining->forget($id);
+                $element->childs = $this->parseTree($remaining, $element->getKey(), 1);
+                $tree->push($element);
+                $progress = true;
+            }
+
+            if (! $progress)
+            {
+                foreach ($remaining as $id => $element)
+                {
+                    $remaining->forget($id);
+                    $element->childs = $this->parseTree($remaining, $element->getKey(), 1);
+                    $tree->push($element);
+                }
+            }
+        }
+
+        return $this->sortTreeElements($tree);
+    }
+
+    protected function collectionContainsElementKey(Collection $collection, $key) : bool
+    {
+        return $collection->contains(fn ($element) => $element->getKey() == $key);
+    }
+
+    protected function sortTreeElements(Collection $elements) : Collection
+    {
+        return $elements->sortBy(function ($element) {
+            $sortingIndex = $element->sorting_index ?? null;
+
+            $name = $element->name
+                ?? (method_exists($element, 'getName') ? $element->getName() : null)
+                ?? '';
+
+            return [
+                $sortingIndex === null ? PHP_INT_MAX : (int) $sortingIndex,
+                Str::lower((string) $name),
+            ];
+        });
     }
 
     public function _reorder(Request $request, $modelInstance = null) : View
@@ -174,18 +229,7 @@ trait CRUDNestableTrait
             }
         }
  
-        return $return->sortBy(function ($element) {
-            $sortingIndex = $element->sorting_index ?? null;
-
-            $name = $element->name
-                ?? (method_exists($element, 'getName') ? $element->getName() : null)
-                ?? '';
-
-            return [
-                $sortingIndex === null ? PHP_INT_MAX : (int) $sortingIndex,
-                Str::lower((string) $name),
-            ];
-        });
+        return $this->sortTreeElements($return);
     }
 
     private function removeLeadingControlCharacter(string $elementId = null)

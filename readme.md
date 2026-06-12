@@ -51,6 +51,36 @@ and then run npm
 
 ## Usage
 
+## Batch field read (ib-editor-read-batch)
+
+Oltre al read singolo (`ib-editor-read` + `field`), la route di update accetta una lettura cumulativa di più campi in una sola richiesta. Viene usata dal coordinatore batch di FormField (vedi readme di `ilbronza/formfield`).
+
+Richiesta (`PUT` via `_method` sulla stessa route di update):
+
+```
+ib-editor-read-batch: true
+fields[]: total_cost
+fields[]: total_revenue
+```
+
+Risposta:
+
+``` json
+{
+    "success": true,
+    "fetch-fields-batch": true,
+    "values": { "total_cost": 123.45, "total_revenue": 456.78 },
+    "model-id": "..."
+}
+```
+
+Il flusso è gestito da:
+
+- `CrudRequestHelper::isEditorBatchReadRequest()` — riconosce il flag
+- `CRUDUpdateEditorBatchReadTrait::returnFieldsFromEditor()` — legge ogni campo da `$model->{$field}` e ritorna la mappa `values`
+
+Il trait è incluso automaticamente da `CRUDUpdateTrait`; il read singolo `returnFieldFromEditor` resta invariato.
+
 ## Relazioni
 
 creare un getter con i possibili valori di relazione in un select
