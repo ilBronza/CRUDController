@@ -6,6 +6,7 @@ use Auth;
 use DB;
 use Exception;
 use IlBronza\Buttons\Button;
+use IlBronza\CRUD\Interfaces\CondensableModelInterface;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -147,7 +148,27 @@ trait CRUDIndexTrait
 		$this->table->addButton($button);
 	}
 
-	public function addPostFieldsToTable() {}
+	public function addCondenseButton()
+	{
+		$model = $this->getModelClass()::make();
+
+		if(! $model instanceof CondensableModelInterface)
+			return;
+
+		if(! $this->mustShowRowSelectCheckboxes() && ! $this->getRowSelectCheckboxes())
+			return;
+
+		$this->getTable()->createPostButtonSamePage([
+			'href' => $model->getBulkCondenseUrl(),
+			'text' => 'crud::buttons.condenseSelected',
+			'icon' => 'compress',
+		]);
+	}
+
+	public function addPostFieldsToTable()
+	{
+		$this->addCondenseButton();
+	}
 
 	public function beforeRenderIndex() {}
 

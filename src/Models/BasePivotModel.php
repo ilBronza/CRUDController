@@ -7,6 +7,7 @@ use IlBronza\CRUD\Traits\Model\CRUDModelTranslationsTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class BasePivotModel extends Pivot 
@@ -20,5 +21,15 @@ class BasePivotModel extends Pivot
 	protected $casts = [
 		'deleted_at' => 'datetime'
 	];
+
+	public function getActivitylogOptions(): LogOptions
+	{
+		return $this->dontLogEmptyActivityChanges(
+			LogOptions::defaults()->logAll()
+		)->logOnlyDirty()->logExcept([
+            'created_at',
+            'updated_at',
+        ]);
+	}
 
 }

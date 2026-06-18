@@ -16,6 +16,9 @@
     "require-dev": {
     },
     "autoload": {
+        "files": [
+            "src/Support/activitylog_compatibility.php"
+        ],
         "psr-4": {
             "IlBronza\\CRUD\\": "src/"
         }

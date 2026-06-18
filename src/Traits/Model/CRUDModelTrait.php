@@ -3,7 +3,9 @@
 namespace IlBronza\CRUD\Traits\Model;
 
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+
 
 trait CRUDModelTrait
 {
@@ -13,6 +15,7 @@ trait CRUDModelTrait
 	use CRUDModelButtonsTrait;
 	use CRUDModelUserRightsTrait;
 
+	use LogsActivity;
 	use CRUDDeleterTrait;
 
 	static function createByName(string $name) : static
@@ -27,7 +30,22 @@ trait CRUDModelTrait
 
 	public function getActivitylogOptions(): LogOptions
 	{
-		return LogOptions::defaults()->logAll()->dontSubmitEmptyLogs()->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
+		return $this->dontLogEmptyActivityChanges(
+			LogOptions::defaults()->logAll()
+		)->logOnlyDirty()->logExcept(['created_at', 'updated_at']);
+	}
+
+	protected function dontLogEmptyActivityChanges(LogOptions $logOptions) : LogOptions
+	{
+		if(method_exists($logOptions, 'dontLogEmptyChanges'))
+			return $logOptions->dontLogEmptyChanges();
+
+		if(method_exists($logOptions, 'dontSubmitEmptyLogs'))
+			return $logOptions->dontSubmitEmptyLogs();
+
+		$logOptions->logEmptyChanges = false;
+
+		return $logOptions;
 	}
 
 	public function printJsonFieldHtml($array)

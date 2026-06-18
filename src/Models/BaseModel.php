@@ -10,13 +10,10 @@ use IlBronza\CRUD\Traits\Model\CRUDRelationshipModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDRestoreTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
-
 use function array_merge;
 
 class BaseModel extends Model 
 {
-	use LogsActivity;
 	use SoftDeletes;
 
 	use CRUDRestoreTrait;

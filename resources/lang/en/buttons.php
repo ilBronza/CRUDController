@@ -5,5 +5,6 @@ return [
 	'uploadNewImage' => 'Upload image',
 	'bulkEdit' => 'Bulk edit',
 	'massDeleteSelected' => 'Delete selected',
+	'condenseSelected' => 'Condense selected',
 ];
 

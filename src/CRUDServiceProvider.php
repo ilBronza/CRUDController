@@ -12,6 +12,7 @@ use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
 use IlBronza\CRUD\Middleware\CRUDCheckForcedUrlMiddleware;
+use IlBronza\CRUD\Middleware\CRUDNormalizeEmptyArrays;
 use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
 use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Middleware\CRUDReturnBackMiddleware;
@@ -55,13 +56,7 @@ class CRUDServiceProvider extends ServiceProvider
 
 	    $router->pushMiddlewareToGroup('web', IframeCheckerMiddleware::class);
 
-	    $router->middlewareGroup('web', [CRUDCheckForcedUrlMiddleware::class]);
         $router->pushMiddlewareToGroup('web', CRUDCheckForcedUrlMiddleware::class);
-
-
-
-
-	    $router->middlewareGroup('web', [CRUDReturnBackMiddleware::class]);
 
         if(config('crud.useConcurrentRequestsAlert'))
             $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);
