@@ -81,7 +81,6 @@
  * END Nestable
  */
 
-
 .fieldcontainer.ib-repeatable
 {
     .uk-form-controls {
@@ -96,5 +95,19 @@
             align-items: center;
         }
     }
-
 }
+
+
+input[type="date"]:in-range:not(:focus)::-webkit-datetime-edit-year-field,
+input[type="date"]:in-range:not(:focus)::-webkit-datetime-edit-month-field,
+input[type="date"]:in-range:not(:focus)::-webkit-datetime-edit-day-field,
+input[type="date"]:in-range:not(:focus)::-webkit-datetime-edit-text
+{
+  color: #efefef;
+}
+
+input::placeholder {
+  color: #efefef;
+  opacity: 0.1;
+}
+

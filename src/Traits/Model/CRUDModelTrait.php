@@ -2,9 +2,10 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 
 trait CRUDModelTrait
@@ -132,6 +133,34 @@ trait CRUDModelTrait
 	{
 		return Str::plural(strtolower(class_basename(static::class)));
 	}
+
+	public function hasBeenTouched() : bool
+	{
+		return $this->created_at != $this->updated_at;
+	}
+
+	public function getHasNeverBeenTouchedAttribute() : bool
+	{
+		return ! $this->hasBeenTouched();
+	}
+
+	public function getHasBeenTouchedAttribute() : bool
+	{
+		return $this->hasBeenTouched();
+	}
+
+	static function getPossibleListArray() : array
+	{
+		return static::getPossibleList()->toArray();
+	}
+
+	static function getPossibleList() : Collection
+	{
+		return static::query()
+			->orderBy('name')
+			->pluck('name', 'id');
+	}
+
 	//Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
 	//DEPRECATO, non voglio niente che non abbia array
 	// public function getTeaserFields()
