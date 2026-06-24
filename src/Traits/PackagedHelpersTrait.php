@@ -10,12 +10,17 @@ trait PackagedHelpersTrait
 
 	static function getHelperConfigPrefix() : string
 	{
-		return static::$classConfigPrefix;
+		if(isset(static::$classConfigPrefix))
+			return static::$classConfigPrefix;
+
+		return lcfirst(
+			class_basename(static::class)
+		);
 	}
 
 	public static function getClassname() : string
 	{
-		return config(
+		return cconfig(
 			static::getConfigParameterKey('helpers.' . static::getHelperConfigPrefix())
 		);
 	}
