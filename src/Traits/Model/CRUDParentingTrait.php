@@ -308,9 +308,9 @@ trait CRUDParentingTrait
     }
 
     public function getSelectTreeArray(
-        string $labelField = 'name',
-        string $indentToken = '-',
-        int $level = 0,
+        ? string $labelField = 'name',
+        ? string $indentToken = '-',
+        ? int $level = 0,
         bool $includeSelf = true
     ) : array
     {
