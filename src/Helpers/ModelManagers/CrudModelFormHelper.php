@@ -107,6 +107,12 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		if(trans()->has($string = $translationFileName . '.' . $key))
 			return trans($string, $parameters);
 
+		if(trans()->has($string = $this->getModel()?->getPackageConfigPrefix() . '::' . $translationFileName . '.' . $key))
+			return trans($string, $parameters);
+
+		if(trans()->has($string = $this->getModel()?->getPackageConfigPrefix() . '::' . strtolower($translationFileName) . '.' . $key))
+			return trans($string, $parameters);
+
 		return trans('crud::crud.' . $key, $parameters);
 	}
 

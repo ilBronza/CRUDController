@@ -250,7 +250,6 @@ trait CRUDUpdateTrait
 
 		$this->checkIfUserCanUpdate();
 
-//		if($this->hasEditorUpdateRequest($request))
 		if(CrudRequestHelper::isEditorUpdateRequest($request))
 			return $this->_updateEditor($request);
 

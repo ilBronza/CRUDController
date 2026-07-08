@@ -4,6 +4,8 @@ namespace IlBronza\CRUD\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use IlBronza\CRUD\Models\Media;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class ShowMediaController extends Controller
 {
@@ -14,7 +16,14 @@ class ShowMediaController extends Controller
 		if(! $media->model->userCanSee())
 			abort(403, 'User can not see this element');
 
-		return response()->file($media->getPath());
+		$fileName = $media->file_name ?: basename($media->getPath());
+		$fallbackFileName = str_replace(['%', '/', '\\'], '-', Str::ascii($fileName));
+
+		return response()->file($media->getPath())
+			->setContentDisposition(
+				ResponseHeaderBag::DISPOSITION_INLINE,
+				$fileName,
+				$fallbackFileName ?: "media-{$media->getKey()}"
+			);
 	}
 }
-
