@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
 use App\Http\Controllers\Controller;
+use IlBronza\CRUD\Helpers\CrudTranslationHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
 use IlBronza\Form\Form;
 use IlBronza\Form\Helpers\FieldsetsProvider\CreateFieldsetsProvider;
@@ -97,23 +98,25 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		return $this->action;
 	}
 
+	public function getPackagedTranslationByKey(string $packageConfig, string $key, array $parameters = []) : string
+	{
+		return CrudTranslationHelper::getByModelKeyParameters(
+			$this->getModel(),
+			$key,
+			$parameters
+		);
+	}
+
 	public function getTranslationByKey(string $key, array $parameters = []) : string
 	{
-		if(! method_exists($this->getModel(), 'getTranslationsFileName'))
-			return trans('crud::crud.' . $key, $parameters);
+		if($packageConfig = $this->getModel()?->getPackageConfigPrefix())
+			return $this->getPackagedTranslationByKey($packageConfig, $key, $parameters);
 
-		$translationFileName = $this->getModel()->getTranslationsFileName();
-
-		if(trans()->has($string = $translationFileName . '.' . $key))
-			return trans($string, $parameters);
-
-		if(trans()->has($string = $this->getModel()?->getPackageConfigPrefix() . '::' . $translationFileName . '.' . $key))
-			return trans($string, $parameters);
-
-		if(trans()->has($string = $this->getModel()?->getPackageConfigPrefix() . '::' . strtolower($translationFileName) . '.' . $key))
-			return trans($string, $parameters);
-
-		return trans('crud::crud.' . $key, $parameters);
+		return CrudTranslationHelper::getByModelKeyParameters(
+			$this->getModel(),
+			$key,
+			$parameters
+		);
 	}
 
 	public function instantiateForm(string $action, array $formOptions) : Form
