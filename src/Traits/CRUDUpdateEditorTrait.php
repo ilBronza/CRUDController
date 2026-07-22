@@ -7,6 +7,7 @@ use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdaterEditor;
 use IlBronza\Form\Facades\Form;
 use IlBronza\FormField\FormField;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use function array_keys;
 use function implode;
@@ -30,6 +31,9 @@ trait CRUDUpdateEditorTrait
 
 		if ($this->isAction($request))
 			return $this->manageAction($request);
+
+		if ($request->boolean('ib-editor-batch'))
+			return $this->manageUpdateBatch($request);
 
 		return $this->manageUpdateGeneric($request);
 	}
@@ -196,6 +200,25 @@ trait CRUDUpdateEditorTrait
 			$updateParameters['ibaction'] = true;
 			$updateParameters['action'] = $formFieldAction;
 		}
+
+		return $this->returnUpdateParameters($request, $updateParameters);
+	}
+
+	private function manageUpdateBatch(Request $request)
+	{
+		$this->modelInstance = DB::transaction(function () use ($request)
+		{
+			return CrudModelUpdaterEditor::saveByRequest(
+				$this->getModel(),
+				$this->getUpdateParametersClass(),
+				$request
+			);
+		});
+
+		$updateParameters['success'] = true;
+		$updateParameters['update-editor'] = true;
+		$updateParameters['fields'] = array_keys($request->input('fields', []));
+		$updateParameters['model-id'] = $this->getModel()->getKey();
 
 		return $this->returnUpdateParameters($request, $updateParameters);
 	}
