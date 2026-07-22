@@ -152,6 +152,11 @@ trait CRUDModelRoutingTrait
 		return $this->getKeyedRoute('index', $data, false);
 	}
 
+	public function getInlineEditUrl(array $data = [])
+	{
+		return $this->getKeyedRoute('edit', $data);
+	}
+
 	public function getEditUrl(array $data = [])
 	{
 		return $this->getKeyedRoute('edit', $data);

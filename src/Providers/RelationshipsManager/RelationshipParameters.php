@@ -258,7 +258,10 @@ class RelationshipParameters
 		$parameters = [
 			'name' => $this->getTableName(),
 			'fieldsGroups' => $this->getTableFieldsGroups(),
-			'elements' => $this->getElements(),
+			'elements' => function ()
+			{
+				return $this->getElements();
+			},
 			'selectRowCheckboxes' => $this->hasSelectRowCheckboxes(),
 			'extraVariables' => $this->getExtraVariables(),
 			'modelClass' => $this->getRelatedModelClass(),
