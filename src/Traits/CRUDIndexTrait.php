@@ -21,6 +21,8 @@ trait CRUDIndexTrait
 	public int $fixedColumnLeft = 0;
 
 	public ?bool $bulkEdit = null;
+	public bool $hasSorting = true;
+	public bool $hasInlineCreate = false;
 
 	public function allowMassDeleting() : bool
 	{
@@ -251,6 +253,9 @@ trait CRUDIndexTrait
 
 		$this->addIndexButtonsToTable();
 		$this->addPostFieldsToTable();
+
+		$this->table->setHasSorting($this->hasSorting);
+		$this->table->setHasInlineCreate($this->hasInlineCreate);
 
 		$this->manageTableCaption();
 

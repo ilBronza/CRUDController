@@ -23,6 +23,8 @@ trait CRUDArchiveTrait
 /*		$model->archive($request->input('archive'));*/
 		$model->archive();
 
+		$this->broadcastCrudModel($model, 'archived');
+
 		$updateParameters = [];
 		$updateParameters['success'] = true;
 		$updateParameters['action'] = 'removeRow';

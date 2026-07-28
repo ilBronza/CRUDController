@@ -3,7 +3,6 @@
 namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Helpers\CrudRequestHelper;
-use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
@@ -235,7 +234,7 @@ trait CRUDUpdateTrait
 
 	public function getUpdaterHelperClassName() : string
 	{
-		return CrudModelUpdater::class;
+		return $this->getModel()->getCrudUpdaterHelperClassName();
 	}
 
 	/**
@@ -270,6 +269,8 @@ trait CRUDUpdateTrait
 			$this->getUpdateEvents(),
 			$this->getUpdateCallback()
 		);
+
+		$this->broadcastCrudModel($this->modelInstance, 'updated');
 
 		$this->sendUpdateSuccessMessage();
 

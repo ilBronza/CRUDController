@@ -13,6 +13,7 @@ use IlBronza\CRUD\Middleware\CRUDParseComasAndDots;
 use IlBronza\CRUD\Traits\CRUDFileParametersTrait;
 use IlBronza\CRUD\Traits\CRUDFormTrait;
 use IlBronza\CRUD\Traits\CRUDMethodsTrait;
+use IlBronza\CRUD\Traits\CRUDModelBroadcastingTrait;
 use IlBronza\CRUD\Traits\CRUDRoutingTrait;
 use IlBronza\CRUD\Traits\IlBronzaPackages\CRUDExtraButtonsTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheAutomaticSetterTrait;
@@ -68,6 +69,7 @@ class CRUD extends Controller
 	use CRUDFormTrait;
 	use CRUDRoutingTrait;
 	use CRUDMethodsTrait;
+	use CRUDModelBroadcastingTrait;
 
 	public $iframed;
 	public $modelClass;
@@ -104,9 +106,6 @@ class CRUD extends Controller
 	{
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
-
-		ini_set('max_execution_time', 40);
-		ini_set('memory_limit', - 1);
 
 		$this->setModelClass();
 

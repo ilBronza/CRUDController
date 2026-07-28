@@ -51,6 +51,83 @@ and then run npm
 
 ## Usage
 
+## Broadcast delle modifiche CRUD
+
+Il broadcast è opzionale e pubblica sul canale privato configurato un evento
+`crud.model.changed` con questo payload:
+
+```json
+{
+    "model": "App\\Models\\Order",
+    "key": 42,
+    "text": "Order updated",
+    "action": "updated"
+}
+```
+
+Per `action: "created"`, il client usa `key` (la chiave primaria effettiva,
+non necessariamente un intero) per decidere se recuperare la riga e
+aggiungerla alla propria tabella. Questo evita di definire nel package un
+formato di riga comune a CRUD e DataTables.
+
+Il canale per `App\Models\Order` è
+`channel.crud-events.models.order`. Abilitare `CRUD_BROADCAST_ENABLED=true` e
+autorizzare i canali privati in `routes/channels.php` dell'applicazione:
+
+```php
+Broadcast::channel('channel.crud-events.models.{modelClass}', fn ($user) => $user !== null);
+```
+
+Con Laravel Echo il listener è:
+
+```js
+Echo.private('channel.crud-events.models.order')
+    .listen('.crud.model.changed', (event) => {
+        console.log(event.model, event.key, event.text);
+    });
+```
+
+Il testo libero si personalizza nel controller CRUD; restituire `null` evita
+l'invio per quella specifica azione. Per inviare una creazione anche quando il
+model viene creato fuori dal controller CRUD, aggiungere il trait al model:
+
+```php
+use IlBronza\CRUD\Traits\Model\BroadcastCreateTrait;
+
+class Order extends BaseModel
+{
+    use BroadcastCreateTrait;
+}
+```
+
+```php
+public function getCrudBroadcastText(Model $model, string $action): ?string
+{
+    return "Ordine {$model->getKey()} {$action}";
+}
+```
+
+Il prefisso è configurabile con `CRUD_BROADCAST_CHANNEL`; per usare una
+convenzione diversa, sovrascrivere `getCrudBroadcastChannel()`.
+Gli invii standard del controller sono effettuati dopo update (anche inline
+editor), delete, force-delete e archive. Il trait emette `created` per ogni
+creazione del model, indipendentemente dal controller che l'ha generata.
+
+Ogni canale effettivamente usato viene registrato una sola volta in
+`crud__channels` (`name`, timestamp). Per creare la tabella, pubblicare e
+applicare le migration del package:
+
+```bash
+php artisan vendor:publish --tag=crud-migrations
+php artisan migrate
+```
+
+Le azioni custom possono inviare direttamente un testo libero:
+
+```php
+$this->broadcastCrudMessage($order, 'Il pagamento è stato confermato', 'paymentConfirmed');
+```
+
 ## Batch field read (ib-editor-read-batch)
 
 Oltre al read singolo (`ib-editor-read` + `field`), la route di update accetta una lettura cumulativa di più campi in una sola richiesta. Viene usata dal coordinatore batch di FormField (vedi readme di `ilbronza/formfield`).

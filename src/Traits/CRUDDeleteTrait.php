@@ -60,6 +60,7 @@ trait CRUDDeleteTrait
 	{
 		$element = $this->getModelClass()::withTrashed()->find($id);
 		$element->deleterForceDelete();
+		$this->broadcastCrudModel($element, 'forceDeleted');
 
 		return $this->returnDeletionResponse($element);
 	}
@@ -69,6 +70,7 @@ trait CRUDDeleteTrait
 		$this->deletionReturnBackKey = RouteHelper::getReturnBackKey($modelInstance);
 
 		$modelInstance->deleterDelete();
+		$this->broadcastCrudModel($modelInstance, 'deleted');
 
 		return $this->returnDeletionResponse($modelInstance);
 	}

@@ -54,6 +54,20 @@ return [
     'concurrentUriCacheLifetime' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 10),
     'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000),
 
+    /*
+    |--------------------------------------------------------------------------
+    | CRUD model broadcasting
+    |--------------------------------------------------------------------------
+    |
+    | Broadcasts are opt-in. The host application must configure a private
+    | broadcasting channel with this name in routes/channels.php.
+    |
+    */
+    'broadcast' => [
+        'enabled' => env('CRUD_BROADCAST_ENABLED', false),
+        'channel' => env('CRUD_BROADCAST_CHANNEL', 'channel.crud-events.models'),
+    ],
+
     'nestableLeadingId' => 'nest',
 	'missingImageUrl' => '/img/no_user.png',
 

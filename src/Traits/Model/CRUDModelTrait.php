@@ -2,11 +2,14 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+use function class_uses_recursive;
+use function in_array;
 
 trait CRUDModelTrait
 {
@@ -18,6 +21,14 @@ trait CRUDModelTrait
 
 	use LogsActivity;
 	use CRUDDeleterTrait;
+
+	public function getCrudUpdaterHelperClassName() : string
+	{
+		if(in_array(CRUDModelImmutableTrait::class, class_uses_recursive($this), true))
+			return $this->getImmutableUpdaterHelperClassName();
+
+		return CrudModelUpdater::class;
+	}
 
 	static function createByName(string $name) : static
 	{
