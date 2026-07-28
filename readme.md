@@ -88,16 +88,13 @@ Echo.private('channel.crud-events.models.order')
 ```
 
 Il testo libero si personalizza nel controller CRUD; restituire `null` evita
-l'invio per quella specifica azione. Per inviare una creazione anche quando il
-model viene creato fuori dal controller CRUD, aggiungere il trait al model:
+l'invio per quella specifica azione. Le creazioni sono intercettate dai model
+base, quindi vengono inviate anche quando avvengono fuori da un controller CRUD:
 
 ```php
 use IlBronza\CRUD\Traits\Model\BroadcastCreateTrait;
 
-class Order extends BaseModel
-{
-    use BroadcastCreateTrait;
-}
+class Order extends BaseModel {}
 ```
 
 ```php
@@ -110,8 +107,9 @@ public function getCrudBroadcastText(Model $model, string $action): ?string
 Il prefisso è configurabile con `CRUD_BROADCAST_CHANNEL`; per usare una
 convenzione diversa, sovrascrivere `getCrudBroadcastChannel()`.
 Gli invii standard del controller sono effettuati dopo update (anche inline
-editor), delete, force-delete e archive. Il trait emette `created` per ogni
-creazione del model, indipendentemente dal controller che l'ha generata.
+editor), delete, force-delete e archive. I model che estendono `BaseModel` o
+`BasePivotModel` emettono `created` indipendentemente dal controller che li ha
+generati.
 
 Ogni canale effettivamente usato viene registrato una sola volta in
 `crud__channels` (`name`, timestamp). Per creare la tabella, pubblicare e

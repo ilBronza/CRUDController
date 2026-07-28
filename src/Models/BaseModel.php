@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Models;
 
 use IlBronza\CRUD\Models\Casts\ExtraField;
+use IlBronza\CRUD\Traits\Model\BroadcastCreateTrait;
 use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTranslationsTrait;
@@ -16,6 +17,7 @@ class BaseModel extends Model
 {
 	use SoftDeletes;
 
+	use BroadcastCreateTrait;
 	use CRUDRestoreTrait;
 
 	use CRUDCacheTrait;
