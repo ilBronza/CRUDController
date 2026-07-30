@@ -14,6 +14,7 @@ class CrudModelBroadcasted implements ShouldBroadcast
 	public mixed $key;
 	public string $text;
 	public string $action;
+	public ?array $origin;
 	protected string $channel;
 
 	public function __construct(
@@ -28,6 +29,25 @@ class CrudModelBroadcasted implements ShouldBroadcast
 		$this->text = $text;
 		$this->action = $action;
 		$this->channel = $channel;
+		$this->origin = $this->getOriginFromRequest();
+	}
+
+	/**
+	 * Keep the browser-origin metadata on the event itself: broadcasts may be
+	 * queued, where the originating HTTP request is no longer available.
+	 */
+	protected function getOriginFromRequest() : ?array
+	{
+		$browserTabId = request()->header('X-IB-Datatable-Browser-Tab-Id');
+		$tableId = request()->header('X-IB-Datatable-Table-Id');
+
+		if((! $browserTabId) || (! $tableId))
+			return null;
+
+		return [
+			'browserTabId' => $browserTabId,
+			'tableId' => $tableId,
+		];
 	}
 
 	public function broadcastOn() : array
@@ -47,6 +67,9 @@ class CrudModelBroadcasted implements ShouldBroadcast
 			'key' => $this->key,
 			'action' => $this->action,
 		];
+
+		if($this->origin)
+			$payload['origin'] = $this->origin;
 
 		return [
 			...$payload,

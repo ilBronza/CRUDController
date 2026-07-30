@@ -61,9 +61,19 @@ Il broadcast è opzionale e pubblica sul canale privato configurato un evento
     "model": "App\\Models\\Order",
     "key": 42,
     "text": "Order updated",
-    "action": "updated"
+    "action": "updated",
+    "origin": {
+        "browserTabId": "5a91610f-29f5-48ec-bb66-bdf46b3a12a3",
+        "tableId": "orders"
+    }
 }
 ```
+
+`origin` è opzionale. Quando una modifica proviene da una DataTable, il
+browser invia `X-IB-Datatable-Browser-Tab-Id` e
+`X-IB-Datatable-Table-Id`; l'evento li cattura alla costruzione, prima di
+un'eventuale coda, e li ripubblica come metadati di correlazione. Non usare
+questi valori per autorizzazione o autenticazione.
 
 Per `action: "created"`, il client usa `key` (la chiave primaria effettiva,
 non necessariamente un intero) per decidere se recuperare la riga e
@@ -92,8 +102,6 @@ l'invio per quella specifica azione. Le creazioni sono intercettate dai model
 base, quindi vengono inviate anche quando avvengono fuori da un controller CRUD:
 
 ```php
-use IlBronza\CRUD\Traits\Model\BroadcastCreateTrait;
-
 class Order extends BaseModel {}
 ```
 
@@ -109,7 +117,10 @@ convenzione diversa, sovrascrivere `getCrudBroadcastChannel()`.
 Gli invii standard del controller sono effettuati dopo update (anche inline
 editor), delete, force-delete e archive. I model che estendono `BaseModel` o
 `BasePivotModel` emettono `created` indipendentemente dal controller che li ha
-generati.
+generati. Anche `touch()` conserva il comportamento Eloquent e, se aggiorna il
+timestamp, emette un evento `updated` sul canale del model. Per disabilitarlo
+su un model specifico, sovrascrivere `getCrudTouchedBroadcastText()` e
+restituire `null`.
 
 Ogni canale effettivamente usato viene registrato una sola volta in
 `crud__channels` (`name`, timestamp). Per creare la tabella, pubblicare e

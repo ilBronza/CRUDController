@@ -42,11 +42,9 @@ trait BroadcastCreateTrait
 		if(! config('crud.broadcast.enabled'))
 			return;
 
-		if(is_null($text = $this->getCrudCreatedBroadcastText()))
-			return;
+		$text = $this->getCrudCreatedBroadcastText();
 
-		if(! $channel = $this->getCrudCreatedBroadcastChannel())
-			return;
+		$channel = $this->getCrudCreatedBroadcastChannel();
 
 		CrudChannel::firstOrCreate([
 			'name' => $channel,
