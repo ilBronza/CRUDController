@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Traits\CRUDDeleteTrait;
+
+class {{ model }}DestroyController extends {{ model }}CRUD
+{
+	use CRUDDeleteTrait;
+
+	public $allowedMethods = ['destroy'];
+
+	public function destroy(${{ modelVariable }})
+	{
+		${{ modelVariable }} = $this->findModel(${{ modelVariable }});
+
+		return $this->_destroy(${{ modelVariable }});
+	}
+}

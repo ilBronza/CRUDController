@@ -1,0 +1,29 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Traits\CRUDIndexTrait;
+use IlBronza\CRUD\Traits\CRUDPlainIndexTrait;
+{{ indexExtraImports }}
+class {{ model }}IndexController extends {{ model }}CRUD
+{
+	use CRUDPlainIndexTrait;
+	use CRUDIndexTrait;
+
+	public $allowedMethods = ['index'];
+
+	public function getIndexFieldsArray()
+	{
+		return {{ indexFieldsGroup }}::getTracedFieldsGroup();
+	}
+
+	public function getRelatedFieldsArray()
+	{
+		return $this->getIndexFieldsArray();
+	}
+
+	public function getIndexElements()
+	{
+		return $this->getModelClass()::get();
+	}
+}

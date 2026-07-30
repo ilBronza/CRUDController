@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Traits\CRUDCreateStoreTrait;
+use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
+{{ createExtraImports }}
+class {{ model }}CreateStoreController extends {{ model }}CRUD
+{
+	use CRUDCreateStoreTrait;
+	use CRUDRelationshipTrait;
+
+	public $allowedMethods = ['create', 'store'];
+
+	public function getGenericParametersFile() : ? string
+	{
+		return {{ createParametersFile }};
+	}
+}

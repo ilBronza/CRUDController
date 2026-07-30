@@ -1,0 +1,25 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\Datatables\Providers\FieldsGroupParametersFile;
+
+class {{ model }}FieldsGroupParametersFile extends FieldsGroupParametersFile
+{
+	static function getFieldsGroup() : array
+	{
+		return [
+			'translationPrefix' => '{{ translationPrefix }}',
+			'fields' =>
+			[
+				'mySelfPrimary' => 'primary',
+				'mySelfEdit' => 'links.edit',
+				'mySelfSee' => 'links.see',
+
+				'name' => 'flat',
+
+				'mySelfDelete' => 'links.delete'
+			]
+		];
+	}
+}

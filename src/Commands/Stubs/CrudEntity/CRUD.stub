@@ -1,0 +1,12 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ baseControllerImport }};
+{{ crudExtraImports }}
+class {{ model }}CRUD extends {{ baseControllerClass }}
+{
+	public ? bool $updateEditor = false;
+
+{{ crudModelBinding }}
+}

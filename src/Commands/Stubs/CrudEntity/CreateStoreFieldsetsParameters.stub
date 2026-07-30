@@ -1,0 +1,7 @@
+<?php
+
+namespace {{ namespace }};
+
+class {{ model }}CreateStoreFieldsetsParameters extends {{ model }}EditUpdateFieldsetsParameters
+{
+}

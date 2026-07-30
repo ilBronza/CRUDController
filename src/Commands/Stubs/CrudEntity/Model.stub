@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+{{ baseModelImportLine }}
+class {{ model }} extends {{ baseModelClass }}
+{
+	static $deletingRelationships = [];
+
+	public function getMorphClass()
+	{
+		return '{{ model }}';
+	}
+}

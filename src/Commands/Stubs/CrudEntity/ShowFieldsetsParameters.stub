@@ -1,0 +1,7 @@
+<?php
+
+namespace {{ namespace }};
+
+class {{ model }}ShowFieldsetsParameters extends {{ model }}EditUpdateFieldsetsParameters
+{
+}

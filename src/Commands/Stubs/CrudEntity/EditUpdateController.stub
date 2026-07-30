@@ -1,0 +1,32 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Traits\CRUDEditUpdateTrait;
+use Illuminate\Http\Request;
+{{ editExtraImports }}
+class {{ model }}EditUpdateController extends {{ model }}CRUD
+{
+	use CRUDEditUpdateTrait;
+
+	public $allowedMethods = ['edit', 'update'];
+
+	public function getEditParametersFile() : ? string
+	{
+		return {{ editParametersFile }};
+	}
+
+	public function edit(string ${{ modelVariable }})
+	{
+		${{ modelVariable }} = $this->findModel(${{ modelVariable }});
+
+		return $this->_edit(${{ modelVariable }});
+	}
+
+	public function update(Request $request, ${{ modelVariable }})
+	{
+		${{ modelVariable }} = $this->findModel(${{ modelVariable }});
+
+		return $this->_update($request, ${{ modelVariable }});
+	}
+}

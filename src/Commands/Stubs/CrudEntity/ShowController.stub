@@ -1,0 +1,31 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Traits\CRUDRelationshipTrait;
+use IlBronza\CRUD\Traits\CRUDShowTrait;
+{{ showExtraImports }}
+class {{ model }}ShowController extends {{ model }}CRUD
+{
+	use CRUDShowTrait;
+	use CRUDRelationshipTrait;
+
+	public $allowedMethods = ['show'];
+
+	public function getGenericParametersFile() : ? string
+	{
+		return {{ showParametersFile }};
+	}
+
+	public function getRelationshipsManagerClass()
+	{
+		return {{ relationshipsManagerClass }};
+	}
+
+	public function show(string ${{ modelVariable }})
+	{
+		${{ modelVariable }} = $this->findModel(${{ modelVariable }});
+
+		return $this->_show(${{ modelVariable }});
+	}
+}

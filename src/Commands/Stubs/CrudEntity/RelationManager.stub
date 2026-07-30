@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
+
+class {{ model }}RelationManager extends RelationshipsManager
+{
+	public function getAllRelationsParameters() : array
+	{
+		return [
+			'show' => [
+				'relations' => [
+				]
+			]
+		];
+	}
+}

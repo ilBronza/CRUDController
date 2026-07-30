@@ -1,0 +1,21 @@
+<?php
+
+namespace {{ namespace }};
+
+use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
+
+class {{ model }}EditUpdateFieldsetsParameters extends FieldsetParametersFile
+{
+	public function _getFieldsetsParameters() : array
+	{
+		return [
+			'baseParameters' => [
+				'translationPrefix' => '{{ translationPrefix }}',
+				'fields' => [
+					'name' => ['text' => 'string|required'],
+				],
+				'width' => ['large']
+			],
+		];
+	}
+}
