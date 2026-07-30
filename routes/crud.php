@@ -1,6 +1,7 @@
 <?php
 
 use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
+use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
 use Illuminate\Support\Facades\Route;
 
@@ -65,6 +66,7 @@ Route::group([
 	],
 	function()
 	{
+		Route::get('show/class/{model}/key/{key}', [HistoryController::class, 'show'])->name('show');
 		Route::get('show-by-field/class/{model}/key/{key}/field/{field}', [HistoryByFieldController::class, 'show'])->name('historyByField');
 	}
 );

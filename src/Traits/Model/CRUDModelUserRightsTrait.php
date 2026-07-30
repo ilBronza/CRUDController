@@ -136,6 +136,14 @@ trait CRUDModelUserRightsTrait
 		return true;
 	}
 
+	/**
+	 * Alias semantico per le pagine di dettaglio del model.
+	 */
+	public function userCanShow(User $user = null)
+	{
+		return $this->userCanSee($user);
+	}
+
 	public function userCanSeeTeaser(User $user = null)
 	{
 		if (Auth::guest())

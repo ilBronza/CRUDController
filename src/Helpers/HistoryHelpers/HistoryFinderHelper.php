@@ -13,6 +13,14 @@ use Illuminate\Support\Str;
 
 class HistoryFinderHelper
 {
+	static function getHistoryUrl($model)
+	{
+		return route('history.show', [
+				'model' => $model->getMorphClass(),
+				'key' => $model->getKey()
+			]);
+	}
+
 	static function getHistoryUrlByField($model, FormField $field)
 	{
 		return route('history.historyByField', [
@@ -261,4 +269,3 @@ class HistoryFinderHelper
 		return (string) $value;
 	}
 }
-
