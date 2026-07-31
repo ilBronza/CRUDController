@@ -465,11 +465,14 @@ class MakeCrudEntityCommand extends Command
 
 	protected function printCreatedFiles() : void
 	{
-		$this->newLine();
-		$this->info('Files creati');
+		if(count($this->created))
+		{
+			$this->newLine();
+			$this->info('Files creati');
 
-		foreach($this->created as $path)
-			$this->line('  <fg=green>' . str_replace(base_path() . '/', '', $path) . '</>');
+			foreach($this->created as $path)
+				$this->line('  <fg=green>' . str_replace(base_path() . '/', '', $path) . '</>');
+		}
 
 		if(! count($this->skipped))
 			return;

@@ -263,6 +263,8 @@ trait CRUDIndexTrait
 
 		$this->shareExtraViews();
 
+		$this->table->getFetchersFromController($this);
+
 		return $this->table->renderPage();
 	}
 

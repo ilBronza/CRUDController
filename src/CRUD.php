@@ -21,7 +21,6 @@ use IlBronza\Form\Traits\ExtraViewsTrait;
 use IlBronza\UikitTemplate\Fetcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Log;
 use function config;
@@ -52,6 +51,13 @@ class CRUD extends Controller
 		'outherRight'
 	];
 
+	static $availableFetchersPositions = [
+		'top',
+		'bottom',
+		'left',
+		'right',
+	];
+
 	public $mustPrintIntestation = null;
 	public $relationshipsElements;
 	public $relationshipsTableNames;
@@ -59,7 +65,6 @@ class CRUD extends Controller
 	public ?Model $plceholderModel = null;
 	public ?bool $updateEditor = null;
 	public $modelFormHelper;
-	public Collection $fetchers;
 	public $debug = false;
 	public bool|string $caption;
 
