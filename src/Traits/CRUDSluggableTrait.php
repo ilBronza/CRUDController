@@ -69,4 +69,9 @@ trait CRUDSluggableTrait
 	{
 		return $this->{$this->getSlugField()};
 	}
+
+	public function scopeBySlug($query, string $slug)
+	{
+		$query->where($this->getSlugField(), $slug);
+	}
 }
