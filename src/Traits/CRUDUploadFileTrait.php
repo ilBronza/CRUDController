@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Traits;
 
 use Carbon\Carbon;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
 use Illuminate\Http\Request;
 
 use function dd;
@@ -27,17 +28,16 @@ trait CRUDUploadFileTrait
 			'multiple' => 'boolean|nullable'
 		]);
 
-		$this->setUpdateFieldsetsProvider();
-
-
 		//gestire la validazione del file come tipo file da array parameters?
 		$fieldName = str_replace("[]", "", $request->fieldname);
 
-		$provider = $this->getFieldsetsProvider();
-
-		$provider->setModel(
-			$this->getModel()
-		);
+		//il provider va costruito dal model manager, altrimenti il parameters file
+		//resta senza modelManager e il suo getModel() torna null
+		$provider = CrudModelUpdater::create(
+			$this->getModel(),
+			$this->getUpdateParametersClass(),
+			$request
+		)->getFieldsetsProvider();
 
 		$field = $provider->getFormFieldByName($fieldName);
 
