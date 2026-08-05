@@ -8,7 +8,6 @@ use IlBronza\Form\Facades\Form;
 use IlBronza\FormField\FormField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use LogicException;
 
 use function array_keys;
 use function implode;
@@ -209,9 +208,6 @@ trait CRUDUpdateEditorTrait
 
 	private function manageUpdateBatch(Request $request)
 	{
-		if (! method_exists($this, 'updateEditorBatch'))
-			throw new LogicException(static::class . ' must implement updateEditorBatch() to validate and persist inline editor fields.');
-
 		$this->modelInstance = DB::transaction(function () use ($request)
 		{
 			return $this->updateEditorBatch($request);

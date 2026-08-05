@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Traits;
 
 use IlBronza\CRUD\Helpers\CrudRequestHelper;
+use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdaterEditor;
 use IlBronza\CRUD\Traits\CRUDUpdateEditorTrait;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use IlBronza\Form\Helpers\FieldsetsProvider\UpdateFieldsetsProvider;
@@ -19,6 +20,21 @@ trait CRUDUpdateTrait
 	use CRUDValidateTrait;
 	use CRUDUpdateEditorTrait;
 	use CRUDUpdateEditorBatchReadTrait;
+
+	/**
+	 * Persist inline-editor fields through the standard editor updater.
+	 * Controllers may override this for domain-specific batch persistence.
+	 */
+	public function updateEditorBatch(Request $request)
+	{
+		return CrudModelUpdaterEditor::saveBatchByRequest(
+			$this->getModel(),
+			$this->getUpdateParametersClass(),
+			$request,
+			$this->getUpdateEvents(),
+			$this->getUpdateCallback()
+		);
+	}
 
 	public function getAfterUpdateRoute()
 	{
