@@ -3,6 +3,8 @@
 use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Media\SetMediaIntegrityCheckController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -56,6 +58,12 @@ Route::group([
 	function()
 	{
 		Route::get('show-media/{media}', 'ShowMediaController@show')->name('media.show');
+
+		Route::get('collection/class/{model}/key/{key}/collection/{collection}', [MediaCollectionController::class, 'show'])->name('media.collection');
+
+		Route::delete('collection/class/{model}/key/{key}/media/{media}', [MediaCollectionController::class, 'destroy'])->name('media.collection.destroy');
+
+		Route::post('media/{media}/set-integrity-check', [SetMediaIntegrityCheckController::class, 'setIntegrityCheck'])->name('media.setIntegrityCheck');
 	}
 );
 

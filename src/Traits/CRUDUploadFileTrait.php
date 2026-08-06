@@ -91,13 +91,26 @@ trait CRUDUploadFileTrait
 			$this->getModel()->save();			
 		}
 
-		return array_merge([
+		$parameters = [
 			'success' => true,
 			'filename' => $file->name,
 			'fileurl' => $file->getServeImageUrl(),
-			'deleteurl' => $this->getModel()->getDeleteMediaUrlByKey($file->getKey()),
 			'thumburl' => $thumbUrl
-		], $this->getFileUploadDateResponseExtra($field, $file));
+		];
+
+		try
+		{
+			$parameters['deleteurl'] = $this->getModel()->getDeleteMediaUrlByKey($file->getKey());
+		}
+		catch(\Exception $e)
+		{
+			
+		}
+
+		return array_merge(
+			$parameters,
+			$this->getFileUploadDateResponseExtra($field, $file)
+		);
 	}
 
 	protected function getFileUploadDateResponseExtra($field, $file) : array

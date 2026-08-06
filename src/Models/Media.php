@@ -10,6 +10,14 @@ class Media extends BaseMedia
 {
 	use SoftDeletes;
 
+	protected $casts = [
+		'manipulations' => 'array',
+		'custom_properties' => 'array',
+		'generated_conversions' => 'array',
+		'responsive_images' => 'array',
+		'integrity_checked_at' => 'datetime'
+	];
+
 	// public function getDeleteUrl()
 	// {
 	// 	return $this->model->getDeleteMediaUrl($this);
@@ -37,16 +45,51 @@ class Media extends BaseMedia
 		return $this->getTypeFromMime() == 'image';
 	}
 
-	public function getServeImageUrl()
+	public function getServeImageUrl(? string $conversion = null)
 	{
 		if($this->isPublic())
-			return $this->getUrl();
+			return $conversion ? $this->getUrl($conversion) : $this->getUrl();
 
-		return route('media.show', [$this]);
+		if(! $conversion)
+			return route('media.show', [$this]);
+
+		return route('media.show', [$this, 'conversion' => $conversion]);
+	}
+
+	public function getServeThumbUrl() : ? string
+	{
+		if(! $this->hasGeneratedConversion('thumb'))
+			return null;
+
+		return $this->getServeImageUrl('thumb');
 	}
 
 	public function getOriginalFileCreatedAt()
 	{
 		return $this->original_file_created_at;
+	}
+
+	public function getIntegrityCheckedAt()
+	{
+		return $this->integrity_checked_at;
+	}
+
+	public function getIntegrityCheckedAtString() : ? string
+	{
+		if(! $integrityCheckedAt = $this->getIntegrityCheckedAt())
+			return null;
+
+		return Carbon::parse($integrityCheckedAt)->format('d/m/Y H:i');
+	}
+
+	public function setIntegrityCheckedAt(Carbon $integrityCheckedAt) : void
+	{
+		$this->integrity_checked_at = $integrityCheckedAt;
+		$this->save();
+	}
+
+	public function getSetIntegrityCheckUrl() : string
+	{
+		return route('media.setIntegrityCheck', [$this]);
 	}
 }
