@@ -44,6 +44,22 @@ trait IlBronzaPackagesTrait
 		return static::$packageConfigPrefix;
 	}
 
+	/**
+	 * Translation namespace for this package (same as config prefix / loadTranslationsFrom).
+	 */
+	static function getTranslationNamespace() : string
+	{
+		return static::getPackageConfigPrefix();
+	}
+
+	/**
+	 * Prefix for page titles resolved from route names: {ns}::routes.{routeName}
+	 */
+	static function getRouteTranslationPrefix() : string
+	{
+		return static::getTranslationNamespace() . '::routes.';
+	}
+
 	public function getRoutePrefix() : ? string
 	{
 		return config(static::getPackageConfigPrefix() . ".routePrefix");

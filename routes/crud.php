@@ -70,7 +70,8 @@ Route::group([
 Route::group([
 		'middleware' => ['web'],
 		'prefix' => 'history',
-		'as' => 'history.'
+		'as' => 'history.',
+		'routeTranslationPrefix' => 'crud::routes.',
 	],
 	function()
 	{
