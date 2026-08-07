@@ -109,8 +109,9 @@ abstract class CrudModelFormHelper implements CrudModelManager
 
 	public function getTranslationByKey(string $key, array $parameters = []) : string
 	{
-		if($packageConfig = $this->getModel()?->getPackageConfigPrefix())
-			return $this->getPackagedTranslationByKey($packageConfig, $key, $parameters);
+		if(($this->getModel())&&(method_exists($this->getModel(), 'getPackageConfigPrefix')))
+			if($packageConfig = $this->getModel()?->getPackageConfigPrefix())
+				return $this->getPackagedTranslationByKey($packageConfig, $key, $parameters);
 
 		return CrudTranslationHelper::getByModelKeyParameters(
 			$this->getModel(),

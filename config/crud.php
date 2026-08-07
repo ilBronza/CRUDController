@@ -88,4 +88,17 @@ return [
 			'timeColumnWidth' => '3.25rem',
 		],
 	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| IlBronza packages version pin
+	|--------------------------------------------------------------------------
+	|
+	| Used by `php artisan crud:pin-ilbronza-packages` to rewrite every
+	| ilbronza/* constraint in the host composer.json. Examples:
+	|   - dev-master / dev-main  → always tip of the default branch
+	|   - v2.5.0                 → lockstep tag (must exist on each package)
+	|
+	*/
+	'packagesVersion' => env('ILBRONZA_PACKAGES_VERSION', 'dev-master'),
 ];
