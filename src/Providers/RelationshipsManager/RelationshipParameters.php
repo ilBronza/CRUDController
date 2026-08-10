@@ -63,6 +63,7 @@ class RelationshipParameters
 	public ?bool $reloadButton = null;
 	public ?bool $copyButton = null;
 	public ?bool $csvButton = null;
+	public int $fixedColumnsLeft = 0;
 
 	public $relationshipsManager;
 
@@ -272,6 +273,7 @@ class RelationshipParameters
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
+		$this->table->setFixedColumnsLeft($this->fixedColumnsLeft);
 
 		if ($this->onlyButtonsDom)
 			$this->table->setOnlyButtonsDom();

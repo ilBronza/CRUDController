@@ -23,7 +23,7 @@ trait CRUDIndexTrait
 	public ?bool $bulkEdit = null;
 	public bool $hasSorting = true;
 	public bool $hasInlineCreate = false;
-	public bool $filtersHidden = false;
+	public ?bool $filtersHidden = null;
 
 	public function allowMassDeleting() : bool
 	{
