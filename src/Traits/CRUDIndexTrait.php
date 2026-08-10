@@ -23,6 +23,7 @@ trait CRUDIndexTrait
 	public ?bool $bulkEdit = null;
 	public bool $hasSorting = true;
 	public bool $hasInlineCreate = false;
+	public bool $filtersHidden = false;
 
 	public function allowMassDeleting() : bool
 	{
@@ -224,6 +225,8 @@ trait CRUDIndexTrait
 			return $this->getIndexElements();
 		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit
 		);
+
+		$this->table->setFiltersHidden($this->filtersHidden);
 
 		if ($request->isMethod('post'))
 			$this->table->setAjaxMethod('POST');
