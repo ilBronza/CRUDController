@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
+use IlBronza\CRUD\Helpers\ModelManagers\Traits\SyncsSoftDeletingPivotsTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -9,6 +10,8 @@ use function get_class;
 
 class CrudModelAssociatorHelper
 {
+	use SyncsSoftDeletingPivotsTrait;
+
 	public Model $model;
 	public string $relation;
 
@@ -109,11 +112,13 @@ class CrudModelAssociatorHelper
 
 		if($relationTypeName == 'BelongsToMany')
 		{
-			$this->getModel()
-			     ->{$this->getRelation()}()
-			     ->sync(
-				     $this->getValues()
-			     );
+			$relation = $this->getModel()->{$this->getRelation()}();
+
+			if($this->pivotUsesSoftDeletes($relation))
+				$this->syncSoftDeletingPivot($relation, $this->getValues());
+
+			else
+				$relation->sync($this->getValues());
 
 			return $this->sendAssociationEvent();
 		}

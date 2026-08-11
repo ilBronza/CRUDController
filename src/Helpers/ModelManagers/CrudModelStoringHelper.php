@@ -2,10 +2,10 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
-use Carbon\Carbon;
 use IlBronza\CRUD\Helpers\CrudRequestHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelAssociatorHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
+use IlBronza\CRUD\Helpers\ModelManagers\Traits\SyncsSoftDeletingPivotsTrait;
 use IlBronza\FormField\Fields\FileFormField;
 use IlBronza\FormField\FormField;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
@@ -27,6 +27,7 @@ use function method_exists;
 abstract class CrudModelStoringHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
+	use SyncsSoftDeletingPivotsTrait;
 
 	public $fieldsetsProvider;
 	public $model;
@@ -154,32 +155,13 @@ abstract class CrudModelStoringHelper implements CrudModelManager
 
 		$relation = $this->getModel()->{$relationshipMethod}();
 
-		if($pivotClass = $relation->getPivotClass())
-		{
-			if(in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($pivotClass)))
-			{
-				$alreadyRelated = $relation->withPivot(['id'])->get();
-
-				$pivotToRemove = $alreadyRelated->map(function($item) use($toRelate)
-				{
-					if(! in_array($item->getKey(), $toRelate))
-					{
-						return $item->pivot->getKey();
-					}
-				});
-
-				$pivotClass::whereIn($pivotClass::make()->getKeyName(), $pivotToRemove)->update(
-					[
-						'deleted_at' => Carbon::now()
-					]
-				);
-			}
-		}
+		if($this->pivotUsesSoftDeletes($relation))
+			return $this->syncSoftDeletingPivot($relation, $toRelate);
 
 		if((count($toRelate) == 1)&&($toRelate[0] == null))
-			return $this->getModel()->{$relationshipMethod}()->sync([]);
+			return $relation->sync([]);
 
-		$this->getModel()->{$relationshipMethod}()->sync($toRelate);
+		$relation->sync($toRelate);
 	}
 
 	private function relateBelongsToElements(string $relationshipMethod, $toRelate)
