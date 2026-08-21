@@ -25,7 +25,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "IlBronza\\CRUD\\Tests\\": "tests"
+            "IlBronza\\CRUD\\Tests\\": "tests",
+            "App\\": "tests/Fixtures/App"
         }
     },
     "extra": {
