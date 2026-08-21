@@ -15,20 +15,20 @@ class CrudModelBroadcasted implements ShouldBroadcast
 	public string $text;
 	public string $action;
 	public ?array $origin;
-	protected string $channel;
+	protected array $channels;
 
 	public function __construct(
 		Model $model,
 		string $text,
 		string $action,
-		string $channel
+		array $channels
 	) {
 		// Keep only scalars: queued broadcasts must also work after a force-delete.
 		$this->model = $model::class;
 		$this->key = $model->getKey();
 		$this->text = $text;
 		$this->action = $action;
-		$this->channel = $channel;
+		$this->channels = $channels;
 		$this->origin = $this->getOriginFromRequest();
 	}
 
@@ -52,7 +52,10 @@ class CrudModelBroadcasted implements ShouldBroadcast
 
 	public function broadcastOn() : array
 	{
-		return [new PrivateChannel($this->channel)];
+		return array_map(
+			fn(string $channel) => new PrivateChannel($channel),
+			$this->channels
+		);
 	}
 
 	public function broadcastAs() : string

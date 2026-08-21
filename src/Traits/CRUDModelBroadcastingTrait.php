@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Traits;
 use IlBronza\CRUD\Events\CrudModelBroadcasted;
 use IlBronza\CRUD\Models\CrudChannel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 trait CRUDModelBroadcastingTrait
@@ -26,12 +27,16 @@ trait CRUDModelBroadcastingTrait
 
 	/**
 	 * Override this when a controller needs a more specific private channel.
+	 * Restituire un nome singolo, un array di nomi, oppure null per non inviare.
 	 *
 	 * The default keeps model classes out of the channel name: a fully qualified
 	 * PHP class contains backslashes, which are not suitable for broadcasters.
 	 */
-	public function getCrudBroadcastChannel(Model $model, string $action) : ?string
+	public function getCrudBroadcastChannel(Model $model, string $action) : string | array | null
 	{
+		if(method_exists($model, 'getCrudBroadcastChannel'))
+			return $model->getCrudBroadcastChannel();
+
 		return rtrim(config('crud.broadcast.channel'), '.')
 			. '.'
 			. Str::kebab(class_basename($model));
@@ -54,13 +59,23 @@ trait CRUDModelBroadcastingTrait
 		if(! config('crud.broadcast.enabled'))
 			return;
 
-		if(! $channel = $this->getCrudBroadcastChannel($model, $action))
+		$channels = Arr::wrap($this->getCrudBroadcastChannel($model, $action));
+
+		if(method_exists($model, 'broadcastCrud'))
+		{
+			$model->broadcastCrud($action, $text, $channels);
+
+			return;
+		}
+
+		if(! $channels)
 			return;
 
-		CrudChannel::firstOrCreate([
-			'name' => $channel,
-		]);
+		foreach($channels as $channel)
+			CrudChannel::firstOrCreate([
+				'name' => $channel,
+			]);
 
-		event(new CrudModelBroadcasted($model, $text, $action, $channel));
+		event(new CrudModelBroadcasted($model, $text, $action, $channels));
 	}
 }
