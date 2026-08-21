@@ -42,7 +42,7 @@ class CrudModelEditor extends CrudModelFormHelper
 
 	public function getTitle() : string
 	{
-		return $this->getTranslationByKey('cardTitleEdit', ['element' => $this->getModel()?->getName()]);
+		return $this->getTranslationByKey('cardTitleEdit', ['element' => $this->getModel()?->getTitle()]);
 	}
 
 	public function getIntro() : string
