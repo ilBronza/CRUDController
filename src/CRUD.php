@@ -69,6 +69,8 @@ class CRUD extends Controller
 	public bool|string $caption;
 
 	public bool $showTitle = true;
+	public array $formParameters = [];
+	public ?string $collapseStateKey = null;
 
 	use CRUDFileParametersTrait;
 	use CRUDFormTrait;
@@ -311,7 +313,25 @@ class CRUD extends Controller
 
 		$defaults['updateEditor'] = $this->hasUpdateEditor();
 
+		$defaults = array_replace(
+			$defaults,
+			$this->getFormParameters()
+		);
+
+		if(! is_null($collapseStateKey = $this->getCollapseStateKey()))
+			$defaults['collapseStateKey'] = $collapseStateKey;
+
 		return $this->overrideWithCustomSettingsToDefaults($defaults);
+	}
+
+	public function getFormParameters() : array
+	{
+		return $this->formParameters;
+	}
+
+	public function getCollapseStateKey() : ?string
+	{
+		return $this->collapseStateKey;
 	}
 
 	public function avoidBackToList() : bool

@@ -122,6 +122,11 @@ abstract class CrudModelFormHelper implements CrudModelManager
 
 	public function instantiateForm(string $action, array $formOptions) : Form
 	{
+		$formOptions = array_replace(
+			$this->getFieldsetParametersFile()->getFormParameters(),
+			$formOptions
+		);
+
 		$this->form = Form::createFromArray([
 			'action' => $action,
 			'method' => $this->getFormMethod()
@@ -132,6 +137,14 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		);
 
 		$this->form->setShowTitle($formOptions['showTitle'] ?? true);
+
+		$this->form->setCollapsible($formOptions['collapsible'] ?? false);
+
+		if(array_key_exists('collapsedInitially', $formOptions))
+			$this->form->setCollapsedInitially($formOptions['collapsedInitially']);
+
+		if(array_key_exists('collapseStateKey', $formOptions))
+			$this->form->setCollapseStateKey($formOptions['collapseStateKey']);
 
 		$this->form->addHtmlClass(Str::slug(request()->route()->getName()));
 
