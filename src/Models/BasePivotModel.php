@@ -34,4 +34,9 @@ class BasePivotModel extends Pivot
         ]);
 	}
 
+	public function getTitle() : string
+	{
+		return $this->getName() ?? static::getTranslatedClassname();
+	}
+
 }

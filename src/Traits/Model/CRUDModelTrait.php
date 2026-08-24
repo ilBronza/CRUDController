@@ -172,6 +172,11 @@ trait CRUDModelTrait
 			->pluck('name', 'id');
 	}
 
+	public function getTitle() : string
+	{
+		return $this->getName();
+	}
+
 	//Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
 	//DEPRECATO, non voglio niente che non abbia array
 	// public function getTeaserFields()
