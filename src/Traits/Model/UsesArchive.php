@@ -45,6 +45,11 @@ trait UsesArchive
         return $query->whereNotNull($model->getQualifiedArchivedColumn());
     }
 
+    public function scopeWithArchived($query)
+    {
+        return $query;
+    }
+
     public function scopeByArchive($query, string $archivio)
     {
         $model = $query->getModel();
