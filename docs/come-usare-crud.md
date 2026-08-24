@@ -306,6 +306,19 @@ class VehicleCreateStoreFieldsetsParameters extends VehicleShowFieldsetsParamete
 
 ### RelationshipsManagers — relazioni nella show
 
+Per usare un canale di refresh dedicato per una singola DataTable, dichiarare
+`refreshTableBroadcastChannel` nei parametri della relazione:
+
+```php
+'orders' => [
+    'refreshTableBroadcastChannel' => 'channel.tables.orders.refresh',
+    'controller' => config('products.models.order.controllers.index'),
+],
+```
+
+Se omesso, Datatables mantiene il proprio canale convenzionale, derivato dal
+nome della tabella.
+
 ```php
 use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 

@@ -53,6 +53,10 @@ class RelationshipParameters
 	public $translatedTitle;
 	public $buttonsMethods = [];
 
+	//url caricata da un fetcher sotto la tabella della relazione
+	public ?string $fetcherUrl = null;
+	public array $fetcherParameters = [];
+
 
 	//relation-specific custom view name
 	public $elementGetterMethod;
@@ -63,6 +67,7 @@ class RelationshipParameters
 	public ?bool $reloadButton = null;
 	public ?bool $copyButton = null;
 	public ?bool $csvButton = null;
+	public ?string $refreshTableBroadcastChannel = null;
 	public int $fixedColumnsLeft = 0;
 
 	public $relationshipsManager;
@@ -273,7 +278,9 @@ class RelationshipParameters
 		];
 
 		$this->table = Datatables::createStandAloneTable($parameters);
+		$this->manageRefreshTableBroadcastChannel();
 		$this->table->setFixedColumnsLeft($this->fixedColumnsLeft);
+		$this->manageFetcher();
 
 		if ($this->onlyButtonsDom)
 			$this->table->setOnlyButtonsDom();
@@ -471,6 +478,20 @@ class RelationshipParameters
 	{
 		if ($this->domMode ?? false)
 			$this->table->setDomMode($this->domMode);
+	}
+
+	public function manageRefreshTableBroadcastChannel() : void
+	{
+		if (! is_null($this->refreshTableBroadcastChannel))
+			$this->table->setRefreshTableBroadcastChannel($this->refreshTableBroadcastChannel);
+	}
+
+	public function manageFetcher() : void
+	{
+		if (is_null($this->fetcherUrl))
+			return;
+
+		$this->table->addFetcherByUrl($this->fetcherUrl, 'bottom', $this->fetcherParameters);
 	}
 
 	public function hasCreateButton()
