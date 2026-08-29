@@ -26,6 +26,7 @@ return [
 
 	'realtionshipManagers' => [
 		'active' => true,
+		'columnsSorting' => true,
 		'selectRowCheckboxes' => false,
 		'reloadButton' => false,
 		'copyButton' => false,

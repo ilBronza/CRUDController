@@ -1,6 +1,7 @@
 <?php
 
 use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Archive\ArchiveController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
@@ -77,6 +78,18 @@ Route::group([
 	{
 		Route::get('show/class/{model}/key/{key}', [HistoryController::class, 'show'])->name('show');
 		Route::get('show-by-field/class/{model}/key/{key}/field/{field}', [HistoryByFieldController::class, 'show'])->name('historyByField');
+	}
+);
+
+Route::group([
+		'middleware' => ['web'],
+		'prefix' => 'crud/archiver',
+		'as' => 'crud.',
+	],
+	function()
+	{
+		Route::put('archive/class/{model}/key/{key}', [ArchiveController::class, 'archive'])->name('archive');
+		Route::put('unarchive/class/{model}/key/{key}', [ArchiveController::class, 'unarchive'])->name('unarchive');
 	}
 );
 

@@ -341,6 +341,18 @@ class VehicleRelationManager extends RelationshipsManager
 
 Ogni relazione punta al controller index dell'entità relazionata: la tabella nella show viene resa con le colonne di `getRelatedFieldsArray()` di quel controller.
 
+Per mostrare il pulsante di creazione della relazione e personalizzarne il testo,
+usare `hasCreateButton` e opzionalmente `createButtonText`. Il testo fornito a
+`createButtonText` viene usato direttamente, quindi deve essere già tradotto:
+
+```php
+'orders' => [
+    'hasCreateButton' => true,
+    'createButtonText' => 'Aggiungi ordine',
+    'controller' => config('products.models.order.controllers.index'),
+],
+```
+
 ## 5. Il config
 
 Tutto si aggancia sotto `models.<chiave>`, dove la chiave è il `$configModelClassName`:

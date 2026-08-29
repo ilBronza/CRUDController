@@ -97,9 +97,9 @@ trait CRUDCacheTrait
 
 	static function findCachedByField(string $fieldname, $value, array $with = [])
 	{
-		return cache()->remember(
-			static::staticCacheKey($fieldname . $value . Str::slug(json_encode($with))), 3600, function () use ($fieldname, $value, $with)
-		{
+		// return cache()->remember(
+		// 	static::staticCacheKey($fieldname . $value . Str::slug(json_encode($with))), 3600, function () use ($fieldname, $value, $with)
+		// {
 			try
 			{
 				$query = static::where($fieldname, $value);
@@ -111,13 +111,14 @@ trait CRUDCacheTrait
 			}
 			catch (Exception $e)
 			{
+				dd($e->getMessage());
 				if (! $e->getCode() == "42S22")
 					throw $e;
 
 				return static::findCachedExtraField($fieldname, $value, $with);
 			}
-		}
-		);
+		// }
+		// );
 	}
 
 	static function staticCacheMethod(string $method)

@@ -48,6 +48,7 @@ class RelationshipParameters
 	public $mustPrintIntestation = true;
 
 	public ?bool $hasCreateButton = null;
+	public ?string $createButtonText = null;
 	public $currentView;
 	public $extraVariables;
 	public $translatedTitle;
@@ -67,6 +68,7 @@ class RelationshipParameters
 	public ?bool $reloadButton = null;
 	public ?bool $copyButton = null;
 	public ?bool $csvButton = null;
+	public ?bool $columnsSorting = null;
 	public ?string $refreshTableBroadcastChannel = null;
 	public int $fixedColumnsLeft = 0;
 
@@ -280,6 +282,7 @@ class RelationshipParameters
 		$this->table = Datatables::createStandAloneTable($parameters);
 		$this->manageRefreshTableBroadcastChannel();
 		$this->table->setFixedColumnsLeft($this->fixedColumnsLeft);
+		$this->table->setHasSorting($this->getHasColumnsSorting());
 		$this->manageFetcher();
 
 		if ($this->onlyButtonsDom)
@@ -457,6 +460,18 @@ class RelationshipParameters
 	}
 
 	/**
+	 * ordinamento delle colonne della tabella
+	 * (da non confondere con hasSorting(), che e' il drag&drop su sorting_index)
+	 **/
+	public function getHasColumnsSorting() : bool
+	{
+		if (! is_null($this->columnsSorting))
+			return $this->columnsSorting;
+
+		return config('crud.realtionshipManagers.columnsSorting', true);
+	}
+
+	/**
 	 * check if table must show extra variables to be called on row cell's methods
 	 *
 	 * @return mixed
@@ -502,6 +517,14 @@ class RelationshipParameters
 		return config('crud.realtionshipManagers.createButton', false);
 	}
 
+	/**
+	 * Return the already translated text to use for the relation create button.
+	 */
+	public function getCreateButtonText() : ?string
+	{
+		return $this->createButtonText;
+	}
+
 	public function getName() : string
 	{
 		return $this->name;
@@ -509,25 +532,31 @@ class RelationshipParameters
 
 	public function manageTableButtons()
 	{
+		$createButton = null;
+
 		if ($this->hasCreateButton())
 		{
 			if ($this->isPolimorphicParentingRelationship())
 			{
-				$this->table->addButton(
-					$this->relatedModel->getCreateByPolimorphicRelatedButton(
-						$this->getParentModel()
-					)
+				$createButton = $this->relatedModel->getCreateByPolimorphicRelatedButton(
+					$this->getParentModel()
 				);
 
 			}
 			else if ($this->isParentingRelationship())
 			{
-				$this->table->addButton(
-					$this->relatedModel->getCreateByRelatedButton(
-						$this->getParentModel(), $this->relatedModel
-					)
+				$createButton = $this->relatedModel->getCreateByRelatedButton(
+					$this->getParentModel(), $this->relatedModel
 				);
 			}
+		}
+
+		if ($createButton)
+		{
+			if (! is_null($this->getCreateButtonText()))
+				$createButton->setTranslatedText($this->getCreateButtonText());
+
+			$this->table->addButton($createButton);
 		}
 
 		foreach ($this->buttons as $button)
