@@ -174,7 +174,7 @@ trait CRUDModelTrait
 
 	public function getTitle() : string
 	{
-		return $this->getName();
+		return $this->getName() ?? $this->getKey() ?? '';
 	}
 
 	//Rimuovere anche _teaser del pacchetto CRUD, come anche lo show
