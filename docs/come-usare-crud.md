@@ -353,6 +353,48 @@ usare `hasCreateButton` e opzionalmente `createButtonText`. Il testo fornito a
 ],
 ```
 
+Per aprire il form di creazione in un iframe/modale e ricaricare la sola tabella
+della relazione dopo il salvataggio, aggiungere `createButtonIframe`:
+
+```php
+'orders' => [
+    'hasCreateButton' => true,
+    'createButtonIframe' => true,
+    'controller' => config('products.models.order.controllers.index'),
+],
+```
+
+Il default globale e' `crud.realtionshipManagers.createButtonIframe` (false).
+Il valore dichiarato sulla relazione ha sempre la precedenza: `false` mantiene
+il redirect anche se il default globale e' attivo.
+
+Per una relazione `belongsToMany` o `morphToMany`, il pulsante di creazione non
+e' applicabile: gli elementi esistono gia' e va creata la sola riga pivot. Per
+mostrare il pulsante **Associa**, che apre una modale con DataTable
+selezionabile, usare `hasAssociateButton`:
+
+```php
+'roles' => [
+    'hasAssociateButton' => true,
+    'associateButtonText' => 'Associa ruoli',
+    'controller' => config('accounts.models.role.controllers.index'),
+],
+```
+
+Il salvataggio e' additivo: associa gli elementi selezionati senza rimuovere
+quelli gia' presenti. Il picker esclude per default gli elementi gia' associati;
+per applicare un filtro o un'autorizzazione ulteriore, `associateElementsGetter`
+puo' essere una callback che riceve il model padre e la relazione Eloquent e
+restituisce la collection selezionabile.
+
+Questo flusso e' adatto a pivot senza attributi obbligatori. Se la riga pivot
+richiede dati aggiuntivi (per esempio quantita', ruolo o date), dichiarare un
+`buttonsMethods` personalizzato che apra il form specifico del pivot.
+
+L'URL del picker contiene il morph alias del model padre (per esempio `Product`),
+non il nome della classe. Il controller accetta soltanto alias registrati nella
+morph map dell'applicazione.
+
 ## 5. Il config
 
 Tutto si aggancia sotto `models.<chiave>`, dove la chiave è il `$configModelClassName`:

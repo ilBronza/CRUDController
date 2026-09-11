@@ -4,6 +4,11 @@
 return [
 	'viewElementsTree' => 'View Elements Tree',
 	'createBy' => 'Created by :by',
+	'associateRelated' => 'Associate :what',
+	'associateSelectTitle' => 'Select :what to associate',
+	'associateSelected' => 'Associate selected',
+	'associateSelectAtLeastOne' => 'Select at least one item to associate.',
+	'associateSuccess' => 'Associations updated successfully.',
 
 	'add' => 'Add :what',
 	'showElement' => 'Show :element',
@@ -37,4 +42,3 @@ return [
 	'clearCache' => 'Clear Cache',
 	'serverClearCache' => 'Clear Server Cache',
 ];
-

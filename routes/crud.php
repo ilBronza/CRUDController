@@ -6,6 +6,7 @@ use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\SetMediaIntegrityCheckController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Relationships\AssociateBelongsToManyController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -96,3 +97,10 @@ Route::group([
 Route::post('crud/ajax-search', AjaxSearchController::class)
 	->middleware('web')
 	->name('crud.ajaxSearch');
+
+Route::get('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'index'])
+	->middleware('web')
+	->name('crud.relationships.associate');
+
+Route::post('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'store'])
+	->middleware('web');

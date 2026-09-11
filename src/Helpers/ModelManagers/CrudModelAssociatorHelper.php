@@ -4,6 +4,7 @@ namespace IlBronza\CRUD\Helpers\ModelManagers;
 
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\SyncsSoftDeletingPivotsTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 use function get_class;
@@ -151,6 +152,36 @@ class CrudModelAssociatorHelper
 
 		$helper->processAssociation($duplicateDirectRelations);
 
+	}
+
+	/**
+	 * Add records to a many-to-many pivot relation without synchronising away
+	 * records that are already attached. This includes MorphToMany, which
+	 * extends BelongsToMany in Eloquent.
+	 */
+	static function associateAdditionalRelation(Model $model, string $relation, array|Collection $values) : Model
+	{
+		$helper = new static();
+
+		$helper->setModel($model);
+		$helper->setRelation($relation);
+		$helper->setValues($values);
+
+		$eloquentRelation = $model->{$relation}();
+
+		if(! $eloquentRelation instanceof BelongsToMany)
+			throw new \InvalidArgumentException('The additive association action requires a many-to-many pivot relation.');
+
+		if($helper->pivotUsesSoftDeletes($eloquentRelation))
+			$helper->attachSoftDeletingPivot($eloquentRelation, $values);
+		else
+			$eloquentRelation->syncWithoutDetaching(
+				collect($values)->map(
+					fn($value) => $value instanceof Model ? $value->getKey() : $value
+				)->filter()->unique()->values()->all()
+			);
+
+		return $helper->sendAssociationEvent();
 	}
 
 }

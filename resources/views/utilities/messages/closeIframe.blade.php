@@ -43,6 +43,21 @@
 		@endforeach
 		@endif
 
+		@if(isset($tableIdsToRefresh))
+		@foreach(array_unique($tableIdsToRefresh) as $tableIdToRefresh)
+		(() => {
+			const tableToRefresh = window.parent.document.getElementById(@json($tableIdToRefresh));
+
+			if (tableToRefresh && window.parent.jQuery)
+			{
+				window.parent.___reloadTable(
+					window.parent.jQuery(tableToRefresh).DataTable()
+				);
+			}
+		})();
+		@endforeach
+		@endif
+
 		@if($closeMessage)
             window.parent.addSuccessNotification('{!! $closeMessage !!} ');
 		@endif

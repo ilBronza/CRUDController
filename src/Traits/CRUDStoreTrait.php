@@ -64,6 +64,24 @@ trait CRUDStoreTrait
 	}
 
 	/**
+	 * A relation create button opened from a DataTable supplies the id of its
+	 * caller table. After a successful store, replace the iframe page with the
+	 * close response so the parent can refresh that exact table and close modal.
+	 */
+	protected function shouldCloseIframeAfterStore(Request $request) : bool
+	{
+		return $this->isIframed() && $request->filled('callertablename');
+	}
+
+	protected function closeIframeAfterStore(Request $request)
+	{
+		return view('crud::utilities.messages.closeIframe', [
+			'closeMessage' => __('crud::messages.success'),
+			'tableIdsToRefresh' => [$request->input('callertablename')],
+		]);
+	}
+
+	/**
 	 * validate request and store model
 	 *
 	 * @param Request $request, Model $modelInstance
@@ -82,6 +100,9 @@ trait CRUDStoreTrait
 		$this->sendStoreSuccessMessage();
 
 		$this->performAdditionalOperations();
+
+		if ($this->shouldCloseIframeAfterStore($request))
+			return $this->closeIframeAfterStore($request);
 
 		if(CrudRequestHelper::isSaveAndCopy($request))
 			return redirect()->to($this->modelInstance->getEditUrl());

@@ -33,6 +33,11 @@ return [
 	'elementsSuccesfullyDeleted' => ':elements elementi cancellati con successo',
 	'cardTitleShow' => 'Mostra :element',
 	'createRelatedBy' => 'Crea :related per :by',
+	'associateRelated' => 'Associa :what',
+	'associateSelectTitle' => 'Seleziona :what da associare',
+	'associateSelected' => 'Associa selezionati',
+	'associateSelectAtLeastOne' => 'Seleziona almeno un elemento da associare.',
+	'associateSuccess' => 'Associazioni aggiornate con successo.',
 	'activities' => [
 		'created' => 'Creato',
 		'updated' => 'Aggiornato',
@@ -54,4 +59,3 @@ return [
 	'clientTestEnvironmentBannerDefault' => 'Si possono sminchiare i dati con serenità. Le immagini ed i files mancano ed è normale.',
 
 ];
-
