@@ -21,6 +21,7 @@ use IlBronza\CRUD\Middleware\CRUDReturnBackMiddleware;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\Middleware\IframeCheckerMiddleware;
 use IlBronza\CRUD\ResourceRegistrar;
+use IlBronza\CRUD\Traits\IlBronzaPackages\IlBronzaServiceProviderPackagesTrait;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
@@ -32,6 +33,8 @@ use Illuminate\Support\Str;
 
 class CRUDServiceProvider extends ServiceProvider
 {
+    // use IlBronzaServiceProviderPackagesTrait;
+
     /**
      * Perform post-registration booting of services.
      *
