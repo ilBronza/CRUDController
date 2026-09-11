@@ -184,4 +184,32 @@ class CollapsibleFormTest extends TestCase
 		);
 		$this->assertStringNotContainsString('ib-collapsible-content uk-hidden', $html);
 	}
+
+	public function test_collapsible_fieldset_persists_its_state_per_route_and_name() : void
+	{
+		$route = new Route(['GET'], '/form-configuration', static fn () => '');
+		$route->name('form.configuration');
+		request()->setRouteResolver(static fn () => $route);
+
+		$form = Form::createFromArray([
+			'action' => '/test'
+		]);
+		$fieldset = $form->addFormFieldset('advanced-options', [
+			'canBeHidden' => true
+		]);
+
+		$this->assertSame(
+			'ilbronza:fieldset-collapse:form.configuration:advanced-options',
+			$fieldset->getCollapseStateKey()
+		);
+
+		$html = $form->_render()->render();
+
+		$this->assertStringContainsString(
+			'data-collapse-state-key="ilbronza:fieldset-collapse:form.configuration:advanced-options"',
+			$html
+		);
+		$this->assertStringContainsString('sessionStorage.getItem(stateKey)', $html);
+		$this->assertStringContainsString('sessionStorage.setItem(', $html);
+	}
 }
