@@ -131,6 +131,22 @@ php artisan vendor:publish --tag=crud-migrations
 php artisan migrate
 ```
 
+`BaseModel` e `BasePivotModel` includono anche `BroadcastCrudModelEventsTrait`:
+gli eventi Eloquent `updated` e `deleted` generano automaticamente le notifiche
+`updated`, `deleted` o `forceDeleted`, anche per salvataggi e cancellazioni
+eseguiti da servizi, observer o job. Il trait usa `broadcastCrudAction()`, quindi
+rispetta la configurazione, i testi, i canali del model e l'invio dopo il commit
+già previsti da `BroadcastCrudTrait`. Archiviazioni e ripristini che aggiornano
+il model generano una notifica automatica `updated`.
+
+Questa prima versione è aggiuntiva: gli invii del CRUD e quelli già presenti
+per `created` e `touch()` rimangono attivi. Non c'è accorpamento o deduplicazione;
+più salvataggi producono più notifiche e il CRUD o `touch()` possono notificare
+nuovamente lo stesso aggiornamento. Le query massive, `saveQuietly()` e
+`updateWithoutEvent()` non attivano i nuovi listener. Le modifiche alle pivot
+sono intercettate quando Eloquent emette gli eventi dell'istanza del pivot;
+una query sulla tabella di relazione non garantisce questi eventi.
+
 Le azioni custom possono inviare direttamente un testo libero:
 
 ```php
