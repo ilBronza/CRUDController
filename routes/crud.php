@@ -4,6 +4,7 @@ use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Archive\ArchiveController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Media\DeleteMediaController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\SetMediaIntegrityCheckController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Relationships\AssociateBelongsToManyController;
@@ -97,6 +98,10 @@ Route::group([
 Route::post('crud/ajax-search', AjaxSearchController::class)
 	->middleware('web')
 	->name('crud.ajaxSearch');
+
+Route::delete('crud/media/model-class/{modelClass}/model-key/{modelKey}/media-key/{mediaKey}', [DeleteMediaController::class, 'destroy'])
+	->middleware('web')
+	->name('crud.media.destroy');
 
 Route::get('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'index'])
 	->middleware('web')
