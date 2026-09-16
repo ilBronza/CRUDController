@@ -21,6 +21,23 @@ trait CRUDModelBroadcastingTrait
 	 */
 	public function getCrudBroadcastExtraChannels(Model $model, string $action) : array
 	{
+		if(! method_exists($this, 'getCrudBroadcastChannel'))
+			return [];
+
+		$channels = $this->getCrudBroadcastChannel($model, $action);
+
+		return array_values(array_filter(
+			is_array($channels) ? $channels : [$channels],
+			fn($channel) => ! is_null($channel) && $channel !== ''
+		));
+	}
+
+	/**
+	 * Compatibility helper for controllers that still expose their contextual
+	 * channel through getCrudBroadcastChannel().
+	 */
+	public function getCrudBroadcastChannel(Model $model, string $action) : string | array | null
+	{
 		return [];
 	}
 

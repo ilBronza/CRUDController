@@ -38,6 +38,9 @@ trait BroadcastCrudTrait
 	{
 		$method = 'getCrudBroadcastChannelsFor' . Str::studly($action);
 
+		if(! method_exists($this, $method))
+			return [$this->getCrudBroadcastChannel()];
+
 		return $this->{$method}();
 	}
 
@@ -87,6 +90,13 @@ trait BroadcastCrudTrait
 	public function getCrudBroadcastText(string $action) : ? string
 	{
 		$method = 'getCrudBroadcastTextFor' . Str::studly($action);
+		$legacyMethod = 'getCrud' . Str::studly($action) . 'BroadcastText';
+
+		if(method_exists($this, $legacyMethod))
+			return $this->{$legacyMethod}();
+
+		if(! method_exists($this, $method))
+			return $this->getCrudBroadcastTranslation($action);
 
 		return $this->{$method}();
 	}

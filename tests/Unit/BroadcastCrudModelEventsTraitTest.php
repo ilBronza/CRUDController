@@ -44,6 +44,13 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 		Event::fake([CrudModelBroadcasted::class]);
 	}
 
+	private function broadcastActions() : array
+	{
+		return Event::dispatched(CrudModelBroadcasted::class)
+			->map(fn($arguments) => $arguments[0]->action)
+			->all();
+	}
+
 	#[DataProvider('modelClasses')]
 	public function test_direct_saves_broadcast_each_change_and_keep_controller_notifications(string $modelClass) : void
 	{
@@ -56,7 +63,11 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 			$this->assertTrue($model->save());
 		}
 
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 3);
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 6);
+		$this->assertSame(
+			['updated', 'saved', 'updated', 'saved', 'updated', 'saved'],
+			$this->broadcastActions()
+		);
 		Event::assertDispatched(CrudModelBroadcasted::class, fn(CrudModelBroadcasted $event) =>
 			$event->action === 'updated'
 			&& $event->model === $modelClass
@@ -69,7 +80,7 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 		};
 		$controller->broadcastCrudModel($model, 'updated');
 
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 4);
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 7);
 	}
 
 	#[DataProvider('modelClasses')]
@@ -78,17 +89,16 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 		$this->startRecording();
 		$model = $modelClass::create(['name' => 'Created']);
 
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
-		Event::assertDispatched(CrudModelBroadcasted::class, fn($event) => $event->action === 'created');
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 2);
+		$this->assertSame(['created', 'saved'], $this->broadcastActions());
 
 		Event::fake([CrudModelBroadcasted::class]);
 		$this->travel(1)->seconds();
 		$this->assertTrue($model->touch());
 
 		// Il nuovo listener si aggiunge all'invio esplicito già presente in touch().
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 2);
-		$this->assertSame(['updated', 'updated'], Event::dispatched(CrudModelBroadcasted::class)
-			->map(fn($arguments) => $arguments[0]->action)->all());
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 3);
+		$this->assertSame(['updated', 'saved', 'updated'], $this->broadcastActions());
 	}
 
 	#[DataProvider('modelClasses')]
@@ -98,36 +108,51 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 		$this->startRecording();
 
 		$model->delete();
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
-		Event::assertDispatched(CrudModelBroadcasted::class, fn($event) => $event->action === 'deleted');
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 2);
+		$this->assertSame(['trashed', 'deleted'], $this->broadcastActions());
 		$this->assertSoftDeleted('gadgets', ['id' => $model->getKey()]);
 
 		Event::fake([CrudModelBroadcasted::class]);
 		$model->restore();
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
-		Event::assertDispatched(CrudModelBroadcasted::class, fn($event) => $event->action === 'updated');
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 3);
+		$this->assertSame(['updated', 'saved', 'restored'], $this->broadcastActions());
 
 		Event::fake([CrudModelBroadcasted::class]);
 		$model->forceDelete();
-		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
-		Event::assertDispatched(CrudModelBroadcasted::class, fn($event) =>
-			$event->action === 'forceDeleted' && $event->key === $model->getKey());
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 2);
+		$this->assertSame(['deleted', 'forceDeleted'], $this->broadcastActions());
 		$this->assertDatabaseMissing('gadgets', ['id' => $model->getKey()]);
 	}
 
 	#[DataProvider('modelClasses')]
-	public function test_unchanged_quiet_and_mass_updates_do_not_trigger_automatic_notifications(string $modelClass) : void
+	public function test_saved_event_is_emitted_for_unchanged_saves_and_mass_updates_are_not_observed(string $modelClass) : void
 	{
 		$model = $modelClass::create(['name' => 'Original']);
 		$this->startRecording();
 
 		$model->save();
-		$model->name = 'Quiet';
-		$model->saveQuietly();
 		$modelClass::whereKey($model->getKey())->update(['name' => 'Mass update']);
 
-		Event::assertNotDispatched(CrudModelBroadcasted::class);
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
+		$this->assertSame(['saved'], $this->broadcastActions());
 		$this->assertDatabaseHas('gadgets', ['id' => $model->getKey(), 'name' => 'Mass update']);
+	}
+
+	#[DataProvider('modelClasses')]
+	public function test_quiet_instance_writes_are_broadcast(string $modelClass) : void
+	{
+		$model = $modelClass::create(['name' => 'Original']);
+		$this->startRecording();
+
+		$model->updateQuietly(['name' => 'Quiet update']);
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
+		$this->assertSame(['updated'], $this->broadcastActions());
+
+		Event::fake([CrudModelBroadcasted::class]);
+		$model->deleteQuietly();
+		Event::assertDispatchedTimes(CrudModelBroadcasted::class, 1);
+		Event::assertDispatched(CrudModelBroadcasted::class, fn($event) => $event->action === 'deleted');
+
 	}
 
 	#[DataProvider('modelClasses')]
@@ -182,22 +207,22 @@ class BroadcastCrudModelEventsTraitTest extends TestCase
 				DB::rollBack();
 		}
 
-		$this->assertCount(1, $broadcaster->messages);
-		$this->assertSame('updated', $broadcaster->messages[0]['action']);
+		$this->assertCount(2, $broadcaster->messages);
+		$this->assertSame(['updated', 'saved'], array_column($broadcaster->messages, 'action'));
 		$this->assertSame($model->getKey(), $broadcaster->messages[0]['key']);
 
 		DB::beginTransaction();
 		try
 		{
 			$model->update(['name' => 'Rolled back']);
-			$this->assertCount(1, $broadcaster->messages);
+			$this->assertCount(2, $broadcaster->messages);
 		}
 		finally
 		{
 			DB::rollBack();
 		}
 
-		$this->assertCount(1, $broadcaster->messages);
+		$this->assertCount(2, $broadcaster->messages);
 		$this->assertSame('Committed', $model->fresh()->name);
 	}
 }
@@ -219,6 +244,11 @@ class AutomaticBroadcastTestPivot extends BasePivotModel
 class SilentAutomaticBroadcastTestModel extends AutomaticBroadcastTestModel
 {
 	public function getCrudBroadcastTextForUpdated() : ?string
+	{
+		return null;
+	}
+
+	public function getCrudBroadcastTextForSaved() : ?string
 	{
 		return null;
 	}

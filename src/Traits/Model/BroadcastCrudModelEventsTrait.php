@@ -18,13 +18,61 @@ trait BroadcastCrudModelEventsTrait
 			$model->broadcastCrudAction('updated');
 		});
 
+		static::saved(function(Model $model)
+		{
+			$model->broadcastCrudAction('saved');
+		});
+
 		static::deleted(function(Model $model)
 		{
-			$action = method_exists($model, 'isForceDeleting') && $model->isForceDeleting()
-				? 'forceDeleted'
-				: 'deleted';
+			$model->broadcastCrudAction('deleted');
+		});
 
-			$model->broadcastCrudAction($action);
+		static::registerModelEvent('trashed', function(Model $model)
+		{
+			$model->broadcastCrudAction('trashed');
+		});
+
+		static::registerModelEvent('restored', function(Model $model)
+		{
+			$model->broadcastCrudAction('restored');
+		});
+
+		static::registerModelEvent('forceDeleted', function(Model $model)
+		{
+			$model->broadcastCrudAction('forceDeleted');
 		});
 	}
+
+	/**
+	 * Laravel silenzia i listener Eloquent in saveQuietly(). Il realtime deve
+	 * comunque seguire la modifica persistita, anche quando il chiamante vuole
+	 * evitare observer o activity log.
+	 */
+	public function saveQuietly(array $options = []) : bool
+	{
+		$wasExisting = $this->exists;
+		$wasDirty = $this->isDirty();
+		$saved = parent::saveQuietly($options);
+
+		if($saved && $wasDirty)
+			$this->broadcastCrudAction($wasExisting ? 'updated' : 'created');
+
+		return $saved;
+	}
+
+	/**
+	 * The quiet deletion methods mute the deleted model event, so publish the
+	 * corresponding realtime action after the database operation has succeeded.
+	 */
+	public function deleteQuietly() : ?bool
+	{
+		$deleted = parent::deleteQuietly();
+
+		if($deleted)
+			$this->broadcastCrudAction('deleted');
+
+		return $deleted;
+	}
+
 }
