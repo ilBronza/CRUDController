@@ -29,7 +29,6 @@ use function dd;
 use function get_class;
 use function implode;
 use function in_array;
-use function ini_set;
 use function method_exists;
 use function request;
 use function trans;
@@ -111,6 +110,8 @@ class CRUD extends Controller
 
 	public function __construct()
 	{
+        ini_set('memory_limit', "-1");
+        
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
 
