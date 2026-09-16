@@ -70,6 +70,48 @@ class CollapsibleFormTest extends TestCase
 		$this->assertSame('controller-property-key', $controller->provideFormDefaultSettings()['collapseStateKey']);
 	}
 
+	public function test_iframed_form_hides_the_list_link_and_closes_its_parent_on_cancel() : void
+	{
+		$route = new Route(['GET'], '/iframed-form', static fn () => '');
+		$route->name('form.iframed');
+		request()->setRouteResolver(static fn () => $route);
+		request()->merge(['iframed' => true]);
+
+		$controller = new class extends GadgetCRUD
+		{
+			public $allowedMethods = ['index'];
+
+			public function getIndexUrl()
+			{
+				return '/gadgets';
+			}
+		};
+		$controller->setModel(new Gadget());
+
+		$this->assertArrayNotHasKey('backToListUrl', $controller->provideFormDefaultSettings());
+
+		$parametersFile = FieldsetParametersFile::makeByParameters([
+			'general' => [
+				'fields' => [
+					'name' => ['text' => 'nullable']
+				]
+			]
+		]);
+
+		$form = $this->makeFormHelper($parametersFile)->instantiateForm('/test', [
+			'backToListUrl' => '/gadgets',
+			'cancelHref' => '/previous-page'
+		]);
+
+		$this->assertFalse($form->getBackToListUrl());
+		$this->assertSame(CrudModelFormHelper::IFRAME_CANCEL_HREF, $form->getCancelHref());
+
+		$html = $form->_render()->render();
+
+		$this->assertStringContainsString('href="#crud-close-parent-overlay"', $html);
+		$this->assertStringContainsString('window.__crudCloseParentOverlay', $html);
+	}
+
 	private function makeFormHelper(FieldsetParametersFile $parametersFile) : CrudModelFormHelper
 	{
 		$helper = new class extends CrudModelFormHelper

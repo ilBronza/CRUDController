@@ -294,7 +294,7 @@ class CRUD extends Controller
 	{
 		$defaults = [];
 
-		if (in_array('index', $this->allowedMethods) && (! $this->avoidBackToList()))
+		if ((! $this->isIframed()) && in_array('index', $this->allowedMethods) && (! $this->avoidBackToList()))
 			$defaults['backToListUrl'] = $this->getIndexUrl();
 
 		if (in_array('show', $this->allowedMethods) && (! $this->avoidShowButton()) && ($this->getModel()?->exists))

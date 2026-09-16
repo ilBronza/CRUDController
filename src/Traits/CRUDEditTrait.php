@@ -95,10 +95,13 @@ trait CRUDEditTrait
 	{
 		$this->getExtendedEditButtons();
 
+		if($this->isIframed())
+			view()->share('backToListUrl', null);
+
 		if((isset($this->editButtons))&&(count($this->editButtons)))
 			view()->share('buttons', $this->editButtons);
 
-		if(! $this->avoidBackToList())
+		if((! $this->isIframed()) && (! $this->avoidBackToList()))
 			if($button = $this->getBackToListButton())
 				$this->addNavbarButton(
 					$button

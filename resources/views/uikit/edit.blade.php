@@ -8,9 +8,9 @@
 	<nav class="uk-navbar-container" uk-navbar>
 		<div class="uk-navbar-left">
 			<ul class="uk-navbar-nav">
-				@isset($backToListUrl)
+				@if((! request()->boolean('iframed')) && isset($backToListUrl))
 				<li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
-				@endisset
+				@endif
 
 				@foreach($buttons as $button)
 					@if($button)

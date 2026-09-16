@@ -36,9 +36,9 @@
                         <div class="uk-navbar-left">
                             <ul class="uk-navbar-nav">
 
-                            @isset($backToListUrl)
+                            @if((! request()->boolean('iframed')) && isset($backToListUrl))
                                 <li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
-                                @endisset
+                            @endif
 
                                 @if(isset($showButtons))
                                     @foreach($showButtons as $showButton)
@@ -61,7 +61,7 @@
                 @include('crud::utilities.editLink', ['element' => $modelInstance])
             @endif
 
-            @if($indexUrl = $modelInstance->getIndexUrl())
+			@if((! request()->boolean('iframed')) && ($indexUrl = $modelInstance->getIndexUrl()))
                 <div class="uk-width-auto">
                     <a class="uk-display-inline-block" href="{{ $indexUrl }}">
                         <i class="fa-solid fa-list"></i>
