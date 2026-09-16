@@ -7,6 +7,7 @@ use IlBronza\FormField\FormField;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\InteractsWithMedia as SpatieInteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 trait InteractsWithMedia
 {
@@ -79,7 +80,7 @@ trait InteractsWithMedia
 		return $query->orderBy('created_at', 'DESC')->first();
 	}
 
-	public function getMainMedia(string $collectionName = null) : ? Media
+	public function getMainMedia(string $collectionName = null) : ? BaseMedia
 	{
 		if($this->relationLoaded('media'))
 		{
@@ -90,8 +91,6 @@ trait InteractsWithMedia
 
 			return $media->sortBy('created_at')->first();
 		}
-
-		return null;
 
 		$query = $this->media();
 
