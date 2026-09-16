@@ -204,14 +204,11 @@ Gestisce il display delle relazioni in una pagina di dettaglio, tipicamente Show
 
 class QuotationRelationManager Extends RelationshipsManager
 {
-	public  function getAllRelationsParameters() : array
+	public function getRelationsParameters() : array
 	{
 		return [
-			'show' => [
-				'relations' => [
-				
-				# dichiarazione complessa, dove vengono specificati parametri aggiuntivi oltre al controller
-				    'quotationrows' => [
+			# dichiarazione complessa, dove vengono specificati parametri aggiuntivi oltre al controller
+			    'quotationrows' => [
                                         'controller' => config('products.models.quotationrow.controllers.index'),
                                         'elementGetterMethod' => 'getQuotationrowsForShowRelation',
 
@@ -248,8 +245,6 @@ class QuotationRelationManager Extends RelationshipsManager
 				# dichiarazione semplice in cui si specifica solo il controller di Index, che si occupa
 				# di impostare i fieldsgroup tramite il suo metodo "getRelatedFieldsArray"
 					'dossiers' => config('filecabinet.models.dossier.controllers.index'),
-				]
-			]
 		];
 	}
 }```

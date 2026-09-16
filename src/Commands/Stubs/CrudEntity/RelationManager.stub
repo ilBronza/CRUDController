@@ -6,13 +6,8 @@ use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 
 class {{ model }}RelationManager extends RelationshipsManager
 {
-	public function getAllRelationsParameters() : array
+	public function getRelationsParameters() : array
 	{
-		return [
-			'show' => [
-				'relations' => [
-				]
-			]
-		];
+		return [];
 	}
 }

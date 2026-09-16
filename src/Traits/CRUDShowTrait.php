@@ -106,6 +106,8 @@ trait CRUDShowTrait
 
 	public function _oldShow($modelInstance)
 	{
+		$this->setRelationshipsManagerLegacyType('show');
+
 		$this->modelInstance = $modelInstance;
 		$view = $this->getShowView();
 		$_showView = $this->get_ShowView();
@@ -125,6 +127,8 @@ trait CRUDShowTrait
 
 	public function _show($modelInstance)
 	{
+		$this->setRelationshipsManagerLegacyType('show');
+
 		if (! $modelInstance)
 			abort(404);
 
@@ -183,6 +187,8 @@ trait CRUDShowTrait
 
 	private function shareShowParameters()
 	{
+		$this->setRelationshipsManagerLegacyType('show');
+
 		$this->shareShowModels();
 
 		$relationships = $this->shareRelationships();
@@ -209,6 +215,6 @@ trait CRUDShowTrait
 
 		$modelId = $request->rowId;
 
-		return $this->useSingleRelationRelationshipsManager('show', $pluralModelType, $modelId);
+		return $this->useSingleRelationRelationshipsManager($pluralModelType, $modelId);
 	}
 }

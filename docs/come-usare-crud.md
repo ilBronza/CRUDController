@@ -324,17 +324,13 @@ use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 
 class VehicleRelationManager extends RelationshipsManager
 {
-	public function getAllRelationsParameters() : array
+	public function getRelationsParameters() : array
 	{
 		$relations = [];
 
 		$relations['kmreadings'] = config('vehicles.models.kmreading.controllers.index');
 
-		return [
-			'show' => [
-				'relations' => $relations
-			]
-		];
+		return $relations;
 	}
 }
 ```

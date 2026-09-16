@@ -103,7 +103,10 @@ class AssociateBelongsToManyController
 			abort(404);
 
 		/** @var RelationshipsManager $manager */
-		$manager = new $managerClass('show', $parent);
+		$manager = new $managerClass($parent);
+
+		if ($manager->usesLegacyRelationsParameters())
+			$manager->setLegacyRelationsType('show');
 		$relationship = $manager->getRelationships()->get($relationName);
 
 		if (! $relationship instanceof RelationshipParameters
