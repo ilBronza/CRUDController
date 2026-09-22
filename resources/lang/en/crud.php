@@ -18,8 +18,6 @@ return [
 	'condenseTargetLabel' => 'Element to keep',
 	'condenseSubmit' => 'Condense',
 	'condenseSuccess' => ':moved relations moved, :condensed elements condensed',
-	'clientTestEnvironmentBanner' => 'Client test environment: :label',
-	'clientTestEnvironmentBannerDefault' => 'remote trial instance',
 	'showElementPage' => 'Show Element :element',
 	'editElement' => 'Edit :element',
 	'singleModel_categories' => 'Category',
