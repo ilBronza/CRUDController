@@ -5,6 +5,7 @@ namespace IlBronza\CRUD;
 use IlBronza\CRUD\CRUDMenuUtilities;
 use IlBronza\CRUD\CRUDRoutingHelper;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
+use IlBronza\CRUD\Commands\CleanupCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Commands\MakeArchiveMigrationCommand;
@@ -214,6 +215,8 @@ class CRUDServiceProvider extends ServiceProvider
      */
     protected function bootForConsole()
     {
+        $this->commands([CleanupCommand::class]);
+
         // Publishing the configuration file.
         $this->publishes([
             __DIR__.'/../config/crud.php' => config_path('crud.php'),
