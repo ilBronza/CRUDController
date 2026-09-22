@@ -13,6 +13,11 @@ trait BroadcastCrudModelEventsTrait
 {
 	public static function bootBroadcastCrudModelEventsTrait() : void
 	{
+		static::created(function(Model $model)
+		{
+			$model->broadcastCrudAction('created');
+		});
+
 		static::updated(function(Model $model)
 		{
 			$model->broadcastCrudAction('updated');
@@ -42,6 +47,16 @@ trait BroadcastCrudModelEventsTrait
 		{
 			$model->broadcastCrudAction('forceDeleted');
 		});
+	}
+
+	public function touch($attribute = null)
+	{
+		$touched = parent::touch($attribute);
+
+		if($touched)
+			$this->broadcastCrudAction('updated');
+
+		return $touched;
 	}
 
 	/**

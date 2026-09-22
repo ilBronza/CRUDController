@@ -43,13 +43,13 @@ trait CRUDModelBroadcastingTrait
 
 	public function broadcastCrudModel(Model $model, string $action) : void
 	{
-		if(! config('crud.broadcast.enabled'))
-			return;
+		// if(! config('crud.broadcast.enabled'))
+		// 	return;
 
-		if(is_null($text = $this->getCrudBroadcastText($model, $action)))
-			return;
+		// if(is_null($text = $this->getCrudBroadcastText($model, $action)))
+		// 	return;
 
-		$this->broadcastCrudMessage($model, $text, $action);
+		// $this->broadcastCrudMessage($model, $text, $action);
 	}
 
 	/** Send an explicit free-text message from a custom CRUD action. */

@@ -9,26 +9,26 @@ use Illuminate\Support\Str;
 
 trait BroadcastCrudTrait
 {
-	public static function bootBroadcastCrudTrait() : void
-	{
-		static::created(function(Model $model)
-		{
-			$model->broadcastCrudAction('created');
-		});
-	}
+	// public static function bootBroadcastCrudTrait() : void
+	// {
+	// 	static::created(function(Model $model)
+	// 	{
+	// 		$model->broadcastCrudAction('created');
+	// 	});
+	// }
 
 	/**
 	 * Il touch cambia il timestamp senza passare dal controller: trasmette da sé.
 	 */
-	public function touch($attribute = null)
-	{
-		$touched = parent::touch($attribute);
+	// public function touch($attribute = null)
+	// {
+	// 	$touched = parent::touch($attribute);
 
-		if($touched)
-			$this->broadcastCrudAction('updated');
+	// 	if($touched)
+	// 		$this->broadcastCrudAction('updated');
 
-		return $touched;
-	}
+	// 	return $touched;
+	// }
 
 	/**
 	 * Canali intrinseci del model: dove va pubblicata la modifica
