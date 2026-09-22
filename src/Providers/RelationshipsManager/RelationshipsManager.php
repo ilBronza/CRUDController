@@ -21,8 +21,8 @@ abstract class RelationshipsManager
 	public $relationship;
 
 	/**
-	 * Kept only while legacy managers still expose their relations under a
-	 * show/edit container. New managers never receive nor use this value.
+	 * Kept for legacy callers and subclasses. Container selection always
+	 * prefers show, then edit, independently of this value.
 	 */
 	public ?string $legacyRelationsType = null;
 
@@ -43,18 +43,8 @@ abstract class RelationshipsManager
 	 */
 	public function getRelationsParameters() : array
 	{
-		$parameters = $this->getAllRelationsParameters();
-
-		return static::getAllRelationsParameters()['show']['relations'];
-
-		return $this->normalizeLegacyRelationsParameters($parameters);
+		return $this->normalizeLegacyRelationsParameters($this->getAllRelationsParameters());
 	}
-
-	// public function getRelationsParameters() : array
-	// {
-	// 	return static::getAllRelationsParameters()['show']['relations'];
-	// }
-
 
 	/**
 	 * Legacy extension point. New managers must implement
@@ -77,8 +67,8 @@ abstract class RelationshipsManager
 	}
 
 	/**
-	 * This context is intentionally available only to legacy managers. It must
-	 * be set before relations are read because legacy data is action-scoped.
+	 * Retained for legacy subclasses which inspect the action directly.
+	 * It does not select the show/edit container in the base manager.
 	 */
 	public function setLegacyRelationsType(string $type) : self
 	{
@@ -252,33 +242,30 @@ abstract class RelationshipsManager
 		// TODO: rimuovere il supporto al formato legacy
 		// ['show'|'edit' => ['relations' => [...]]]
 		// dopo la migrazione di tutti i RelationshipsManager.
-		if (! $this->legacyRelationsType)
+		if (array_key_exists('show', $parameters))
+			$type = 'show';
+		elseif (array_key_exists('edit', $parameters))
+			$type = 'edit';
+		else
 			throw new LogicException(sprintf(
-				'Legacy RelationshipsManager %s requires an action type before its relations can be read.',
+				'Legacy RelationshipsManager %s must declare a "show" or "edit" container.',
 				static::class
 			));
 
-		if (! array_key_exists($this->legacyRelationsType, $parameters))
-			throw new LogicException(sprintf(
-				'Legacy RelationshipsManager %s does not declare the requested "%s" type.',
-				static::class,
-				$this->legacyRelationsType
-			));
-
-		$typeParameters = $parameters[$this->legacyRelationsType];
+		$typeParameters = $parameters[$type];
 
 		if (! is_array($typeParameters) || ! array_key_exists('relations', $typeParameters))
 			throw new LogicException(sprintf(
 				'Legacy RelationshipsManager %s must declare ["%s" => ["relations" => [...]]].',
 				static::class,
-				$this->legacyRelationsType
+				$type
 			));
 
 		if (! is_array($typeParameters['relations']))
 			throw new LogicException(sprintf(
 				'Legacy RelationshipsManager %s must declare "%s.relations" as an array.',
 				static::class,
-				$this->legacyRelationsType
+				$type
 			));
 
 		return $typeParameters['relations'];

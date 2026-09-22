@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RelationshipsManagerContractTest extends TestCase
 {
@@ -57,15 +58,62 @@ class RelationshipsManagerContractTest extends TestCase
 		], $manager->getRelationsParameters());
 	}
 
-	public function test_legacy_manager_reports_an_invalid_requested_type_explicitly() : void
+	#[DataProvider('legacyContainerFallbackCases')]
+	public function test_legacy_container_selection_prefers_show_then_edit(array $parameters, ?string $legacyType, array $expected) : void
 	{
-		$manager = new LegacyShowContractRelationshipsManager(
-			'edit',
-			new RelationshipsManagerContractParent()
-		);
+		$manager = new class(new RelationshipsManagerContractParent()) extends RelationshipsManager
+		{
+			public array $parameters = [];
+			public int $parametersReads = 0;
+
+			public function getAllRelationsParameters() : array
+			{
+				$this->parametersReads++;
+
+				return $this->parameters;
+			}
+		};
+
+		$manager->parameters = $parameters;
+
+		if ($legacyType !== null)
+			$manager->setLegacyRelationsType($legacyType);
+
+		$this->assertSame($expected, $manager->getRelationsParameters());
+		$this->assertSame(1, $manager->parametersReads);
+	}
+
+	public static function legacyContainerFallbackCases() : array
+	{
+		$show = ['children' => 'legacy.show.children.index'];
+		$edit = ['children' => 'legacy.edit.children.index'];
+
+		return [
+			'show without action context' => [['show' => ['relations' => $show]], null, $show],
+			'edit without action context' => [['edit' => ['relations' => $edit]], null, $edit],
+			'show wins over edit even for an edit action' => [
+				['show' => ['relations' => $show], 'edit' => ['relations' => $edit]], 'edit', $show,
+			],
+			'edit fallback for a show action' => [['edit' => ['relations' => $edit]], 'show', $edit],
+			'empty show wins over nonempty edit' => [
+				['show' => ['relations' => []], 'edit' => ['relations' => $edit]], null, [],
+			],
+			'empty edit is valid' => [['edit' => ['relations' => []]], null, []],
+		];
+	}
+
+	public function test_legacy_manager_reports_missing_show_and_edit_containers_explicitly() : void
+	{
+		$manager = new class(new RelationshipsManagerContractParent()) extends RelationshipsManager
+		{
+			public function getAllRelationsParameters() : array
+			{
+				return ['create' => ['relations' => []]];
+			}
+		};
 
 		$this->expectException(LogicException::class);
-		$this->expectExceptionMessage('does not declare the requested "edit" type');
+		$this->expectExceptionMessage('must declare a "show" or "edit" container');
 
 		$manager->getRelationsParameters();
 	}
