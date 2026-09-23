@@ -26,6 +26,7 @@ class RelationshipsManagerContractTest extends TestCase
 			],
 		], $manager->getRelationsParameters());
 		$this->assertSame(['children'], $manager->getRelationshipsNamesArray());
+		$this->assertSame(['children'], $manager->getSections()->keys()->all());
 		$this->assertNull($manager->legacyRelationsType);
 	}
 
@@ -42,6 +43,7 @@ class RelationshipsManagerContractTest extends TestCase
 			],
 		], $manager->getRelationsParameters());
 		$this->assertSame(['children'], $manager->getRelationshipsNamesArray());
+		$this->assertSame($manager->getRelationships()['children'], $manager->getSections()['children']);
 	}
 
 	public function test_legacy_edit_container_is_normalized_to_a_direct_relation_map() : void

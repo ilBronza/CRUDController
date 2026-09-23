@@ -3,11 +3,12 @@
 namespace IlBronza\CRUD\Providers;
 
 use IlBronza\CRUD\Providers\RelationshipsManager;
+use IlBronza\CRUD\Providers\RelationshipsManager\ManagerSection;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 
-class RelationshipParameters
+class RelationshipParameters implements ManagerSection
 {
 	public $name;
 	public $relation;
@@ -48,6 +49,16 @@ class RelationshipParameters
 
 		$this->manageParameters($parameters);
 		$this->setRenderingType();
+	}
+
+	public function getName() : string
+	{
+		return $this->name;
+	}
+
+	public function prepare() : void
+	{
+		$this->setShowParameters();
 	}
 
 	public function getCardTitle()

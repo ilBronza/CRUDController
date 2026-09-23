@@ -306,6 +306,66 @@ class VehicleCreateStoreFieldsetsParameters extends VehicleShowFieldsetsParamete
 
 ### RelationshipsManagers — relazioni nella show
 
+Il manager può comporre anche sezioni fetcher autonome, senza una relazione
+Eloquent. Per mescolare relazioni e fetcher nello stesso `Flat`, `Switcher` o
+`Toggler`, usare `getSectionsParameters()`:
+
+```php
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
+
+class VehicleRelationManager extends RelationshipsManager
+{
+	public function getSectionsParameters() : array
+	{
+		return [
+			'kmreadings' => [
+				'type' => 'relationship',
+				'controller' => config('vehicles.models.kmreading.controllers.index'),
+			],
+			'notes' => [
+				'type' => 'fetcher',
+				'title' => 'Note',
+				'url' => route('vehicles.notes', ['vehicle' => $this->getModel()]),
+				'refresh' => true,
+				'canExpand' => true,
+			],
+		];
+	}
+}
+```
+
+Le sezioni seguono l'ordine dell'array; è valido anche un manager con soli
+fetcher. La route `vehicles.notes` dell'esempio deve essere definita
+dall'applicazione e restituire il contenuto HTML del pannello. Il browser la
+richiede attraverso il fetcher di UikitTemplate, con `ibFetcher=true`; il manager
+non carica quel contenuto lato server. Il caricamento iniziale e i comandi di
+refresh/espansione usano il comportamento del fetcher esistente.
+
+Per un fetcher, `url` è obbligatorio e deve essere una stringa non vuota. `title`
+è già tradotto e, se omesso, usa il nome della sezione. Gli altri parametri sono
+inoltrati a `IlBronza\UikitTemplate\Fetcher`, per esempio `refresh`, `canExpand`,
+`buttons` e `card`. Di default il fetcher non aggiunge una propria card, perché
+il layout del manager fornisce già il contenitore.
+
+I manager esistenti con `getRelationsParameters()` o con il formato legacy di
+`getAllRelationsParameters()` continuano a funzionare. Quando si adotta
+`getSectionsParameters()`, questo diventa la mappa completa: `type` omesso e
+la forma breve con il solo controller identificano una relazione. Se si
+estende un manager esistente, si può partire da
+`parent::getSectionsParameters()` e aggiungere le nuove sezioni.
+
+`getSections()` espone tutti i pannelli; `getRelationships()` e le API per la
+singola relazione espongono soltanto relazioni. Associazioni, editor e refresh
+delle righe continuano quindi a usare le relazioni. Il precedente `fetcherUrl`
+di una relazione mantiene il suo significato: aggiunge un fetcher sotto la sua
+tabella, senza creare una scheda autonoma.
+
+Le sezioni implementano `ManagerSection` (`getName()`, `getCardTitle()`,
+`getToggleId()`, `prepare()`, `render()`). Il controller le prepara prima di
+renderizzare il layout. Per un tipo aggiuntivo si può estendere
+`createSection()` e restituire un'implementazione di questo contratto,
+delegando gli altri tipi a `parent::createSection()`.
+
 Per usare un canale di refresh dedicato per una singola DataTable, dichiarare
 `refreshTableBroadcastChannel` nei parametri della relazione:
 

@@ -179,6 +179,12 @@ abstract class RelationshipsManager
 		return $this->relationships;
 	}
 
+	/** Compatibility with the shared section layouts for the original namespace. */
+	public function getSections()
+	{
+		return $this->getRelationships();
+	}
+
 	public function getRelationship() : RelationshipParameters
 	{
 		$this->ensureRelationshipsInstantiated();

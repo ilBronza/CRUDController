@@ -2,18 +2,18 @@
 
 	<ul id="relationswitcher{{ $relationshipManager->getModel()->getKey() }}"
 		class="relationships-list uk-subnav uk-subnav-pill" uk-switcher>
-		@foreach($relationshipManager->getRelationships() as $relationship)
-			<li class="{{ Str::slug($relationship->getName()) }}"><a class="uk-button uk-button-small uk-button-default"
-				   href="#">{!! $relationship->getCardTitle() !!}</a></li>
+		@foreach($relationshipManager->getSections() as $section)
+			<li class="{{ Str::slug($section->getName()) }}"><a class="uk-button uk-button-small uk-button-default"
+				   href="#">{!! $section->getCardTitle() !!}</a></li>
 		@endforeach
 	</ul>
 
 	<ul class="uk-switcher uk-margin">
-		@foreach($relationshipManager->getRelationships() as $relationship)
-			<li class="{{ Str::slug($relationship->getName()) }}">
+		@foreach($relationshipManager->getSections() as $section)
+			<li class="{{ Str::slug($section->getName()) }}">
 				<div class="uk-card uk-card-small">
 					<div class="uk-card-body">
-						{!! $relationship->render() !!}
+						{!! $section->render() !!}
 					</div>
 				</div>
 			</li>
@@ -58,4 +58,3 @@
         }
     });
 </script>
-

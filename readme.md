@@ -202,6 +202,12 @@ creare un getter con i possibili valori di relazione in un select
 
 Gestisce il display delle relazioni in una pagina di dettaglio, tipicamente Show o Edit
 
+Supporta anche sezioni fetcher autonome: dichiarare `getSectionsParameters()`
+con voci `type => 'relationship'` o `type => 'fetcher'`. Le sezioni condividono
+i layout `Flat`, `Switcher` e `Toggler` e conservano l'ordine dell'array.
+I manager che dichiarano `getRelationsParameters()` restano compatibili.
+Vedi [la guida alle sezioni e ai fetcher](docs/come-usare-crud.md#relationshipsmanagers--relazioni-nella-show).
+
 ### Dichiarazione
 
 ``` bash

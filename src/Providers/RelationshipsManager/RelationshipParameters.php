@@ -14,7 +14,7 @@ use function config;
 use function dd;
 use function is_null;
 
-class RelationshipParameters
+class RelationshipParameters implements ManagerSection
 {
 	use RelationshipParametersGettersTrait;
 
@@ -230,6 +230,11 @@ class RelationshipParameters
 			return $this->setTable();
 
 		return $this->setCurrentView();
+	}
+
+	public function prepare() : void
+	{
+		$this->setShowParameters();
 	}
 
 	public function returnSingleRow()

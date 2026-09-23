@@ -62,10 +62,8 @@ trait CRUDRelationshipsManagerTrait
 		$this->relationshipsTableNames = [];
 		$this->relationshipsElements = [];
 
-		foreach($this->relationshipManager->getRelationships() as $name => $relationshipsParameters)
-		{
-			$relationshipsParameters->setShowParameters();
-		}
+		foreach ($this->relationshipManager->getSections() as $section)
+			$section->prepare();
 
 		view()->share('relationshipManager', $this->relationshipManager);
 	}

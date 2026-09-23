@@ -2,10 +2,8 @@
 
 namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParameters;
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use LogicException;
 use InvalidArgumentException;
 
@@ -28,6 +26,8 @@ abstract class RelationshipsManager
 
 	private ?string $requestedRelation = null;
 	private bool $relationshipsInstantiated = false;
+	/** @var Collection<string, ManagerSection> */
+	private Collection $sections;
 
 	public $displayType = 'Switcher';
 
@@ -37,7 +37,18 @@ abstract class RelationshipsManager
 	}
 
 	/**
-	 * New managers override this method and return a direct relation map.
+	 * Ordered map of relationship and fetcher sections. Existing relation maps
+	 * remain valid: omitted types and controller strings mean "relationship".
+	 *
+	 * @return array<string, array|string>
+	 */
+	public function getSectionsParameters() : array
+	{
+		return $this->getRelationsParameters();
+	}
+
+	/**
+	 * Relation-only managers may continue overriding this method.
 	 *
 	 * @return array<string, array|string>
 	 */
@@ -47,13 +58,13 @@ abstract class RelationshipsManager
 	}
 
 	/**
-	 * Legacy extension point. New managers must implement
-	 * getRelationsParameters() instead.
+	 * Legacy extension point. New managers implement getSectionsParameters()
+	 * or getRelationsParameters() instead.
 	 */
 	public function getAllRelationsParameters() : array
 	{
 		throw new LogicException(sprintf(
-			'%s must implement getRelationsParameters(). getAllRelationsParameters() is supported only for legacy managers.',
+			'%s must implement getSectionsParameters() or getRelationsParameters(). getAllRelationsParameters() is supported only for legacy managers.',
 			static::class
 		));
 	}
@@ -63,7 +74,8 @@ abstract class RelationshipsManager
 	 */
 	public function usesLegacyRelationsParameters() : bool
 	{
-		return (new \ReflectionMethod($this, 'getRelationsParameters'))->getDeclaringClass()->getName() === self::class;
+		return (new \ReflectionMethod($this, 'getSectionsParameters'))->getDeclaringClass()->getName() === self::class
+			&& (new \ReflectionMethod($this, 'getRelationsParameters'))->getDeclaringClass()->getName() === self::class;
 	}
 
 	/**
@@ -87,10 +99,13 @@ abstract class RelationshipsManager
 
 	public function getRelationParameters(string $relation) : array|string
 	{
-		$parameters = $this->getRelationsParameters();
+		$parameters = $this->getSectionsParameters();
 
 		if (! array_key_exists($relation, $parameters))
 			throw new LogicException(sprintf('Relationship "%s" is not declared by %s.', $relation, static::class));
+
+		if (is_array($parameters[$relation]) && ($parameters[$relation]['type'] ?? 'relationship') !== 'relationship')
+			throw new LogicException(sprintf('Section "%s" is not a relationship in %s.', $relation, static::class));
 
 		return $parameters[$relation];
 	}
@@ -98,11 +113,18 @@ abstract class RelationshipsManager
 	private function instantiateAllRelations() : void
 	{
 		$this->relationships = collect();
+		$this->sections = collect();
 
-		$relationsParameters = $this->getRelationsParameters();
-
-		foreach($relationsParameters as $name => $parameters)
-			$this->addRelationship($name, $parameters);
+		foreach ($this->getSectionsParameters() as $name => $parameters)
+		{
+			if (is_string($parameters) || ($parameters['type'] ?? 'relationship') === 'relationship')
+			{
+				$this->addRelationship($name, $parameters);
+				$this->sections->put($name, $this->relationships->get($name));
+			}
+			else
+				$this->sections->put($name, $this->createSection($name, $parameters));
+		}
 
 		$this->loadModelRelatedElements();
 	}
@@ -117,6 +139,8 @@ abstract class RelationshipsManager
 		$relationParameters = $this->getRelationParameters($relation);
 
 		$this->relationship = $this->createRelationship($relation, $relationParameters);
+		$this->relationships = collect([$relation => $this->relationship]);
+		$this->sections = collect([$relation => $this->relationship]);
 	}
 
 	/**
@@ -192,11 +216,34 @@ abstract class RelationshipsManager
 		return new RelationshipParameters($name, $parameters, $this);
 	}
 
+	public function createSection(string $name, array|string $parameters) : ManagerSection
+	{
+		if (is_string($parameters))
+			return $this->createRelationship($name, $parameters);
+
+		return match ($parameters['type'] ?? 'relationship') {
+			'relationship' => $this->createRelationship($name, $parameters),
+			'fetcher' => new FetcherParameters($name, $parameters),
+			default => throw new InvalidArgumentException(sprintf('Unknown section type for "%s" in %s.', $name, static::class)),
+		};
+	}
+
 	public function addRelationship(string $name, $parameters)
 	{
 		$relationship = $this->createRelationship($name, $parameters);
 
 		$this->relationships->put($name, $relationship);
+
+		if (isset($this->sections))
+			$this->sections->put($name, $relationship);
+	}
+
+	/** @return Collection<string, ManagerSection> */
+	public function getSections() : Collection
+	{
+		$this->ensureRelationshipsInstantiated();
+
+		return $this->sections;
 	}
 
 	public function getRelationshipsNamesArray()

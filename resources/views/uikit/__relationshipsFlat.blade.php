@@ -1,15 +1,15 @@
 <div class="uk-card-footer relationships">
 
-	@foreach($relationshipManager->getRelationships() as $relationship)
+	@foreach($relationshipManager->getSections() as $section)
 
 		<div class="uk-card uk-card-small">
 			<div class="uk-card-header">
             <span class="uk-h3">
-                {!! $relationship->getCardTitle() !!}
+                {!! $section->getCardTitle() !!}
             </span>
 			</div>
 			<div class="uk-card-body">
-				{!! $relationship->render() !!}
+				{!! $section->render() !!}
 			</div>
 		</div>
 	@endforeach
