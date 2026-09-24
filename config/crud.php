@@ -24,6 +24,12 @@ return [
 		'total_limit' => 100,
 	],
 
+	'index' => [
+		// Keep the index visible while the standard create form is open.
+		// A controller may override this with its own createButtonIframe property.
+		'createButtonIframe' => true,
+	],
+
 	'realtionshipManagers' => [
 		'active' => true,
 		'createButton' => false,

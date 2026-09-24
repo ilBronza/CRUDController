@@ -116,6 +116,7 @@ class CRUDServiceProvider extends ServiceProvider
                 Route::get($childUrl . '/archived',                                         $controller . '@archived')  ->name($nameString . '.archived')->middleware($middleware);
 
                 Route::get($childUrl . '/create',                                           $controller . '@create')    ->name($nameString . '.create')->middleware($middleware);
+				Route::post($childUrl . '/create-empty',                                    $controller . '@createEmpty')->name($nameString . '.createEmpty')->middleware($middleware);
                 Route::post($childUrl,                                                      $controller . '@store')     ->name($nameString . '.store')->middleware($middleware);
 
                 Route::get($childUrl . '/{' . $singularChild . ':' . $childKey . '}',       $controller . '@show')      ->name($nameString . '.show')->middleware($middleware);

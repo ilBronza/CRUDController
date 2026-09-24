@@ -15,7 +15,12 @@ trait CRUDMethodsTrait
 		if(! $this->allowedMethods)
 			throw new \Exception('public $allowedMethods non dichiarato nella classe estesa ' . get_class($this));
 
-		return $this->allowedMethods;
+		$allowedMethods = $this->allowedMethods;
+
+		if (method_exists($this, 'hasCreateEmptyButton') && $this->hasCreateEmptyButton())
+			$allowedMethods[] = 'createEmpty';
+
+		return array_values(array_unique($allowedMethods));
 	}
 
 	/**

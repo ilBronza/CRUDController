@@ -9,6 +9,7 @@ use IlBronza\CRUD\Tests\Fixtures\Controllers\GadgetIndexController;
 use IlBronza\CRUD\Tests\Fixtures\Controllers\GadgetShowController;
 use IlBronza\CRUD\Tests\Fixtures\Models\Gadget;
 use IlBronza\CRUD\Tests\TestCase;
+use Illuminate\Support\Facades\Route;
 
 // Smoke test delle 7 route dichiarate in CRUDResourceController::$allowedMethods.
 // Non verifica i contenuti: verifica che il giro completo
@@ -22,12 +23,16 @@ class StandardRoutesTest extends TestCase
 		$router->group(['middleware' => 'web'], function ($router)
 		{
 			$router->get('gadgets', [GadgetIndexController::class, 'index'])->name('gadgets.index');
+			$router->post('gadgets/create-empty', [GadgetIndexController::class, 'createEmpty'])->name('gadgets.createEmpty');
 			$router->get('gadgets/create', [GadgetCreateStoreController::class, 'create'])->name('gadgets.create');
 			$router->post('gadgets', [GadgetCreateStoreController::class, 'store'])->name('gadgets.store');
 			$router->get('gadgets/{gadget}', [GadgetShowController::class, 'show'])->name('gadgets.show');
 			$router->get('gadgets/{gadget}/edit', [GadgetEditUpdateController::class, 'edit'])->name('gadgets.edit');
 			$router->put('gadgets/{gadget}', [GadgetEditUpdateController::class, 'update'])->name('gadgets.update');
 			$router->delete('gadgets/{gadget}', [GadgetDestroyController::class, 'destroy'])->name('gadgets.destroy');
+
+			$router->resource('resource-gadgets', GadgetIndexController::class)->only('createEmpty');
+			$router->childResource(['parents', 'gadgets'], GadgetIndexController::class);
 		});
 	}
 
@@ -50,7 +55,36 @@ class StandardRoutesTest extends TestCase
 	{
 		$this->createGadget();
 
-		$this->get('gadgets')->assertOk();
+		$this->get('gadgets')
+			->assertOk()
+			->assertSee('Crea vuoto');
+	}
+
+	public function test_create_empty_crea_un_modello_senza_passare_dal_form()
+	{
+		$response = $this->postJson('gadgets/create-empty');
+
+		$response->assertOk()->assertJson([
+			'success' => true,
+		]);
+
+		$this->assertDatabaseCount('gadgets', 1);
+		$this->assertDatabaseHas('gadgets', ['name' => null]);
+	}
+
+	public function test_resource_and_child_resource_register_the_create_empty_post_route()
+	{
+		foreach ([
+			'resource-gadgets.createEmpty' => 'resource-gadgets/create-empty',
+			'parents.gadgets.createEmpty' => 'parents/{parent}/gadgets/create-empty',
+		] as $name => $uri)
+		{
+			$route = Route::getRoutes()->getByName($name);
+
+			$this->assertNotNull($route);
+			$this->assertSame($uri, $route->uri());
+			$this->assertSame(['POST'], $route->methods());
+		}
 	}
 
 	// Le 4 route che costruiscono un form passano da CRUDDbFieldsTrait::getDbFields(),

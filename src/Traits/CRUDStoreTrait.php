@@ -64,20 +64,18 @@ trait CRUDStoreTrait
 	}
 
 	/**
-	 * A relation create button opened from a DataTable supplies the id of its
-	 * caller table. After a successful store, replace the iframe page with the
-	 * close response so the parent can refresh that exact table and close modal.
+	 * A successful create inside an iframe must close its parent popup. The
+	 * caller table is refreshed by its Reverb `created` listener, not here.
 	 */
 	protected function shouldCloseIframeAfterStore(Request $request) : bool
 	{
-		return $this->isIframed() && $request->filled('callertablename');
+		return (bool) $this->isIframed();
 	}
 
 	protected function closeIframeAfterStore(Request $request)
 	{
 		return view('crud::utilities.messages.closeIframe', [
 			'closeMessage' => __('crud::messages.success'),
-			'tableIdsToRefresh' => [$request->input('callertablename')],
 		]);
 	}
 

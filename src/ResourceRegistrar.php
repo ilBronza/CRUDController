@@ -7,8 +7,20 @@ use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
 class ResourceRegistrar extends BaseResourceRegistrar
 {
     protected $resourceDefaults = [
-        'index', 'archived', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'deleted'
+        'index', 'archived', 'create', 'createEmpty', 'store', 'show', 'edit', 'update', 'destroy', 'deleted'
     ];
+
+    /**
+     * Add the endpoint used by the optional index `createEmpty` button.
+     */
+    public function addResourceCreateEmpty($name, $base, $controller, $options)
+    {
+        $uri = $this->getResourceUri($name).'/create-empty';
+
+        $action = $this->getResourceAction($name, $controller, 'createEmpty', $options);
+
+        return $this->router->post($uri, $action);
+    }
 
     /**
      * Add the list method for a resourceful route.

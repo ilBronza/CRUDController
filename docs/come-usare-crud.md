@@ -108,6 +108,18 @@ class VehicleIndexController extends VehicleCRUD
 
 `CRUDPlainIndexTrait` fornisce il metodo pubblico `index()`, `CRUDIndexTrait` la logica. `getIndexElements()` è il punto dove definire query, eager loading e scope. `getRelatedFieldsArray()` serve quando l'entità compare come tabella relazionata nella show di un altro modello. Con `addIndexButtons()` si aggiungono bottoni sopra la tabella.
 
+Il pulsante standard **Crea** apre per default il form in un popup, lasciando visibile la pagina della tabella. Dopo un salvataggio riuscito il popup si chiude senza ricaricare direttamente la DataTable: il broadcast `created` via Reverb comunica alla tabella la chiave del nuovo record, che viene caricato dal listener esistente. Il comportamento e' configurabile globalmente con `crud.index.createButtonIframe`; per mantenere la navigazione tradizionale in uno specifico controller index dichiarare `public bool $createButtonIframe = false;`.
+
+#### Crea record vuoto
+
+Il pulsante `createEmpty` è disattivato di default. Per abilitarlo nello specifico controller index basta dichiarare:
+
+```php
+public bool $createEmpty = true;
+```
+
+Il middleware abilita automaticamente l'azione quando la flag è attiva. Il pulsante invia una `POST` a `.../create-empty` e salva il model senza passare dal form né dalla sua validazione. Conserva gli eventuali default del controller e l'associazione al modello padre. Il record deve comunque poter essere salvato con i soli valori di default previsti dal database. La tabella non viene ricaricata: il nuovo record è lasciato al normale broadcast `created` e al listener Reverb/DataTables già configurato. `Route::resource()` e `Route::childResource()` registrano già la route; lo scaffolder la include nelle route manuali generate.
+
 ### Create + Store
 
 Create e store vivono nello stesso controller perché condividono i campi del form.
@@ -409,8 +421,8 @@ usare `hasCreateButton` e opzionalmente `createButtonText`. Il testo fornito a
 ],
 ```
 
-Per aprire il form di creazione in un iframe/modale e ricaricare la sola tabella
-della relazione dopo il salvataggio, aggiungere `createButtonIframe`:
+Per aprire il form di creazione in un iframe/modale, aggiungere
+`createButtonIframe`:
 
 ```php
 'orders' => [
@@ -420,9 +432,11 @@ della relazione dopo il salvataggio, aggiungere `createButtonIframe`:
 ],
 ```
 
-Il default globale e' `crud.realtionshipManagers.createButtonIframe` (false).
+Il default globale e' `crud.realtionshipManagers.createButtonIframe` (true).
 Il valore dichiarato sulla relazione ha sempre la precedenza: `false` mantiene
-il redirect anche se il default globale e' attivo.
+il redirect anche se il default globale e' attivo. Dopo il salvataggio la modale
+si chiude senza forzare il reload: il nuovo record arriva alla tabella tramite il
+broadcast `created` di Reverb.
 
 Per una relazione `belongsToMany` o `morphToMany`, il pulsante di creazione non
 e' applicabile: gli elementi esistono gia' e va creata la sola riga pivot. Per

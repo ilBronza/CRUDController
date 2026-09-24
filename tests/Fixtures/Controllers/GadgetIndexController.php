@@ -11,6 +11,8 @@ class GadgetIndexController extends GadgetCRUD
 	use CRUDPlainIndexTrait;
 	use CRUDIndexTrait;
 
+	public bool $createEmpty = true;
+
 	public $allowedMethods = ['index'];
 
 	public function getIndexFieldsArray()
