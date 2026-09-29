@@ -231,6 +231,7 @@ trait CRUDIndexTrait
 		]);
 
 		$button->setHtmlClass('uk-button uk-button-danger ib-table-action-button');
+		$button->setHtmlClass('ib-dt-selection-action uk-hidden');
 		$button->setData('route', $this->getRouteUrlByType('bulkDelete'));
 
 		$this->table->addButton($button);
