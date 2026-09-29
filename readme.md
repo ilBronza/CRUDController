@@ -119,8 +119,8 @@ editor), delete, force-delete e archive. I model che estendono `BaseModel` o
 `BasePivotModel` emettono `created` indipendentemente dal controller che li ha
 generati. Anche `touch()` conserva il comportamento Eloquent e, se aggiorna il
 timestamp, emette un evento `updated` sul canale del model. Per disabilitarlo
-su un model specifico, sovrascrivere `getCrudTouchedBroadcastText()` e
-restituire `null`.
+per un model specifico insieme agli altri aggiornamenti, sovrascrivere
+`getCrudBroadcastTextForUpdated()` e restituire `null`.
 
 Ogni canale effettivamente usato viene registrato una sola volta in
 `crud__channels` (`name`, timestamp). Per creare la tabella, pubblicare e
@@ -132,18 +132,18 @@ php artisan migrate
 ```
 
 `BaseModel` e `BasePivotModel` includono anche `BroadcastCrudModelEventsTrait`:
-gli eventi Eloquent successivi a una scrittura — `created`, `updated`, `saved`,
-`trashed`, `deleted`, `restored` e `forceDeleted` — generano automaticamente una
+gli eventi Eloquent successivi a una scrittura — `created`, `updated`, `trashed`,
+`deleted`, `restored` e `forceDeleted` — generano automaticamente una
 notifica con la stessa action, anche per salvataggi e cancellazioni eseguiti da
 servizi, observer o job. Il trait usa `broadcastCrudAction()`, quindi rispetta la
 configurazione, i testi, i canali del model e l'invio dopo il commit già previsti
 da `BroadcastCrudTrait`.
 
-Questa prima versione è aggiuntiva: gli invii del CRUD e quelli già presenti
-per `created` e `touch()` rimangono attivi. Non c'è accorpamento o deduplicazione:
-un salvataggio che modifica un model produce `updated` e `saved`, mentre una
-creazione produce `created` e `saved`; il CRUD o `touch()` possono aggiungere
-ulteriori notifiche. Anche `saveQuietly()`, `updateQuietly()`,
+Ogni salvataggio genera una sola notifica specifica: `created` per un nuovo
+model, `updated` per un model esistente realmente modificato e nessuna notifica
+per un `save()` senza modifiche. Anche `touch()` produce il solo evento `updated`.
+L'action `saved` resta disponibile per gli invii espliciti che devono invalidare
+un'intera tabella. Anche `saveQuietly()`, `updateQuietly()`,
 `deleteQuietly()` generano la notifica realtime dopo aver scritto nel database,
 pur continuando a silenziare observer e gli altri eventi Eloquent. Le query
 massive, `forceDeleteQuietly()`, `restoreQuietly()` e `updateWithoutEvent()` non

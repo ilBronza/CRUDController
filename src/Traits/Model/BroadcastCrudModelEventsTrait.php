@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Completa gli invii di BroadcastCrudTrait per le modifiche fuori dal CRUD.
- * Gli invii esistenti (controller, created e touch) restano attivi:
- * questa prima versione non accorpa né deduplica le notifiche.
+ * Ogni scrittura emette l'evento Eloquent più specifico: created per i nuovi
+ * model e updated per quelli esistenti che sono stati realmente modificati.
  */
 trait BroadcastCrudModelEventsTrait
 {
@@ -21,11 +21,6 @@ trait BroadcastCrudModelEventsTrait
 		static::updated(function(Model $model)
 		{
 			$model->broadcastCrudAction('updated');
-		});
-
-		static::saved(function(Model $model)
-		{
-			$model->broadcastCrudAction('saved');
 		});
 
 		static::deleted(function(Model $model)
@@ -47,16 +42,6 @@ trait BroadcastCrudModelEventsTrait
 		{
 			$model->broadcastCrudAction('forceDeleted');
 		});
-	}
-
-	public function touch($attribute = null)
-	{
-		$touched = parent::touch($attribute);
-
-		if($touched)
-			$this->broadcastCrudAction('updated');
-
-		return $touched;
 	}
 
 	/**
