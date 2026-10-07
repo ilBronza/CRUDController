@@ -59,4 +59,5 @@ return [
   'cardIntroShow' => 'Informazioni sull’elemento',
   'cardIntroShowIlBronza\\Notes\\Models\\Notetype' => 'Informazioni sul tipo di nota',
   'cardIntroShowIlBronza\\AccountManager\\Models\\Userdata' => 'Informazioni sui dati utente',
+    'nestableElementMovedTo' => 'Elemento spostato nella nuova posizione',
 ];
