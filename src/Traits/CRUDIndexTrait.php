@@ -302,6 +302,11 @@ trait CRUDIndexTrait
 
 		$this->setPagetitle();
 
+		$queryProvider = $elementsGetter === null && method_exists($this, 'getIndexQuery')
+			&& is_callable([$this, 'getIndexQuery'])
+			? fn () => $this->getIndexQuery()
+			: null;
+
 		$this->table = Datatables::create(
 			$tableName, $this->getTableFieldsGroups($fieldsGroupsNames), function () use ($elementsGetter)
 		{
@@ -309,7 +314,7 @@ trait CRUDIndexTrait
 				return $elementsGetter();
 
 			return $this->getIndexElements();
-		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit
+		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit, null, $queryProvider
 		);
 
 		$this->table->setFiltersHidden($this->filtersHidden);
