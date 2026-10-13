@@ -110,6 +110,26 @@ class VehicleIndexController extends VehicleCRUD
 
 Il pulsante standard **Crea** apre per default il form in un popup, lasciando visibile la pagina della tabella. Dopo un salvataggio riuscito il popup si chiude senza ricaricare direttamente la DataTable: il broadcast `created` via Reverb comunica alla tabella la chiave del nuovo record, che viene caricato dal listener esistente. Il comportamento e' configurabile globalmente con `crud.index.createButtonIframe`; per mantenere la navigazione tradizionale in uno specifico controller index dichiarare `public bool $createButtonIframe = false;`.
 
+#### Cache dei dati dell’index
+
+`CRUDIndexTrait` usa di default `public bool $useIndexCache = true`. La cache si attiva soltanto per la risposta AJAX dell’elenco completo e se il modello principale usa `CRUDCacheTrait`, anche ereditato. Un hit evita sia `getIndexElements()` sia la trasformazione delle celle. Il layout HTML e l’ID della DataTable continuano a essere generati normalmente.
+
+La chiave è `Model::getIndexCacheKey() . '_jsonData'`. Il valore contiene la risposta dati già preparata e una firma del controller, URL, parametri del dataset, lingua e definizione dei campi. La firma esclude il nonce AJAX, `draw`, token CSRF e `cachedtablekey`: un refresh riusa la cache. Elenchi diversi dello stesso modello sostituiscono la stessa entry anziché condividere celle incompatibili; resta una sola chiave da invalidare.
+
+La cache è condivisa fra utenti e resta valida fino all’invalidazione del modello. `forgetIndexCache()` elimina sia le chiavi index restituite da `getIndexCacheKeys()` sia le rispettive `_jsonData`. Salvataggio, `touch()`, cancellazione e ripristino del modello passano da questa invalidazione. Quando si modificano dati collegati o si effettuano scritture dirette sul database, l’applicazione deve chiamare `$model->touch()` oppure `Model::forgetIndexCache()`. Anche dopo una modifica al codice dei renderer si può usare quest’ultimo metodo per rigenerare le celle.
+
+Per mantenere un index sempre aggiornato:
+
+```php
+public bool $useIndexCache = false;
+```
+
+Per elenchi la cui visibilità dipende dall’utente o dalla sessione, sovrascrivere `usesIndexCache(): bool` e disabilitare la cache condivisa in quei contesti. Il controller Clients la esclude per gli `areaManager`. Non vengono create chiavi per utente.
+
+`beforeIndex(): void` viene eseguito anche sugli hit: gli effetti di sessione necessari a ogni apertura devono stare qui, perché `getIndexElements()` non viene chiamato a cache calda. Le richieste `rowId`, `rowIds`, `ibeditor`, `ibFetcher` e gli index con un `elementsGetter` esplicito non usano questa cache. Le definizioni non serializzabili vengono calcolate normalmente.
+
+È possibile personalizzare `$indexCacheKey` nel controller; in tal caso il modello deve includere la chiave base personalizzata in `getIndexCacheKeys()` per invalidarla insieme all’index principale.
+
 #### Crea record vuoto
 
 Il pulsante `createEmpty` è disattivato di default. Per abilitarlo nello specifico controller index basta dichiarare:

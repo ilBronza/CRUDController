@@ -8,6 +8,7 @@ use Exception;
 use IlBronza\Buttons\Button;
 use IlBronza\CRUD\Buttons\CreateEmptyButton;
 use IlBronza\CRUD\Interfaces\CondensableModelInterface;
+use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -261,6 +262,36 @@ trait CRUDIndexTrait
 
 	public function beforeRenderIndex() {}
 
+	/** Runs for both freshly calculated and cached index responses. */
+	public function beforeIndex() : void {}
+
+	public function usesIndexCache() : bool
+	{
+		return (bool) ($this->useIndexCache ?? true);
+	}
+
+	protected function getIndexJsonDataCacheKey(string $modelClass) : string
+	{
+		return ($this->indexCacheKey ?? $modelClass::getIndexCacheKey()) . '_jsonData';
+	}
+
+	protected function getIndexDataCacheContext(Request $request, array $definition) : ?string
+	{
+		try
+		{
+			// One entry per model: a different index replaces it, never reads its cells.
+			return hash('sha256', serialize([
+				static::class, $request->method(), $request->url(), app()->getLocale(),
+				$request->except(['_', '_token', 'draw', 'cachedtablekey']), $definition,
+			]));
+		}
+		catch (\Throwable $exception)
+		{
+			// Definitions containing closures or other non-serializable values stay live.
+			return null;
+		}
+	}
+
 	public function getCaption() : null|bool|string
 	{
 		if (isset($this->caption))
@@ -301,6 +332,31 @@ trait CRUDIndexTrait
 			$selectRow = $this->getSelectRow();
 
 		$this->setPagetitle();
+		$this->beforeIndex();
+
+		$modelClass = $baseModel ?? $this->getModelClass();
+		$fieldsGroups = $this->getTableFieldsGroups($fieldsGroupsNames);
+		$selectRows = $selectRow ?: $this->mustShowRowSelectCheckboxes();
+		$cacheKey = $cacheContext = null;
+
+		if ($request->ajax() && ! $request->ibFetcher
+			&& ! $request->hasAny(['rowId', 'rowIds', 'ibeditor'])
+			&& $elementsGetter === null && $this->usesIndexCache()
+			&& in_array(CRUDCacheTrait::class, class_uses_recursive($modelClass), true))
+		{
+			$cacheContext = $this->getIndexDataCacheContext($request, [
+				$modelClass, $tableName, $fieldsGroups, $selectRows, $tableVariables, $this->bulkEdit,
+			]);
+
+			if ($cacheContext !== null)
+			{
+				$cacheKey = $this->getIndexJsonDataCacheKey($modelClass);
+				$cached = cache()->get($cacheKey);
+				if (is_array($cached) && ($cached['context'] ?? null) === $cacheContext
+					&& is_array($cached['response'] ?? null))
+					return $cached['response'];
+			}
+		}
 
 		$queryProvider = $elementsGetter === null && method_exists($this, 'getIndexQuery')
 			&& is_callable([$this, 'getIndexQuery'])
@@ -308,13 +364,13 @@ trait CRUDIndexTrait
 			: null;
 
 		$this->table = Datatables::create(
-			$tableName, $this->getTableFieldsGroups($fieldsGroupsNames), function () use ($elementsGetter)
+			$tableName, $fieldsGroups, function () use ($elementsGetter)
 		{
 			if ($elementsGetter)
 				return $elementsGetter();
 
 			return $this->getIndexElements();
-		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit, null, $queryProvider
+		}, $selectRows, $tableVariables, $modelClass, $this->bulkEdit, null, $queryProvider
 		);
 
 		$this->table->setFiltersHidden($this->filtersHidden);
@@ -323,7 +379,13 @@ trait CRUDIndexTrait
 			$this->table->setAjaxMethod('POST');
 
 		if ((request()->ajax()) && (! request()->ibFetcher))
-			return $this->table->renderPage();
+		{
+			$response = $this->table->renderPage();
+			if ($cacheKey !== null)
+				cache()->forever($cacheKey, ['context' => $cacheContext, 'response' => $response]);
+
+			return $response;
+		}
 
 		if ($this->fixedHeader ?? null)
 			$this->table->fixedHeader = $this->fixedHeader;
@@ -390,7 +452,7 @@ trait CRUDIndexTrait
 
 	public function getIndexCacheKey()
 	{
-		return $this->indexCacheKey;
+		return $this->indexCacheKey ?? $this->getModelClass()::getIndexCacheKey();
 	}
 
 	public function getPlaceholderElement()

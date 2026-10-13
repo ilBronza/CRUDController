@@ -96,6 +96,7 @@ class CRUD extends Controller
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
+	public bool $useIndexCache = true;
 
 	// index parameters
 	public $canEditModelInstance = true;
