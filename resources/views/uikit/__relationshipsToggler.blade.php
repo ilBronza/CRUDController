@@ -1,4 +1,4 @@
-<div class="uk-card-footer">
+<div class="uk-card-footer relationships">
 
 @foreach($relationshipManager->getSections() as $section)
     <div  class="uk-margin" >
@@ -19,3 +19,5 @@
 @endforeach
 
 </div>
+
+@include('crud::uikit.__relationshipsTableSizing')

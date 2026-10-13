@@ -15,3 +15,5 @@
 	@endforeach
 
 </div>
+
+@include('crud::uikit.__relationshipsTableSizing')

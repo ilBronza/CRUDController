@@ -22,6 +22,8 @@
 
 </div>
 
+@include('crud::uikit.__relationshipsTableSizing')
+
 <script type="text/javascript">
 
 	window.strSanitize = function(string)
