@@ -279,6 +279,16 @@ Please see [contributing.md](contributing.md) for details and a todolist.
 
 If you discover any security related issues, please email author email instead of using the issue tracker.
 
+## Catalogo filtrabile
+
+Il componente `<x-crud::catalog :catalog="$catalog" />` mostra modelli Eloquent
+come schede con filtri, ordinamento e paginazione. Ogni catalogo dichiara query,
+campi o scope ammessi tramite una classe `CatalogParametersFile`; i filtri sono
+classi estensibili. Funziona con GET e aggiornamento AJAX senza nuovi framework.
+
+Vedi [la guida completa al catalogo](docs/catalogo.md) per modello, parameters file,
+controller, route, opzioni dinamiche e schede personalizzate.
+
 ## Credits
 
 - [author name][link-author]
