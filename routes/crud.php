@@ -109,3 +109,9 @@ Route::get('crud/relationships/model/{model}/key/{key}/relation/{relation}/assoc
 
 Route::post('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'store'])
 	->middleware('web');
+
+Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'crud/seo', 'as' => 'crud.seo.'], function () {
+    Route::get('{model}/{key}', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'index'])->name('index');
+    Route::get('{model}/{key}/{locale}/edit', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'edit'])->name('edit');
+    Route::put('{model}/{key}/{locale}', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'update'])->name('update');
+});
