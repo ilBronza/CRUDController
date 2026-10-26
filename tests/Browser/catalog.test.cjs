@@ -40,8 +40,13 @@ function browser() {
         const node = {
             id: 'crud-catalog', content, isConnected: true, dataset: { errorMessage: 'Loading failed' },
             attributes: {}, parts: {},
+            options: ['filters[category][]', 'filters[light_source][]'].map(name => ({
+                scrollTop: 0,
+                querySelector() { return { name }; },
+            })),
             setAttribute(key, value) { this.attributes[key] = value; },
             querySelector(selector) { return this.parts[selector]; },
+            querySelectorAll(selector) { return selector === '.crud-catalog-options' ? this.options : []; },
             matches(selector) { return selector === '[data-crud-catalog]'; },
             contains() { return false; },
             replaceWith(next) { this.isConnected = false; root = next; },
@@ -96,6 +101,18 @@ test('GET form state retains zero and context, removes blanks and resets page', 
     assert.equal(app.root.content, 'filtered results');
     assert.equal(app.history.length, 1);
     assert.equal(app.root.attributes['aria-busy'], 'false');
+});
+
+test('filter lists retain independent scroll positions, including scrolling while loading', async () => {
+    const app = browser();
+    const original = app.root;
+    original.options[0].scrollTop = 120;
+    original.options[1].scrollTop = 640;
+    app.submit([['filters[category][]', 'wash']]);
+    original.options[0].scrollTop = 272;
+    await app.respond(0, 'filtered results');
+    assert.notEqual(app.root, original);
+    assert.deepEqual(app.root.options.map(options => options.scrollTop), [272, 640]);
 });
 
 test('an older response cannot overwrite a newer selection or its history', async () => {

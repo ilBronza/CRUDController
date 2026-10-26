@@ -72,6 +72,11 @@
             }
 
             const focusedId = root.contains(document.activeElement) ? document.activeElement.id : null;
+            const optionsScroll = new Map();
+            root.querySelectorAll('.crud-catalog-options').forEach(options => {
+                const input = options.querySelector('[name]');
+                if (input) optionsScroll.set(input.name, options.scrollTop);
+            });
             const isOpen = root.dataset.filtersOpen === 'true';
             replacement.dataset.filtersOpen = String(isOpen);
             replacement.querySelector('[data-catalog-toggle]').setAttribute('aria-expanded', String(isOpen));
@@ -81,6 +86,10 @@
             if (window.UIkit) window.UIkit.update(replacement);
             const focusTarget = focusedId && document.getElementById(focusedId);
             (focusTarget || replacement.querySelector('[data-catalog-total]')).focus({ preventScroll: true });
+            replacement.querySelectorAll('.crud-catalog-options').forEach(options => {
+                const input = options.querySelector('[name]');
+                if (input && optionsScroll.has(input.name)) options.scrollTop = optionsScroll.get(input.name);
+            });
         } catch (error) {
             if (state.sequence !== sequence || error.name === 'AbortError' || !root.isConnected) return;
             errorBox.textContent = error.message || root.dataset.errorMessage;
