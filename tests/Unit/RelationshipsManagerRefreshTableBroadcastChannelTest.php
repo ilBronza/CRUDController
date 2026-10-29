@@ -64,6 +64,94 @@ class RelationshipsManagerRefreshTableBroadcastChannelTest extends TestCase
 
 		$this->assertSame('Aggiungi ordine', $table->buttons[0]->getText());
 	}
+
+	public function test_relation_create_button_can_open_in_an_iframe() : void
+	{
+		$manager = new class('show', new CreateButtonParentModel()) extends RelationshipsManager
+		{
+			public function getAllRelationsParameters() : array
+			{
+				return [
+					'show' => [
+						'relations' => [
+							'orders' => [
+								'hasCreateButton' => true,
+								'createButtonIframe' => true,
+							],
+						],
+					],
+				];
+			}
+		};
+
+		$relationship = $manager->getRelationships()->get('orders');
+		$table = new RelationButtonsTable();
+		$relationship->table = $table;
+		$relationship->manageTableButtons();
+
+		$this->assertTrue($table->buttons[0]->isIframe());
+		$this->assertTrue($table->buttons[0]->getData()['openiframe']);
+		$this->assertSame('GET', $table->buttons[0]->getData()['method']);
+		$this->assertTrue($table->buttons[0]->isAjax());
+		$this->assertContains('ib-table-action-button', $table->buttons[0]->getHtmlClasses());
+	}
+
+	public function test_relation_create_button_uses_the_global_iframe_default() : void
+	{
+		config(['crud.realtionshipManagers.createButtonIframe' => true]);
+
+		$manager = new class('show', new CreateButtonParentModel()) extends RelationshipsManager
+		{
+			public function getAllRelationsParameters() : array
+			{
+				return [
+					'show' => [
+						'relations' => [
+							'orders' => [
+								'hasCreateButton' => true,
+							],
+						],
+					],
+				];
+			}
+		};
+
+		$relationship = $manager->getRelationships()->get('orders');
+		$table = new RelationButtonsTable();
+		$relationship->table = $table;
+		$relationship->manageTableButtons();
+
+		$this->assertTrue($table->buttons[0]->isIframe());
+	}
+
+	public function test_relation_create_button_can_override_the_global_iframe_default() : void
+	{
+		config(['crud.realtionshipManagers.createButtonIframe' => true]);
+
+		$manager = new class('show', new CreateButtonParentModel()) extends RelationshipsManager
+		{
+			public function getAllRelationsParameters() : array
+			{
+				return [
+					'show' => [
+						'relations' => [
+							'orders' => [
+								'hasCreateButton' => true,
+								'createButtonIframe' => false,
+							],
+						],
+					],
+				];
+			}
+		};
+
+		$relationship = $manager->getRelationships()->get('orders');
+		$table = new RelationButtonsTable();
+		$relationship->table = $table;
+		$relationship->manageTableButtons();
+
+		$this->assertFalse($table->buttons[0]->isIframe());
+	}
 }
 
 class RefreshTableChannelParentModel extends Model

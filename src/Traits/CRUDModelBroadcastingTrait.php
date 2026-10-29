@@ -21,18 +21,35 @@ trait CRUDModelBroadcastingTrait
 	 */
 	public function getCrudBroadcastExtraChannels(Model $model, string $action) : array
 	{
+		if(! method_exists($this, 'getCrudBroadcastChannel'))
+			return [];
+
+		$channels = $this->getCrudBroadcastChannel($model, $action);
+
+		return array_values(array_filter(
+			is_array($channels) ? $channels : [$channels],
+			fn($channel) => ! is_null($channel) && $channel !== ''
+		));
+	}
+
+	/**
+	 * Compatibility helper for controllers that still expose their contextual
+	 * channel through getCrudBroadcastChannel().
+	 */
+	public function getCrudBroadcastChannel(Model $model, string $action) : string | array | null
+	{
 		return [];
 	}
 
 	public function broadcastCrudModel(Model $model, string $action) : void
 	{
-		if(! config('crud.broadcast.enabled'))
-			return;
+		// if(! config('crud.broadcast.enabled'))
+		// 	return;
 
-		if(is_null($text = $this->getCrudBroadcastText($model, $action)))
-			return;
+		// if(is_null($text = $this->getCrudBroadcastText($model, $action)))
+		// 	return;
 
-		$this->broadcastCrudMessage($model, $text, $action);
+		// $this->broadcastCrudMessage($model, $text, $action);
 	}
 
 	/** Send an explicit free-text message from a custom CRUD action. */

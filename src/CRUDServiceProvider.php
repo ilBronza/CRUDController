@@ -5,6 +5,7 @@ namespace IlBronza\CRUD;
 use IlBronza\CRUD\CRUDMenuUtilities;
 use IlBronza\CRUD\CRUDRoutingHelper;
 use IlBronza\CRUD\Commands\ControllerCrudParametersTraitCommand;
+use IlBronza\CRUD\Commands\CleanupCommand;
 use IlBronza\CRUD\Commands\CrudBelongsToController;
 use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Commands\MakeArchiveMigrationCommand;
@@ -21,6 +22,7 @@ use IlBronza\CRUD\Middleware\CRUDReturnBackMiddleware;
 use IlBronza\CRUD\Middleware\CRUDUserAllowedMethod;
 use IlBronza\CRUD\Middleware\IframeCheckerMiddleware;
 use IlBronza\CRUD\ResourceRegistrar;
+use IlBronza\CRUD\Traits\IlBronzaPackages\IlBronzaServiceProviderPackagesTrait;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
@@ -32,6 +34,8 @@ use Illuminate\Support\Str;
 
 class CRUDServiceProvider extends ServiceProvider
 {
+    // use IlBronzaServiceProviderPackagesTrait;
+
     /**
      * Perform post-registration booting of services.
      *
@@ -112,6 +116,7 @@ class CRUDServiceProvider extends ServiceProvider
                 Route::get($childUrl . '/archived',                                         $controller . '@archived')  ->name($nameString . '.archived')->middleware($middleware);
 
                 Route::get($childUrl . '/create',                                           $controller . '@create')    ->name($nameString . '.create')->middleware($middleware);
+				Route::post($childUrl . '/create-empty',                                    $controller . '@createEmpty')->name($nameString . '.createEmpty')->middleware($middleware);
                 Route::post($childUrl,                                                      $controller . '@store')     ->name($nameString . '.store')->middleware($middleware);
 
                 Route::get($childUrl . '/{' . $singularChild . ':' . $childKey . '}',       $controller . '@show')      ->name($nameString . '.show')->middleware($middleware);
@@ -211,6 +216,8 @@ class CRUDServiceProvider extends ServiceProvider
      */
     protected function bootForConsole()
     {
+        $this->commands([CleanupCommand::class]);
+
         // Publishing the configuration file.
         $this->publishes([
             __DIR__.'/../config/crud.php' => config_path('crud.php'),

@@ -73,6 +73,28 @@ trait CRUDCreateTrait
 	}
 
 	/**
+	 * Keep the iframe context on the form POST. The DataTable iframe opener
+	 * supplies it to the create GET request, while the form action is normally
+	 * generated again without its query string.
+	 */
+	protected function addIframeContextToFormAction(string $action) : string
+	{
+		if (! $this->isIframed())
+			return $action;
+
+		$parameters = [
+			'iframed' => 1,
+		];
+
+		if ($callerTableName = request()->input('callertablename'))
+			$parameters['callertablename'] = $callerTableName;
+
+		$separator = str_contains($action, '?') ? '&' : '?';
+
+		return $action . $separator . http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
+	}
+
+	/**
 	 * share parameters to populate create view
 	 *
 	 * @return callable
@@ -112,7 +134,9 @@ trait CRUDCreateTrait
 		$this->modelFormHelper = CrudModelCreator::buildForm(
 			$this->getModel(),
 			$this->getCreateParametersClass(),
-			$this->getStoreModelAction(),
+			$this->addIframeContextToFormAction(
+				$this->getStoreModelAction()
+			),
 			$this->provideFormDefaultSettings(),
 		);
 

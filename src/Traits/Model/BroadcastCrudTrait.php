@@ -9,26 +9,26 @@ use Illuminate\Support\Str;
 
 trait BroadcastCrudTrait
 {
-	public static function bootBroadcastCrudTrait() : void
-	{
-		static::created(function(Model $model)
-		{
-			$model->broadcastCrudAction('created');
-		});
-	}
+	// public static function bootBroadcastCrudTrait() : void
+	// {
+	// 	static::created(function(Model $model)
+	// 	{
+	// 		$model->broadcastCrudAction('created');
+	// 	});
+	// }
 
 	/**
 	 * Il touch cambia il timestamp senza passare dal controller: trasmette da sé.
 	 */
-	public function touch($attribute = null)
-	{
-		$touched = parent::touch($attribute);
+	// public function touch($attribute = null)
+	// {
+	// 	$touched = parent::touch($attribute);
 
-		if($touched)
-			$this->broadcastCrudAction('updated');
+	// 	if($touched)
+	// 		$this->broadcastCrudAction('updated');
 
-		return $touched;
-	}
+	// 	return $touched;
+	// }
 
 	/**
 	 * Canali intrinseci del model: dove va pubblicata la modifica
@@ -37,6 +37,9 @@ trait BroadcastCrudTrait
 	public function getCrudBroadcastChannels(string $action) : array
 	{
 		$method = 'getCrudBroadcastChannelsFor' . Str::studly($action);
+
+		if(! method_exists($this, $method))
+			return [$this->getCrudBroadcastChannel()];
 
 		return $this->{$method}();
 	}
@@ -87,6 +90,13 @@ trait BroadcastCrudTrait
 	public function getCrudBroadcastText(string $action) : ? string
 	{
 		$method = 'getCrudBroadcastTextFor' . Str::studly($action);
+		$legacyMethod = 'getCrud' . Str::studly($action) . 'BroadcastText';
+
+		if(method_exists($this, $legacyMethod))
+			return $this->{$legacyMethod}();
+
+		if(! method_exists($this, $method))
+			return $this->getCrudBroadcastTranslation($action);
 
 		return $this->{$method}();
 	}

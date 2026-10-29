@@ -5,7 +5,9 @@ namespace IlBronza\CRUD\Traits\Media;
 use IlBronza\CRUD\Models\Media;
 use IlBronza\FormField\FormField;
 use Spatie\Image\Enums\Fit;
+use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\InteractsWithMedia as SpatieInteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 trait InteractsWithMedia
 {
@@ -17,18 +19,26 @@ trait InteractsWithMedia
 	{
 		$this
 			->addMediaConversion('thumb')
-			->fit(Fit::Crop, 300, 300)
+			->fit(static::getCrudMediaConversionCropFit(), 300, 300)
 			->nonQueued();
 
 		$this
 			->addMediaConversion('thumb-mini')
-			->fit(Fit::Crop, 100, 100)
+			->fit(static::getCrudMediaConversionCropFit(), 100, 100)
 			->nonQueued();
 
 		$this
 			->addMediaConversion('table')
-			->fit(Fit::Crop, 25, 25)
+			->fit(static::getCrudMediaConversionCropFit(), 25, 25)
 			->nonQueued();
+	}
+
+	private static function getCrudMediaConversionCropFit()
+	{
+		if(class_exists(Fit::class))
+			return Fit::Crop;
+
+		return Manipulations::FIT_CROP;
 	}
 
 	static function getMediaFolder()
@@ -70,8 +80,18 @@ trait InteractsWithMedia
 		return $query->orderBy('created_at', 'DESC')->first();
 	}
 
-	public function getMainMedia(string $collectionName = null) : ? Media
+	public function getMainMedia(string $collectionName = null) : ? BaseMedia
 	{
+		if($this->relationLoaded('media'))
+		{
+			$media = $this->getRelation('media');
+
+			if($collectionName)
+				$media = $media->where('collection_name', $collectionName);
+
+			return $media->sortBy('created_at')->first();
+		}
+
 		$query = $this->media();
 
 		if($collectionName)

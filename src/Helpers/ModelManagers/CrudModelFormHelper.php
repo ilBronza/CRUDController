@@ -18,6 +18,8 @@ abstract class CrudModelFormHelper implements CrudModelManager
 {
 	use ModelManagersSettersAndGettersTraits;
 
+	public const IFRAME_CANCEL_HREF = '#crud-close-parent-overlay';
+
 	public $model;
 	public $fieldsetsProvider;
 
@@ -164,7 +166,12 @@ abstract class CrudModelFormHelper implements CrudModelManager
 			$formOptions['title'] ?? $this->getTitle()
 		);
 
-		if($formOptions['cancelHref'] ?? false)
+		if(request()->boolean('iframed'))
+		{
+			$this->form->setCancelHref(static::IFRAME_CANCEL_HREF);
+			$this->form->addExtraView('outherBottom', 'crud::utilities.iframe.cancel');
+		}
+		elseif($formOptions['cancelHref'] ?? false)
 			$this->form->setCancelHref($formOptions['cancelHref']);
 
 		if($formOptions['buttonsNavbar'] ?? false)
@@ -172,7 +179,7 @@ abstract class CrudModelFormHelper implements CrudModelManager
 				$formOptions['buttonsNavbar']
 			);
 
-		if($formOptions['backToListUrl'] ?? false)
+		if((! request()->boolean('iframed')) && ($formOptions['backToListUrl'] ?? false))
 			$this->form->setBackToListUrl(
 				$formOptions['backToListUrl']
 			);

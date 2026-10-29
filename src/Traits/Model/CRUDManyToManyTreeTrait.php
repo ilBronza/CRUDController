@@ -92,9 +92,9 @@ trait CRUDManyToManyTreeTrait
         return $this->ancestors($mainComponentName)->get();
     }
 
-    public function getDescendants(string $mainComponentName = null) : Collection
+    public function getDescendants() : Collection
     {
-        return $this->descendants($mainComponentName)->get();
+        return $this->descendants;
     }
 
     private function deleteAncestorRelation($ancestor = null) : bool

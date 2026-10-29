@@ -33,6 +33,11 @@ return [
 	'elementsSuccesfullyDeleted' => ':elements elementi cancellati con successo',
 	'cardTitleShow' => 'Mostra :element',
 	'createRelatedBy' => 'Crea :related per :by',
+	'associateRelated' => 'Associa :what',
+	'associateSelectTitle' => 'Seleziona :what da associare',
+	'associateSelected' => 'Associa selezionati',
+	'associateSelectAtLeastOne' => 'Seleziona almeno un elemento da associare.',
+	'associateSuccess' => 'Associazioni aggiornate con successo.',
 	'activities' => [
 		'created' => 'Creato',
 		'updated' => 'Aggiornato',
@@ -50,8 +55,9 @@ return [
 	'condenseTargetLabel' => 'Elemento da mantenere',
 	'condenseSubmit' => 'Condensa',
 	'condenseSuccess' => ':moved relazioni spostate, :condensed elementi condensati',
-	'clientTestEnvironmentBanner' => 'Ambiente di test cliente: :label',
-	'clientTestEnvironmentBannerDefault' => 'Si possono sminchiare i dati con serenità. Le immagini ed i files mancano ed è normale.',
 
+  'cardIntroShow' => 'Informazioni sull’elemento',
+  'cardIntroShowIlBronza\\Notes\\Models\\Notetype' => 'Informazioni sul tipo di nota',
+  'cardIntroShowIlBronza\\AccountManager\\Models\\Userdata' => 'Informazioni sui dati utente',
+    'nestableElementMovedTo' => 'Elemento spostato nella nuova posizione',
 ];
-

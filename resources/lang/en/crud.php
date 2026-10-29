@@ -4,6 +4,11 @@
 return [
 	'viewElementsTree' => 'View Elements Tree',
 	'createBy' => 'Created by :by',
+	'associateRelated' => 'Associate :what',
+	'associateSelectTitle' => 'Select :what to associate',
+	'associateSelected' => 'Associate selected',
+	'associateSelectAtLeastOne' => 'Select at least one item to associate.',
+	'associateSuccess' => 'Associations updated successfully.',
 
 	'add' => 'Add :what',
 	'showElement' => 'Show :element',
@@ -13,8 +18,6 @@ return [
 	'condenseTargetLabel' => 'Element to keep',
 	'condenseSubmit' => 'Condense',
 	'condenseSuccess' => ':moved relations moved, :condensed elements condensed',
-	'clientTestEnvironmentBanner' => 'Client test environment: :label',
-	'clientTestEnvironmentBannerDefault' => 'remote trial instance',
 	'showElementPage' => 'Show Element :element',
 	'editElement' => 'Edit :element',
 	'singleModel_categories' => 'Category',
@@ -37,4 +40,3 @@ return [
 	'clearCache' => 'Clear Cache',
 	'serverClearCache' => 'Clear Server Cache',
 ];
-

@@ -4,8 +4,10 @@ use IlBronza\CRUD\Http\Controllers\Utilities\AjaxSearchController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Archive\ArchiveController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryController;
 use IlBronza\CRUD\Http\Controllers\Utilities\History\HistoryByFieldController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Media\DeleteMediaController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\SetMediaIntegrityCheckController;
+use IlBronza\CRUD\Http\Controllers\Utilities\Relationships\AssociateBelongsToManyController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -96,3 +98,20 @@ Route::group([
 Route::post('crud/ajax-search', AjaxSearchController::class)
 	->middleware('web')
 	->name('crud.ajaxSearch');
+
+Route::delete('crud/media/model-class/{modelClass}/model-key/{modelKey}/media-key/{mediaKey}', [DeleteMediaController::class, 'destroy'])
+	->middleware('web')
+	->name('crud.media.destroy');
+
+Route::get('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'index'])
+	->middleware('web')
+	->name('crud.relationships.associate');
+
+Route::post('crud/relationships/model/{model}/key/{key}/relation/{relation}/associate', [AssociateBelongsToManyController::class, 'store'])
+	->middleware('web');
+
+Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'crud/seo', 'as' => 'crud.seo.'], function () {
+    Route::get('{model}/{key}', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'index'])->name('index');
+    Route::get('{model}/{key}/{locale}/edit', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'edit'])->name('edit');
+    Route::put('{model}/{key}/{locale}', [\IlBronza\CRUD\Http\Controllers\Utilities\Seo\SeoController::class, 'update'])->name('update');
+});

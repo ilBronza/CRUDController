@@ -95,10 +95,13 @@ trait CRUDEditTrait
 	{
 		$this->getExtendedEditButtons();
 
+		if($this->isIframed())
+			view()->share('backToListUrl', null);
+
 		if((isset($this->editButtons))&&(count($this->editButtons)))
 			view()->share('buttons', $this->editButtons);
 
-		if(! $this->avoidBackToList())
+		if((! $this->isIframed()) && (! $this->avoidBackToList()))
 			if($button = $this->getBackToListButton())
 				$this->addNavbarButton(
 					$button
@@ -133,6 +136,8 @@ trait CRUDEditTrait
 	public function shareExtraParameters()
 	{
 		//TODO accorpare sta roba presente anche in show in un unico helper (creare show helper e edit helper e che sia finita)
+		$this->setRelationshipsManagerLegacyType('edit');
+
 		$this->shareModels();
 
 		if(method_exists($this, 'getRelationshipsManagerClass'))
@@ -147,6 +152,8 @@ trait CRUDEditTrait
 	 **/
 	public function _edit($modelInstance)
 	{
+		$this->setRelationshipsManagerLegacyType('edit');
+
 		$this->setModel(
 			$modelInstance
 		);

@@ -119,8 +119,8 @@ editor), delete, force-delete e archive. I model che estendono `BaseModel` o
 `BasePivotModel` emettono `created` indipendentemente dal controller che li ha
 generati. Anche `touch()` conserva il comportamento Eloquent e, se aggiorna il
 timestamp, emette un evento `updated` sul canale del model. Per disabilitarlo
-su un model specifico, sovrascrivere `getCrudTouchedBroadcastText()` e
-restituire `null`.
+per un model specifico insieme agli altri aggiornamenti, sovrascrivere
+`getCrudBroadcastTextForUpdated()` e restituire `null`.
 
 Ogni canale effettivamente usato viene registrato una sola volta in
 `crud__channels` (`name`, timestamp). Per creare la tabella, pubblicare e
@@ -130,6 +130,27 @@ applicare le migration del package:
 php artisan vendor:publish --tag=crud-migrations
 php artisan migrate
 ```
+
+`BaseModel` e `BasePivotModel` includono anche `BroadcastCrudModelEventsTrait`:
+gli eventi Eloquent successivi a una scrittura — `created`, `updated`, `trashed`,
+`deleted`, `restored` e `forceDeleted` — generano automaticamente una
+notifica con la stessa action, anche per salvataggi e cancellazioni eseguiti da
+servizi, observer o job. Il trait usa `broadcastCrudAction()`, quindi rispetta la
+configurazione, i testi, i canali del model e l'invio dopo il commit già previsti
+da `BroadcastCrudTrait`.
+
+Ogni salvataggio genera una sola notifica specifica: `created` per un nuovo
+model, `updated` per un model esistente realmente modificato e nessuna notifica
+per un `save()` senza modifiche. Anche `touch()` produce il solo evento `updated`.
+L'action `saved` resta disponibile per gli invii espliciti che devono invalidare
+un'intera tabella. Anche `saveQuietly()`, `updateQuietly()`,
+`deleteQuietly()` generano la notifica realtime dopo aver scritto nel database,
+pur continuando a silenziare observer e gli altri eventi Eloquent. Le query
+massive, `forceDeleteQuietly()`, `restoreQuietly()` e `updateWithoutEvent()` non
+attivano i nuovi listener: devono invocare esplicitamente
+`broadcastCrudAction('updated')` dopo l'update. Le modifiche alle pivot sono
+intercettate quando Eloquent emette gli eventi dell'istanza del pivot; una query
+sulla tabella di relazione non garantisce questi eventi.
 
 Le azioni custom possono inviare direttamente un testo libero:
 
@@ -181,6 +202,12 @@ creare un getter con i possibili valori di relazione in un select
 
 Gestisce il display delle relazioni in una pagina di dettaglio, tipicamente Show o Edit
 
+Supporta anche sezioni fetcher autonome: dichiarare `getSectionsParameters()`
+con voci `type => 'relationship'` o `type => 'fetcher'`. Le sezioni condividono
+i layout `Flat`, `Switcher` e `Toggler` e conservano l'ordine dell'array.
+I manager che dichiarano `getRelationsParameters()` restano compatibili.
+Vedi [la guida alle sezioni e ai fetcher](docs/come-usare-crud.md#relationshipsmanagers--relazioni-nella-show).
+
 ### Dichiarazione
 
 ``` bash
@@ -188,14 +215,11 @@ Gestisce il display delle relazioni in una pagina di dettaglio, tipicamente Show
 
 class QuotationRelationManager Extends RelationshipsManager
 {
-	public  function getAllRelationsParameters() : array
+	public function getRelationsParameters() : array
 	{
 		return [
-			'show' => [
-				'relations' => [
-				
-				# dichiarazione complessa, dove vengono specificati parametri aggiuntivi oltre al controller
-				    'quotationrows' => [
+			# dichiarazione complessa, dove vengono specificati parametri aggiuntivi oltre al controller
+			    'quotationrows' => [
                                         'controller' => config('products.models.quotationrow.controllers.index'),
                                         'elementGetterMethod' => 'getQuotationrowsForShowRelation',
 
@@ -232,8 +256,6 @@ class QuotationRelationManager Extends RelationshipsManager
 				# dichiarazione semplice in cui si specifica solo il controller di Index, che si occupa
 				# di impostare i fieldsgroup tramite il suo metodo "getRelatedFieldsArray"
 					'dossiers' => config('filecabinet.models.dossier.controllers.index'),
-				]
-			]
 		];
 	}
 }```
@@ -256,6 +278,16 @@ Please see [contributing.md](contributing.md) for details and a todolist.
 ## Security
 
 If you discover any security related issues, please email author email instead of using the issue tracker.
+
+## Catalogo filtrabile
+
+Il componente `<x-crud::catalog :catalog="$catalog" />` mostra modelli Eloquent
+come schede con filtri, ordinamento e paginazione. Ogni catalogo dichiara query,
+campi o scope ammessi tramite una classe `CatalogParametersFile`; i filtri sono
+classi estensibili. Funziona con GET e aggiornamento AJAX senza nuovi framework.
+
+Vedi [la guida completa al catalogo](docs/catalogo.md) per modello, parameters file,
+controller, route, opzioni dinamiche e schede personalizzate.
 
 ## Credits
 

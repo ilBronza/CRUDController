@@ -64,6 +64,22 @@ trait CRUDStoreTrait
 	}
 
 	/**
+	 * A successful create inside an iframe must close its parent popup. The
+	 * caller table is refreshed by its Reverb `created` listener, not here.
+	 */
+	protected function shouldCloseIframeAfterStore(Request $request) : bool
+	{
+		return (bool) $this->isIframed();
+	}
+
+	protected function closeIframeAfterStore(Request $request)
+	{
+		return view('crud::utilities.messages.closeIframe', [
+			'closeMessage' => __('crud::messages.success'),
+		]);
+	}
+
+	/**
 	 * validate request and store model
 	 *
 	 * @param Request $request, Model $modelInstance
@@ -82,6 +98,9 @@ trait CRUDStoreTrait
 		$this->sendStoreSuccessMessage();
 
 		$this->performAdditionalOperations();
+
+		if ($this->shouldCloseIframeAfterStore($request))
+			return $this->closeIframeAfterStore($request);
 
 		if(CrudRequestHelper::isSaveAndCopy($request))
 			return redirect()->to($this->modelInstance->getEditUrl());

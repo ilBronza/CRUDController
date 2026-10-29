@@ -29,7 +29,6 @@ use function dd;
 use function get_class;
 use function implode;
 use function in_array;
-use function ini_set;
 use function method_exists;
 use function request;
 use function trans;
@@ -97,6 +96,7 @@ class CRUD extends Controller
 	public $indexFieldsGroups = ['index'];
 	public $archivedFieldsGroups = ['archived'];
 	public $indexCacheKey;
+	public bool $useIndexCache = true;
 
 	// index parameters
 	public $canEditModelInstance = true;
@@ -111,6 +111,8 @@ class CRUD extends Controller
 
 	public function __construct()
 	{
+        ini_set('memory_limit', "-1");
+        
 		if (method_exists(parent::class, '__construct'))
 			parent::__construct();
 
@@ -294,7 +296,7 @@ class CRUD extends Controller
 	{
 		$defaults = [];
 
-		if (in_array('index', $this->allowedMethods) && (! $this->avoidBackToList()))
+		if ((! $this->isIframed()) && in_array('index', $this->allowedMethods) && (! $this->avoidBackToList()))
 			$defaults['backToListUrl'] = $this->getIndexUrl();
 
 		if (in_array('show', $this->allowedMethods) && (! $this->avoidShowButton()) && ($this->getModel()?->exists))

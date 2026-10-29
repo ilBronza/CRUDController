@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Models;
 
+use IlBronza\CRUD\Traits\Model\BroadcastCrudModelEventsTrait;
 use IlBronza\CRUD\Traits\Model\BroadcastCrudTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTrait;
 use IlBronza\CRUD\Traits\Model\CRUDModelTranslationsTrait;
@@ -16,6 +17,7 @@ class BasePivotModel extends Pivot
 	use LogsActivity;
 	use SoftDeletes;
 	use BroadcastCrudTrait;
+	use BroadcastCrudModelEventsTrait;
 	use CRUDModelTrait;
 	use CRUDRelationshipModelTrait;
 	use CRUDModelTranslationsTrait;

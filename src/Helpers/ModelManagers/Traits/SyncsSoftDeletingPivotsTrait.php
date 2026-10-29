@@ -80,4 +80,43 @@ trait SyncsSoftDeletingPivotsTrait
 		foreach($toRelate->diff($pivots->keys()) as $key)
 			$relation->attach($key);
 	}
+
+	/**
+	 * Add models to a soft-deleting pivot without removing the existing ones.
+	 * A previously soft-deleted pivot is restored instead of attempting a second
+	 * insert for the same pair.
+	 */
+	public function attachSoftDeletingPivot(BelongsToMany $relation, array|Collection $toRelate) : void
+	{
+		$toRelate = collect($toRelate)->map(
+			fn($value) => $value instanceof Model ? $value->getKey() : $value
+		)->filter()->unique()->values();
+
+		if($toRelate->isEmpty())
+			return;
+
+		$relatedKey = $relation->getRelatedPivotKeyName();
+
+		$pivots = $relation->newPivotQuery()
+			->orderBy($relation->newPivot()->getKeyName())
+			->get()
+			->map(fn($record) => $relation->newPivot((array) $record, true))
+			->groupBy($relatedKey);
+
+		foreach($toRelate as $key)
+		{
+			$keyPivots = $pivots->get($key, collect());
+
+			if($keyPivots->reject->trashed()->isNotEmpty())
+				continue;
+
+			if($keyPivots->isNotEmpty())
+			{
+				$keyPivots->last()->restore();
+				continue;
+			}
+
+			$relation->attach($key);
+		}
+	}
 }

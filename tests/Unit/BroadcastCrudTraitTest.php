@@ -5,6 +5,7 @@ namespace IlBronza\CRUD\Tests\Unit;
 use IlBronza\CRUD\Events\CrudModelBroadcasted;
 use IlBronza\CRUD\Tests\TestCase;
 use IlBronza\CRUD\Traits\CRUDModelBroadcastingTrait;
+use IlBronza\CRUD\Traits\Model\BroadcastCrudModelEventsTrait;
 use IlBronza\CRUD\Traits\Model\BroadcastCrudTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
@@ -38,10 +39,12 @@ class BroadcastCrudTraitTest extends TestCase
 
 	public function test_touch_broadcasts_an_updated_action() : void
 	{
+		$this->freezeTime();
 		$model = BroadcastCrudTestModel::create(['name' => 'Touched model']);
 
 		config()->set('crud.broadcast.enabled', true);
 		Event::fake([CrudModelBroadcasted::class]);
+		$this->travel(1)->seconds();
 
 		$this->assertTrue($model->touch());
 
@@ -100,6 +103,7 @@ class BroadcastCrudTraitTest extends TestCase
 class BroadcastCrudTestModel extends Model
 {
 	use BroadcastCrudTrait;
+	use BroadcastCrudModelEventsTrait;
 
 	protected $table = 'gadgets';
 	protected $fillable = ['name'];

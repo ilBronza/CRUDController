@@ -2,10 +2,10 @@
 
 namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipParameters;
-use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use LogicException;
+use InvalidArgumentException;
 
 use function request;
 
@@ -16,38 +16,115 @@ abstract class RelationshipsManager
 	public $model;
 	public $relationships;
 	public $modelKey;
+	public $relationship;
+
+	/**
+	 * Kept for legacy callers and subclasses. Container selection always
+	 * prefers show, then edit, independently of this value.
+	 */
+	public ?string $legacyRelationsType = null;
+
+	private ?string $requestedRelation = null;
+	private bool $relationshipsInstantiated = false;
+	/** @var Collection<string, ManagerSection> */
+	private Collection $sections;
 
 	public $displayType = 'Switcher';
-
-	abstract  function getAllRelationsParameters() : array;
 
 	public function getModelClass()
 	{
 		return get_class($this->model);
 	}
 
-	public function getRelationsParameters()
+	/**
+	 * Ordered map of relationship and fetcher sections. Existing relation maps
+	 * remain valid: omitted types and controller strings mean "relationship".
+	 *
+	 * @return array<string, array|string>
+	 */
+	public function getSectionsParameters() : array
 	{
-		$parameters = $this->getAllRelationsParameters();
-
-		return $parameters[$this->type];
+		return $this->getRelationsParameters();
 	}
 
-	public function getRelationParameters(string $relation)
+	/**
+	 * Relation-only managers may continue overriding this method.
+	 *
+	 * @return array<string, array|string>
+	 */
+	public function getRelationsParameters() : array
 	{
-		$parameters = $this->getAllRelationsParameters();
-
-		return $parameters[$this->type]['relations'][$relation];
+		return $this->normalizeLegacyRelationsParameters($this->getAllRelationsParameters());
 	}
 
-	private function instantiateAllRelations()
+	/**
+	 * Legacy extension point. New managers implement getSectionsParameters()
+	 * or getRelationsParameters() instead.
+	 */
+	public function getAllRelationsParameters() : array
+	{
+		throw new LogicException(sprintf(
+			'%s must implement getSectionsParameters() or getRelationsParameters(). getAllRelationsParameters() is supported only for legacy managers.',
+			static::class
+		));
+	}
+
+	/**
+	 * Returns true only when the subclass still relies on the legacy method.
+	 */
+	public function usesLegacyRelationsParameters() : bool
+	{
+		return (new \ReflectionMethod($this, 'getSectionsParameters'))->getDeclaringClass()->getName() === self::class
+			&& (new \ReflectionMethod($this, 'getRelationsParameters'))->getDeclaringClass()->getName() === self::class;
+	}
+
+	/**
+	 * Retained for legacy subclasses which inspect the action directly.
+	 * It does not select the show/edit container in the base manager.
+	 */
+	public function setLegacyRelationsType(string $type) : self
+	{
+		if ($this->relationshipsInstantiated)
+			throw new LogicException('The legacy relationships type must be set before reading relationships.');
+
+		$this->legacyRelationsType = $type;
+
+		// Temporary public-property compatibility for legacy implementations
+		// which still inspect $this->type directly.
+		$this->name = $type;
+		$this->type = $type;
+
+		return $this;
+	}
+
+	public function getRelationParameters(string $relation) : array|string
+	{
+		$parameters = $this->getSectionsParameters();
+
+		if (! array_key_exists($relation, $parameters))
+			throw new LogicException(sprintf('Relationship "%s" is not declared by %s.', $relation, static::class));
+
+		if (is_array($parameters[$relation]) && ($parameters[$relation]['type'] ?? 'relationship') !== 'relationship')
+			throw new LogicException(sprintf('Section "%s" is not a relationship in %s.', $relation, static::class));
+
+		return $parameters[$relation];
+	}
+
+	private function instantiateAllRelations() : void
 	{
 		$this->relationships = collect();
+		$this->sections = collect();
 
-		$relationsParameters = $this->getRelationsParameters();
-
-		foreach($relationsParameters['relations'] as $name => $parameters)
-			$this->addRelationship($name, $parameters);
+		foreach ($this->getSectionsParameters() as $name => $parameters)
+		{
+			if (is_string($parameters) || ($parameters['type'] ?? 'relationship') === 'relationship')
+			{
+				$this->addRelationship($name, $parameters);
+				$this->sections->put($name, $this->relationships->get($name));
+			}
+			else
+				$this->sections->put($name, $this->createSection($name, $parameters));
+		}
 
 		$this->loadModelRelatedElements();
 	}
@@ -57,39 +134,57 @@ abstract class RelationshipsManager
 		return $relationParameters['relation'];
 	}
 
-	private function instantiateSingleRelation(string $relation) : self
+	private function instantiateSingleRelation(string $relation) : void
 	{
 		$relationParameters = $this->getRelationParameters($relation);
 
 		$this->relationship = $this->createRelationship($relation, $relationParameters);
-
-		return $this;
-
-		// die("ASDADS relationship");
-
-		// $dummyRelatedModel = $this->model->{$relationMethod}()->make();
-		// $relationKeyName = $dummyRelatedModel->getKeyName();
-
-		// if(! is_array($modelKey))
-		// 	$modelKey = [$modelKey];
-
-		// $this->relatedModels = $this->model->{$relationMethod}()->whereIn($relationKeyName, $modelKey)->get();
+		$this->relationships = collect([$relation => $this->relationship]);
+		$this->sections = collect([$relation => $this->relationship]);
 	}
 
-	public function __construct(string $type = 'show', Model $model, string $relation = null, $modelKey = null)
+	/**
+	 * New signature: __construct(Model $model, ?string $relation = null, mixed $modelKey = null).
+	 *
+	 * The old (string $type, Model $model, ?string $relation, mixed $modelKey)
+	 * signature remains readable for legacy callers during the migration.
+	 */
+	public function __construct(Model|string $modelOrLegacyType, Model|string|null $modelOrRelation = null, mixed $relationOrModelKey = null, mixed $legacyModelKey = null)
 	{
-		$this->name = $type;
-		$this->type = $type;
-		$this->model = $model;
-		$this->modelKey = $modelKey;
+		if (is_string($modelOrLegacyType))
+		{
+			if (! $modelOrRelation instanceof Model)
+				throw new InvalidArgumentException('The legacy RelationshipsManager constructor requires a model as its second argument.');
+
+			$this->model = $modelOrRelation;
+			$this->requestedRelation = $relationOrModelKey;
+			$this->modelKey = $legacyModelKey;
+			$this->setLegacyRelationsType($modelOrLegacyType);
+		}
+		else
+		{
+			if (! is_null($modelOrRelation) && ! is_string($modelOrRelation))
+				throw new InvalidArgumentException('The new RelationshipsManager constructor accepts a relation name as its second argument.');
+
+			$this->model = $modelOrLegacyType;
+			$this->requestedRelation = $modelOrRelation;
+			$this->modelKey = $relationOrModelKey;
+		}
 
 		app('uikittemplate')->addRelationsManagerNames(get_class($this));
+	}
 
+	private function ensureRelationshipsInstantiated() : void
+	{
+		if ($this->relationshipsInstantiated)
+			return;
 
-		if(! $relation)
-			return $this->instantiateAllRelations();
+		if(! $this->requestedRelation)
+			$this->instantiateAllRelations();
+		else
+			$this->instantiateSingleRelation($this->requestedRelation);
 
-		return $this->instantiateSingleRelation($relation);
+		$this->relationshipsInstantiated = true;
 	}
 
 	private function loadModelRelatedElements()
@@ -121,26 +216,58 @@ abstract class RelationshipsManager
 		return new RelationshipParameters($name, $parameters, $this);
 	}
 
+	public function createSection(string $name, array|string $parameters) : ManagerSection
+	{
+		if (is_string($parameters))
+			return $this->createRelationship($name, $parameters);
+
+		return match ($parameters['type'] ?? 'relationship') {
+			'relationship' => $this->createRelationship($name, $parameters),
+			'fetcher' => new FetcherParameters($name, $parameters),
+			default => throw new InvalidArgumentException(sprintf('Unknown section type for "%s" in %s.', $name, static::class)),
+		};
+	}
+
 	public function addRelationship(string $name, $parameters)
 	{
 		$relationship = $this->createRelationship($name, $parameters);
 
 		$this->relationships->put($name, $relationship);
+
+		if (isset($this->sections))
+			$this->sections->put($name, $relationship);
+	}
+
+	/** @return Collection<string, ManagerSection> */
+	public function getSections() : Collection
+	{
+		$this->ensureRelationshipsInstantiated();
+
+		return $this->sections;
 	}
 
 	public function getRelationshipsNamesArray()
 	{
-		return array_keys($this->relationships);
+		return array_keys($this->getRelationships()->all());
 	}
 
 	public function getRelationships()
 	{
+		$this->ensureRelationshipsInstantiated();
+
 		return $this->relationships;
+	}
+
+	public function getRelationship() : RelationshipParameters
+	{
+		$this->ensureRelationshipsInstantiated();
+
+		return $this->relationship;
 	}
 
 	public function getRelationshipsMethodsArray()
 	{
-		return $this->relationships->pluck('relation')->toArray();
+		return $this->getRelationships()->pluck('relation')->toArray();
 	}
 
 	public function manageAjaxTableRequest()
@@ -155,6 +282,40 @@ abstract class RelationshipsManager
 		foreach($this->getRelationships() as $name => $relationshipsParameters)
 			if($name == request()->model)
 				return $relationshipsParameters->returnSingleRow();
+	}
+
+	private function normalizeLegacyRelationsParameters(array $parameters) : array
+	{
+		// TODO: rimuovere il supporto al formato legacy
+		// ['show'|'edit' => ['relations' => [...]]]
+		// dopo la migrazione di tutti i RelationshipsManager.
+		if (array_key_exists('show', $parameters))
+			$type = 'show';
+		elseif (array_key_exists('edit', $parameters))
+			$type = 'edit';
+		else
+			throw new LogicException(sprintf(
+				'Legacy RelationshipsManager %s must declare a "show" or "edit" container.',
+				static::class
+			));
+
+		$typeParameters = $parameters[$type];
+
+		if (! is_array($typeParameters) || ! array_key_exists('relations', $typeParameters))
+			throw new LogicException(sprintf(
+				'Legacy RelationshipsManager %s must declare ["%s" => ["relations" => [...]]].',
+				static::class,
+				$type
+			));
+
+		if (! is_array($typeParameters['relations']))
+			throw new LogicException(sprintf(
+				'Legacy RelationshipsManager %s must declare "%s.relations" as an array.',
+				static::class,
+				$type
+			));
+
+		return $typeParameters['relations'];
 	}
 
 	public function getCustomDom()

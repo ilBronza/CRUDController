@@ -4,49 +4,92 @@ namespace IlBronza\CRUD\Traits;
 
 trait CRUDRelationshipsManagerTrait
 {
-	public function setRelationshipsManager(string $type = 'show')
+	public function setRelationshipsManager()
 	{
-		if(! $relationshipManagerClass = $this->getModel()->getRelationshipsManagerClass())
+		if(! $relationshipManagerClass = $this->getRelationshipsManagerClass())
 			return false;
 
-		// if(! $this->getRelationshipsManagerClass())
-		// 	return false;
-
 		if(empty($this->relationshipManager))
-			$this->relationshipManager = new ($relationshipManagerClass)($type, $this->modelInstance);
+		{
+			$this->relationshipManager = new ($relationshipManagerClass)($this->modelInstance);
+
+			if ($this->relationshipManager->usesLegacyRelationsParameters())
+				$this->relationshipManager->setLegacyRelationsType(
+					$this->getRelationshipsManagerLegacyType()
+				);
+		}
 
 		return $this->relationshipManager;
 
 	}
 
-	public function useRelationshipsManager(string $type = 'show')
+	/**
+	 * The action remains relevant only while a legacy manager is normalized.
+	 * New managers receive no action/type parameter.
+	 */
+	public function getRelationshipsManagerLegacyType() : string
 	{
-		$this->setRelationshipsManager($type);
+		if (isset($this->relationshipsManagerLegacyType))
+			return $this->relationshipsManagerLegacyType;
 
-		if(request()->ajax())
-			return $this->relationshipManager->manageAjaxTableRequest();
+		if (method_exists($this, 'getAction'))
+			return $this->getAction();
+
+		return 'show';
+	}
+
+	/**
+	 * This is controller state used only to read legacy parameter containers.
+	 * It is deliberately never forwarded to managers using the new contract.
+	 */
+	public function setRelationshipsManagerLegacyType(string $type) : static
+	{
+		$this->relationshipsManagerLegacyType = $type;
+
+		return $this;
+	}
+
+	public function useRelationshipsManager()
+	{
+		$this->setRelationshipsManager();
 
 		if(! $this->relationshipManager)
 			return false;
 
+		if(request()->ajax())
+			return $this->relationshipManager->manageAjaxTableRequest();
+
 		$this->relationshipsTableNames = [];
 		$this->relationshipsElements = [];
 
-		foreach($this->relationshipManager->getRelationships() as $name => $relationshipsParameters)
-		{
-			$relationshipsParameters->setShowParameters();
-		}
+		foreach ($this->relationshipManager->getSections() as $section)
+			$section->prepare();
 
 		view()->share('relationshipManager', $this->relationshipManager);
 	}
 
-	public function useSingleRelationRelationshipsManager(string $type = 'show', string $relation, $modelKey)
+	public function useSingleRelationRelationshipsManager(string $relation, $modelKey)
 	{
-		$this->relationshipManager = new ($this->getRelationshipsManagerClass())($type, $this->modelInstance, $relation, $modelKey);
+		$relationshipManagerClass = $this->getRelationshipsManagerClass();
+
+		if (! $relationshipManagerClass)
+			return false;
+
+		$this->relationshipManager = new ($relationshipManagerClass)(
+			$this->modelInstance,
+			$relation,
+			$modelKey
+		);
+
+		if ($this->relationshipManager->usesLegacyRelationsParameters())
+			$this->relationshipManager->setLegacyRelationsType(
+				$this->getRelationshipsManagerLegacyType()
+			);
 
 		$relationshipManager = $this->relationshipManager;
+		$relationship = $this->relationshipManager->getRelationship();
 
-		$this->relationshipManager->relationship->elementsGetter = function() use($relationshipManager)
+		$relationship->elementsGetter = function() use($relationshipManager)
 		{
 			$relationMethod = $relationshipManager->relationship->relation;
 
@@ -59,6 +102,6 @@ trait CRUDRelationshipsManagerTrait
 			return $relationshipManager->model->{$relationMethod}()->whereIn($relationKeyName, $relationshipManager->modelKey)->get();
 		};
 
-		return $this->relationshipManager->relationship->renderTableRowsArray();
+		return $relationship->renderTableRowsArray();
 	}
 }

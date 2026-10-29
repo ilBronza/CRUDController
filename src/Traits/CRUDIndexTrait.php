@@ -6,8 +6,11 @@ use Auth;
 use DB;
 use Exception;
 use IlBronza\Buttons\Button;
+use IlBronza\CRUD\Buttons\CreateEmptyButton;
 use IlBronza\CRUD\Interfaces\CondensableModelInterface;
+use IlBronza\CRUD\Traits\Model\CRUDCacheTrait;
 use IlBronza\Datatables\Datatables;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -123,8 +126,91 @@ trait CRUDIndexTrait
 	public function addCreateButton()
 	{
 		$createButton = $this->getCreateNewModelButton();
+		$this->configureCreateButton($createButton);
 
 		$this->table->addButton($createButton);
+	}
+
+	public function hasCreateButtonIframe() : bool
+	{
+		if (isset($this->createButtonIframe))
+			return (bool) $this->createButtonIframe;
+
+		return (bool) config('crud.index.createButtonIframe', true);
+	}
+
+	protected function configureCreateButton(Button $createButton) : void
+	{
+		if (! $this->hasCreateButtonIframe())
+			return;
+
+		// DataTable toolbar buttons use their delegated iframe opener. The create
+		// route renders a form, so it must be loaded with GET instead of the
+		// action button's default POST request.
+		$createButton->setAjaxTableButton();
+		$createButton->setAsIframe();
+		$createButton->setData('method', 'GET');
+	}
+
+	public function hasCreateEmptyButton() : bool
+	{
+		return (bool) ($this->createEmpty ?? false);
+	}
+
+	public function getCreateEmptyButton() : CreateEmptyButton
+	{
+		$button = CreateEmptyButton::create([
+			'text' => 'crud::buttons.createEmpty',
+			'icon' => 'plus',
+		]);
+
+		$button->setSecondary();
+		$button->setCreateEmptyUrl($this->getRouteUrlByType('createEmpty'));
+
+		return $button;
+	}
+
+	public function addCreateEmptyButton() : void
+	{
+		if (! $this->hasCreateEmptyButton())
+			return;
+
+		$this->table->addButton($this->getCreateEmptyButton());
+	}
+
+	protected function makeEmptyModel() : Model
+	{
+		$model = $this->getModelClass()::make();
+		$parameters = $this->getModelDefaultParameters();
+
+		if (method_exists($this, 'addParentModelAssociationParameter'))
+			$parameters = $this->addParentModelAssociationParameter($parameters);
+		elseif (isset($this->parentModel) && method_exists($this, 'associateParentModel'))
+			$parameters = $this->associateParentModel($parameters);
+
+		foreach ($parameters as $key => $value)
+			$model->$key = $value;
+
+		return $model;
+	}
+
+	/**
+	 * Create the model without passing through the form validation flow.
+	 * The model preserves the controller defaults and a possible parent-model
+	 * association before it is saved.
+	 */
+	public function createEmpty(Request $request)
+	{
+		abort_unless($this->hasCreateEmptyButton(), 404);
+		abort_unless($this->userCanCreate(), 403);
+
+		$this->setModel($this->makeEmptyModel());
+		$this->getModel()->save();
+
+		return response()->json([
+			'success' => true,
+			'key' => $this->getModel()->getKey(),
+		]);
 	}
 
 	public function getPageLength()
@@ -146,6 +232,7 @@ trait CRUDIndexTrait
 		]);
 
 		$button->setHtmlClass('uk-button uk-button-danger ib-table-action-button');
+		$button->setHtmlClass('ib-dt-selection-action uk-hidden');
 		$button->setData('route', $this->getRouteUrlByType('bulkDelete'));
 
 		$this->table->addButton($button);
@@ -174,6 +261,36 @@ trait CRUDIndexTrait
 	}
 
 	public function beforeRenderIndex() {}
+
+	/** Runs for both freshly calculated and cached index responses. */
+	public function beforeIndex() : void {}
+
+	public function usesIndexCache() : bool
+	{
+		return (bool) ($this->useIndexCache ?? true);
+	}
+
+	protected function getIndexJsonDataCacheKey(string $modelClass) : string
+	{
+		return ($this->indexCacheKey ?? $modelClass::getIndexCacheKey()) . '_jsonData';
+	}
+
+	protected function getIndexDataCacheContext(Request $request, array $definition) : ?string
+	{
+		try
+		{
+			// One entry per model: a different index replaces it, never reads its cells.
+			return hash('sha256', serialize([
+				static::class, $request->method(), $request->url(), app()->getLocale(),
+				$request->except(['_', '_token', 'draw', 'cachedtablekey']), $definition,
+			]));
+		}
+		catch (\Throwable $exception)
+		{
+			// Definitions containing closures or other non-serializable values stay live.
+			return null;
+		}
+	}
 
 	public function getCaption() : null|bool|string
 	{
@@ -215,15 +332,45 @@ trait CRUDIndexTrait
 			$selectRow = $this->getSelectRow();
 
 		$this->setPagetitle();
+		$this->beforeIndex();
+
+		$modelClass = $baseModel ?? $this->getModelClass();
+		$fieldsGroups = $this->getTableFieldsGroups($fieldsGroupsNames);
+		$selectRows = $selectRow ?: $this->mustShowRowSelectCheckboxes();
+		$cacheKey = $cacheContext = null;
+
+		if ($request->ajax() && ! $request->ibFetcher
+			&& ! $request->hasAny(['rowId', 'rowIds', 'ibeditor'])
+			&& $elementsGetter === null && $this->usesIndexCache()
+			&& in_array(CRUDCacheTrait::class, class_uses_recursive($modelClass), true))
+		{
+			$cacheContext = $this->getIndexDataCacheContext($request, [
+				$modelClass, $tableName, $fieldsGroups, $selectRows, $tableVariables, $this->bulkEdit,
+			]);
+
+			if ($cacheContext !== null)
+			{
+				$cacheKey = $this->getIndexJsonDataCacheKey($modelClass);
+				$cached = cache()->get($cacheKey);
+				if (is_array($cached) && ($cached['context'] ?? null) === $cacheContext
+					&& is_array($cached['response'] ?? null))
+					return $cached['response'];
+			}
+		}
+
+		$queryProvider = $elementsGetter === null && method_exists($this, 'getIndexQuery')
+			&& is_callable([$this, 'getIndexQuery'])
+			? fn () => $this->getIndexQuery()
+			: null;
 
 		$this->table = Datatables::create(
-			$tableName, $this->getTableFieldsGroups($fieldsGroupsNames), function () use ($elementsGetter)
+			$tableName, $fieldsGroups, function () use ($elementsGetter)
 		{
 			if ($elementsGetter)
 				return $elementsGetter();
 
 			return $this->getIndexElements();
-		}, $selectRow ? : $this->mustShowRowSelectCheckboxes(), $tableVariables, $baseModel ?? $this->getModelClass(), $this->bulkEdit
+		}, $selectRows, $tableVariables, $modelClass, $this->bulkEdit, null, $queryProvider
 		);
 
 		$this->table->setFiltersHidden($this->filtersHidden);
@@ -232,7 +379,13 @@ trait CRUDIndexTrait
 			$this->table->setAjaxMethod('POST');
 
 		if ((request()->ajax()) && (! request()->ibFetcher))
-			return $this->table->renderPage();
+		{
+			$response = $this->table->renderPage();
+			if ($cacheKey !== null)
+				cache()->forever($cacheKey, ['context' => $cacheContext, 'response' => $response]);
+
+			return $response;
+		}
 
 		if ($this->fixedHeader ?? null)
 			$this->table->fixedHeader = $this->fixedHeader;
@@ -299,7 +452,7 @@ trait CRUDIndexTrait
 
 	public function getIndexCacheKey()
 	{
-		return $this->indexCacheKey;
+		return $this->indexCacheKey ?? $this->getModelClass()::getIndexCacheKey();
 	}
 
 	public function getPlaceholderElement()
@@ -409,9 +562,7 @@ trait CRUDIndexTrait
 			throw new Exception('Associa il trait CRUDModelTrait al model ' . $this->getModelClass() . '. ' . $e->getMessage());
 		}
 
-		$createButton = $this->getCreateNewModelButton();
-
-		$this->table->addButton($createButton);
+		$this->addCreateButton();
 	}
 
 	private function addIndexButtonsToTable()
@@ -427,6 +578,8 @@ trait CRUDIndexTrait
 		}
 
 		$this->manageReorderButton();
+
+		$this->addCreateEmptyButton();
 
 		$this->addMassDeleteButton();
 

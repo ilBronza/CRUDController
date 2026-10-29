@@ -99,24 +99,16 @@ trait CRUDModelRoutingTrait
 
 	public function getDeleteMediaUrlByKey($fileId, array $data = []) : string
 	{
-		$routeBasename = $this->getRouteBasename();
-		$routeClassname = $this->getRouteClassname();
-
-		return route($routeBasename . '.deleteMedia', [
-			$routeClassname => $this->getKey(),
-			'media' => $fileId
-		], $data);
+		return route('crud.media.destroy', array_merge([
+			'modelClass' => $this->getMorphClass(),
+			'modelKey' => $this->getKey(),
+			'mediaKey' => $fileId
+		], $data));
 	}
 
 	public function getDeleteMediaUrlByMedia(Media $file, array $data = []) : string
 	{
-		$routeBasename = $this->getRouteBasename();
-		$routeClassname = $this->getRouteClassname();
-
-		return route($routeBasename . '.deleteMedia', [
-			$routeClassname => $this->getKey(),
-			'media' => $file->getKey()
-		], $data);
+		return $this->getDeleteMediaUrlByKey($file->getKey(), $data);
 	}
 
 	public function getDeleteMediaUrl($fileId, array $data = []) : string

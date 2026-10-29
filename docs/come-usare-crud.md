@@ -108,6 +108,38 @@ class VehicleIndexController extends VehicleCRUD
 
 `CRUDPlainIndexTrait` fornisce il metodo pubblico `index()`, `CRUDIndexTrait` la logica. `getIndexElements()` è il punto dove definire query, eager loading e scope. `getRelatedFieldsArray()` serve quando l'entità compare come tabella relazionata nella show di un altro modello. Con `addIndexButtons()` si aggiungono bottoni sopra la tabella.
 
+Il pulsante standard **Crea** apre per default il form in un popup, lasciando visibile la pagina della tabella. Dopo un salvataggio riuscito il popup si chiude senza ricaricare direttamente la DataTable: il broadcast `created` via Reverb comunica alla tabella la chiave del nuovo record, che viene caricato dal listener esistente. Il comportamento e' configurabile globalmente con `crud.index.createButtonIframe`; per mantenere la navigazione tradizionale in uno specifico controller index dichiarare `public bool $createButtonIframe = false;`.
+
+#### Cache dei dati dell’index
+
+`CRUDIndexTrait` usa di default `public bool $useIndexCache = true`. La cache si attiva soltanto per la risposta AJAX dell’elenco completo e se il modello principale usa `CRUDCacheTrait`, anche ereditato. Un hit evita sia `getIndexElements()` sia la trasformazione delle celle. Il layout HTML e l’ID della DataTable continuano a essere generati normalmente.
+
+La chiave è `Model::getIndexCacheKey() . '_jsonData'`. Il valore contiene la risposta dati già preparata e una firma del controller, URL, parametri del dataset, lingua e definizione dei campi. La firma esclude il nonce AJAX, `draw`, token CSRF e `cachedtablekey`: un refresh riusa la cache. Elenchi diversi dello stesso modello sostituiscono la stessa entry anziché condividere celle incompatibili; resta una sola chiave da invalidare.
+
+La cache è condivisa fra utenti e resta valida fino all’invalidazione del modello. `forgetIndexCache()` elimina sia le chiavi index restituite da `getIndexCacheKeys()` sia le rispettive `_jsonData`. Salvataggio, `touch()`, cancellazione e ripristino del modello passano da questa invalidazione. Quando si modificano dati collegati o si effettuano scritture dirette sul database, l’applicazione deve chiamare `$model->touch()` oppure `Model::forgetIndexCache()`. Anche dopo una modifica al codice dei renderer si può usare quest’ultimo metodo per rigenerare le celle.
+
+Per mantenere un index sempre aggiornato:
+
+```php
+public bool $useIndexCache = false;
+```
+
+Per elenchi la cui visibilità dipende dall’utente o dalla sessione, sovrascrivere `usesIndexCache(): bool` e disabilitare la cache condivisa in quei contesti. Il controller Clients la esclude per gli `areaManager`. Non vengono create chiavi per utente.
+
+`beforeIndex(): void` viene eseguito anche sugli hit: gli effetti di sessione necessari a ogni apertura devono stare qui, perché `getIndexElements()` non viene chiamato a cache calda. Le richieste `rowId`, `rowIds`, `ibeditor`, `ibFetcher` e gli index con un `elementsGetter` esplicito non usano questa cache. Le definizioni non serializzabili vengono calcolate normalmente.
+
+È possibile personalizzare `$indexCacheKey` nel controller; in tal caso il modello deve includere la chiave base personalizzata in `getIndexCacheKeys()` per invalidarla insieme all’index principale.
+
+#### Crea record vuoto
+
+Il pulsante `createEmpty` è disattivato di default. Per abilitarlo nello specifico controller index basta dichiarare:
+
+```php
+public bool $createEmpty = true;
+```
+
+Il middleware abilita automaticamente l'azione quando la flag è attiva. Il pulsante invia una `POST` a `.../create-empty` e salva il model senza passare dal form né dalla sua validazione. Conserva gli eventuali default del controller e l'associazione al modello padre. Il record deve comunque poter essere salvato con i soli valori di default previsti dal database. La tabella non viene ricaricata: il nuovo record è lasciato al normale broadcast `created` e al listener Reverb/DataTables già configurato. `Route::resource()` e `Route::childResource()` registrano già la route; lo scaffolder la include nelle route manuali generate.
+
 ### Create + Store
 
 Create e store vivono nello stesso controller perché condividono i campi del form.
@@ -306,6 +338,66 @@ class VehicleCreateStoreFieldsetsParameters extends VehicleShowFieldsetsParamete
 
 ### RelationshipsManagers — relazioni nella show
 
+Il manager può comporre anche sezioni fetcher autonome, senza una relazione
+Eloquent. Per mescolare relazioni e fetcher nello stesso `Flat`, `Switcher` o
+`Toggler`, usare `getSectionsParameters()`:
+
+```php
+use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
+
+class VehicleRelationManager extends RelationshipsManager
+{
+	public function getSectionsParameters() : array
+	{
+		return [
+			'kmreadings' => [
+				'type' => 'relationship',
+				'controller' => config('vehicles.models.kmreading.controllers.index'),
+			],
+			'notes' => [
+				'type' => 'fetcher',
+				'title' => 'Note',
+				'url' => route('vehicles.notes', ['vehicle' => $this->getModel()]),
+				'refresh' => true,
+				'canExpand' => true,
+			],
+		];
+	}
+}
+```
+
+Le sezioni seguono l'ordine dell'array; è valido anche un manager con soli
+fetcher. La route `vehicles.notes` dell'esempio deve essere definita
+dall'applicazione e restituire il contenuto HTML del pannello. Il browser la
+richiede attraverso il fetcher di UikitTemplate, con `ibFetcher=true`; il manager
+non carica quel contenuto lato server. Il caricamento iniziale e i comandi di
+refresh/espansione usano il comportamento del fetcher esistente.
+
+Per un fetcher, `url` è obbligatorio e deve essere una stringa non vuota. `title`
+è già tradotto e, se omesso, usa il nome della sezione. Gli altri parametri sono
+inoltrati a `IlBronza\UikitTemplate\Fetcher`, per esempio `refresh`, `canExpand`,
+`buttons` e `card`. Di default il fetcher non aggiunge una propria card, perché
+il layout del manager fornisce già il contenitore.
+
+I manager esistenti con `getRelationsParameters()` o con il formato legacy di
+`getAllRelationsParameters()` continuano a funzionare. Quando si adotta
+`getSectionsParameters()`, questo diventa la mappa completa: `type` omesso e
+la forma breve con il solo controller identificano una relazione. Se si
+estende un manager esistente, si può partire da
+`parent::getSectionsParameters()` e aggiungere le nuove sezioni.
+
+`getSections()` espone tutti i pannelli; `getRelationships()` e le API per la
+singola relazione espongono soltanto relazioni. Associazioni, editor e refresh
+delle righe continuano quindi a usare le relazioni. Il precedente `fetcherUrl`
+di una relazione mantiene il suo significato: aggiunge un fetcher sotto la sua
+tabella, senza creare una scheda autonoma.
+
+Le sezioni implementano `ManagerSection` (`getName()`, `getCardTitle()`,
+`getToggleId()`, `prepare()`, `render()`). Il controller le prepara prima di
+renderizzare il layout. Per un tipo aggiuntivo si può estendere
+`createSection()` e restituire un'implementazione di questo contratto,
+delegando gli altri tipi a `parent::createSection()`.
+
 Per usare un canale di refresh dedicato per una singola DataTable, dichiarare
 `refreshTableBroadcastChannel` nei parametri della relazione:
 
@@ -324,17 +416,13 @@ use IlBronza\CRUD\Providers\RelationshipsManager\RelationshipsManager;
 
 class VehicleRelationManager extends RelationshipsManager
 {
-	public function getAllRelationsParameters() : array
+	public function getRelationsParameters() : array
 	{
 		$relations = [];
 
 		$relations['kmreadings'] = config('vehicles.models.kmreading.controllers.index');
 
-		return [
-			'show' => [
-				'relations' => $relations
-			]
-		];
+		return $relations;
 	}
 }
 ```
@@ -352,6 +440,50 @@ usare `hasCreateButton` e opzionalmente `createButtonText`. Il testo fornito a
     'controller' => config('products.models.order.controllers.index'),
 ],
 ```
+
+Per aprire il form di creazione in un iframe/modale, aggiungere
+`createButtonIframe`:
+
+```php
+'orders' => [
+    'hasCreateButton' => true,
+    'createButtonIframe' => true,
+    'controller' => config('products.models.order.controllers.index'),
+],
+```
+
+Il default globale e' `crud.realtionshipManagers.createButtonIframe` (true).
+Il valore dichiarato sulla relazione ha sempre la precedenza: `false` mantiene
+il redirect anche se il default globale e' attivo. Dopo il salvataggio la modale
+si chiude senza forzare il reload: il nuovo record arriva alla tabella tramite il
+broadcast `created` di Reverb.
+
+Per una relazione `belongsToMany` o `morphToMany`, il pulsante di creazione non
+e' applicabile: gli elementi esistono gia' e va creata la sola riga pivot. Per
+mostrare il pulsante **Associa**, che apre una modale con DataTable
+selezionabile, usare `hasAssociateButton`:
+
+```php
+'roles' => [
+    'hasAssociateButton' => true,
+    'associateButtonText' => 'Associa ruoli',
+    'controller' => config('accounts.models.role.controllers.index'),
+],
+```
+
+Il salvataggio e' additivo: associa gli elementi selezionati senza rimuovere
+quelli gia' presenti. Il picker esclude per default gli elementi gia' associati;
+per applicare un filtro o un'autorizzazione ulteriore, `associateElementsGetter`
+puo' essere una callback che riceve il model padre e la relazione Eloquent e
+restituisce la collection selezionabile.
+
+Questo flusso e' adatto a pivot senza attributi obbligatori. Se la riga pivot
+richiede dati aggiuntivi (per esempio quantita', ruolo o date), dichiarare un
+`buttonsMethods` personalizzato che apra il form specifico del pivot.
+
+L'URL del picker contiene il morph alias del model padre (per esempio `Product`),
+non il nome della classe. Il controller accetta soltanto alias registrati nella
+morph map dell'applicazione.
 
 ## 5. Il config
 

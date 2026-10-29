@@ -3,8 +3,10 @@
 namespace IlBronza\CRUD\Providers\RelationshipsManager;
 
 use Exception;
+use IlBronza\Buttons\Button;
 use IlBronza\Datatables\Datatables;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use function class_basename;
@@ -12,7 +14,7 @@ use function config;
 use function dd;
 use function is_null;
 
-class RelationshipParameters
+class RelationshipParameters implements ManagerSection
 {
 	use RelationshipParametersGettersTrait;
 
@@ -49,6 +51,14 @@ class RelationshipParameters
 
 	public ?bool $hasCreateButton = null;
 	public ?string $createButtonText = null;
+	public ?bool $createButtonIframe = null;
+	public ?bool $hasAssociateButton = null;
+	public ?string $associateButtonText = null;
+	/**
+	 * Optional callback returning the models that may be associated. It receives
+	 * the parent model and the Eloquent many-to-many relation.
+	 */
+	public $associateElementsGetter = null;
 	public $currentView;
 	public $extraVariables;
 	public $translatedTitle;
@@ -220,6 +230,11 @@ class RelationshipParameters
 			return $this->setTable();
 
 		return $this->setCurrentView();
+	}
+
+	public function prepare() : void
+	{
+		$this->setShowParameters();
 	}
 
 	public function returnSingleRow()
@@ -518,11 +533,139 @@ class RelationshipParameters
 	}
 
 	/**
+	 * Enable the "associate existing models" action for a many-to-many
+	 * relationship (BelongsToMany or MorphToMany). This deliberately has a different name from
+	 * hasCreateButton(): no related record is created by this action.
+	 */
+	public function hasAssociateButton() : bool
+	{
+		if (! is_null($this->hasAssociateButton))
+			return $this->hasAssociateButton;
+
+		return config('crud.realtionshipManagers.associateButton', false);
+	}
+
+	public function isAssociatableManyToManyRelationship() : bool
+	{
+		return in_array($this->getRelationType(), [
+			'BelongsToMany',
+			'MorphToMany',
+		]);
+	}
+
+	public function getAssociateButtonText() : string
+	{
+		if (! is_null($this->associateButtonText))
+			return $this->associateButtonText;
+
+		return trans('crud::crud.associateRelated', [
+			'what' => $this->getCardTitle(),
+		]);
+	}
+
+	/**
+	 * The relation name, rather than its method name, identifies the manager
+	 * configuration on the receiving endpoint. They may differ when `relation`
+	 * is explicitly configured.
+	 */
+	public function getAssociateButtonUrl() : string
+	{
+		$parent = $this->getParentModel();
+
+		return route('crud.relationships.associate', [
+			// Morph aliases are stable public identifiers. Do not expose (or accept)
+			// a base64-encoded FQCN in a public association URL.
+			'model' => $parent->getMorphClass(),
+			'key' => $parent->getKey(),
+			'relation' => $this->getName(),
+		]);
+	}
+
+	public function getAssociateButton() : ?Button
+	{
+		if (! $this->hasAssociateButton() || ! $this->isAssociatableManyToManyRelationship())
+			return null;
+
+		$button = Button::create([
+			'href' => $this->getAssociateButtonUrl(),
+			'translatedText' => $this->getAssociateButtonText(),
+			'icon' => 'plus',
+		]);
+
+		// The selector is always rendered in the DataTable modal iframe.
+		$button->setAjaxTableButton();
+		$button->setAsIframe();
+		$button->setData('method', 'GET');
+
+		return $button;
+	}
+
+	/**
+	 * Return the models displayed by the association picker. Existing related
+	 * models are excluded, so the endpoint can safely perform an additive attach.
+	 */
+	public function getAssociateableElements() : Collection
+	{
+		$this->getRelationType();
+
+		if ($this->associateElementsGetter)
+			return collect(($this->associateElementsGetter)(
+				$this->getParentModel(), $this->eloquentRelationship
+			));
+
+		$related = $this->getRelatedModel();
+		$alreadyRelatedKeys = $this->eloquentRelationship->allRelatedIds();
+
+		return $related->newQuery()
+			->whereNotIn($related->qualifyColumn($related->getKeyName()), $alreadyRelatedKeys)
+			->get()
+			->filter(function (Model $model)
+			{
+				return ! method_exists($model, 'userCanSee') || $model->userCanSee();
+			})
+			->values();
+	}
+
+	/**
+	 * Build the association picker table.
+	 *
+	 * This deliberately uses the same AJAX lifecycle as a CRUD index: the
+	 * initial GET renders the DataTable shell and its subsequent GET to this
+	 * very endpoint gets the rows as JSON. `createStandAloneTable()` turns the
+	 * initial request into an array table, which is appropriate for embedded
+	 * relation tables but prevents that lifecycle here.
+	 */
+	public function createAssociateTable() : Datatables
+	{
+		return Datatables::create(
+			$this->getName() . '-associate',
+			$this->getTableFieldsGroups(),
+			fn() => $this->getAssociateableElements(),
+			true,
+			$this->getExtraVariables(),
+			$this->getRelatedModelClass()
+		);
+	}
+
+	/**
 	 * Return the already translated text to use for the relation create button.
 	 */
 	public function getCreateButtonText() : ?string
 	{
 		return $this->createButtonText;
+	}
+
+	/**
+	 * Whether the create button for this specific relation must open its form
+	 * inside the DataTable modal iframe. A relation-level declaration takes
+	 * precedence over the package default.
+	 */
+	public function hasCreateButtonIframe() : bool
+	{
+		if (! is_null($this->createButtonIframe))
+			return $this->createButtonIframe;
+
+		return config('crud.realtionshipManagers.createButtonIframe', false);
 	}
 
 	public function getName() : string
@@ -556,8 +699,22 @@ class RelationshipParameters
 			if (! is_null($this->getCreateButtonText()))
 				$createButton->setTranslatedText($this->getCreateButtonText());
 
+			if ($this->hasCreateButtonIframe())
+			{
+				// Relation create URLs render a form, therefore the iframe opener
+				// must request them with GET rather than its default POST method.
+				// DataTable toolbars only delegate iframe clicks for AJAX table
+				// buttons; without this flag their own action would redirect.
+				$createButton->setAjaxTableButton();
+				$createButton->setAsIframe();
+				$createButton->setData('method', 'GET');
+			}
+
 			$this->table->addButton($createButton);
 		}
+
+		if ($associateButton = $this->getAssociateButton())
+			$this->table->addButton($associateButton);
 
 		foreach ($this->buttons as $button)
 			$this->table->addButton($button);

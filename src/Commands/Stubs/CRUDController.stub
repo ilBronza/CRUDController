@@ -108,6 +108,16 @@ class {{ class }} extends CRUD
      **/
     //  public $avoidCreateButton = true;
 
+    /**
+     * the create button opens in a popup by default; set false to navigate
+     **/
+    // public bool $createButtonIframe = false;
+
+    /**
+     * enables the index button that creates and broadcasts an empty record
+     **/
+    // public bool $createEmpty = true;
+
 
 
     /**
@@ -146,4 +156,3 @@ class {{ class }} extends CRUD
 
 
 }
-

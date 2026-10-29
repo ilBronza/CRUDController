@@ -63,6 +63,11 @@ trait PackageStandardIndexTrait
 
     public function getIndexElements()
     {
+        return $this->getStandardIndexQuery()->get();
+    }
+
+    protected function getStandardIndexQuery()
+    {
         $query = $this->getModelClass()::query();
 
         if($with = $this->getIndexElementsRelationsArray())
@@ -73,6 +78,6 @@ trait PackageStandardIndexTrait
 
 	    $query = $this->customizeQuery($query);
 
-        return $query->get();
+        return $query;
     }
 }

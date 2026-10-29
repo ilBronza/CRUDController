@@ -4,7 +4,7 @@
         <div uk-grid>
             <div class="uk-width-expand">
                 <span class="uk-h3 uk-display-block">
-                    @if($indexUrl = $modelInstance->getIndexUrl())
+					@if((! request()->boolean('iframed')) && ($indexUrl = $modelInstance->getIndexUrl()))
                     <a href="{{ $indexUrl }}">
                         <i class="fa-solid fa-list"></i>
                         Torna alla lista @lang('crudModels.' . Str::plural(strtolower(class_basename($modelInstance))))
@@ -25,9 +25,9 @@
                         >
                         <div class="uk-navbar-left">
                             <ul class="uk-navbar-nav">
-                                @isset($backToListUrl)
+                                @if((! request()->boolean('iframed')) && isset($backToListUrl))
                                 <li><a href="{{ $backToListUrl }}">@lang('crud::crud.backToList')</a></li>
-                                @endisset
+                                @endif
 
                                 @if(isset($showButtons))
                                     @foreach($showButtons as $showButton)

@@ -13,6 +13,44 @@ use function get_class;
 
 trait CRUDCacheTrait
 {
+	public static function bootCRUDCacheTrait() : void
+	{
+		static::saving(function ($model)
+		{
+			$model::forgetIndexCache();
+		});
+
+		// Also invalidate after persistence, so a read during saving cannot survive it.
+		static::saved(function ($model)
+		{
+			$model::forgetIndexCache();
+		});
+
+		static::deleted(function ($model)
+		{
+			$model::forgetIndexCache();
+		});
+	}
+
+	public static function getIndexCacheKey() : string
+	{
+		return static::staticCacheKey('index');
+	}
+
+	public static function getIndexCacheKeys() : array
+	{
+		return [static::getIndexCacheKey()];
+	}
+
+	public static function forgetIndexCache() : void
+	{
+		foreach (static::getIndexCacheKeys() as $cacheKey)
+		{
+			cache()->forget($cacheKey);
+			cache()->forget($cacheKey . '_jsonData');
+		}
+	}
+
 	static function getCachableRelations()
 	{
 		return static::$cachableRelations ?? [];

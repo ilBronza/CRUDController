@@ -565,6 +565,7 @@ class MakeCrudEntityCommand extends Command
 		$this->line("Route::group(['prefix' => '{$names['urlPrefix']}'], function()");
 		$this->line("{");
 		$this->line("\tRoute::get('', [" . $this->getRouteController('index') . ", 'index'])->name('{$routeName}.index');");
+		$this->line("\tRoute::post('create-empty', [" . $this->getRouteController('index') . ", 'createEmpty'])->name('{$routeName}.createEmpty');");
 		$this->line("\tRoute::get('create', [" . $this->getRouteController('create') . ", 'create'])->name('{$routeName}.create');");
 		$this->line("\tRoute::post('', [" . $this->getRouteController('store') . ", 'store'])->name('{$routeName}.store');");
 		$this->line("");

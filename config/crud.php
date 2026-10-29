@@ -24,8 +24,21 @@ return [
 		'total_limit' => 100,
 	],
 
+	'index' => [
+		// Keep the index visible while the standard create form is open.
+		// A controller may override this with its own createButtonIframe property.
+		'createButtonIframe' => true,
+	],
+
 	'realtionshipManagers' => [
 		'active' => true,
+		'createButton' => false,
+		// The association picker for BelongsToMany relations is opt-in per
+		// relation via hasAssociateButton; this is its package-wide fallback.
+		'associateButton' => false,
+		// When enabled, relation create buttons open their form in a modal iframe.
+		// A relation may override this with its own `createButtonIframe` value.
+		'createButtonIframe' => true,
 		'columnsSorting' => true,
 		'selectRowCheckboxes' => false,
 		'reloadButton' => false,

@@ -116,7 +116,7 @@ trait CRUDShowRelationshipsTrait
 		if($this->hasDisabledRelationshipsManager())
 			return null;
 
-		if($this->getModel()->getRelationshipsManagerClass())
+		if($this->getRelationshipsManagerClass())
 			return $this->useRelationshipsManager();
 	}
 

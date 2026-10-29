@@ -115,7 +115,7 @@ trait CRUDModelExtraFieldsTrait
 		$extraFieldsClass = $this->getExtraFieldsClass();
 
 		if(! $extraFieldsClass)
-			throw new \Exception('dichiara getExtraFieldsClass in ' . get_class($this));
+			throw new \Exception('getExtraFieldsClass sta ritornando null, invece è richiesta in ' . get_class($this));
 
 		if($this instanceof Pivot)
 		{
