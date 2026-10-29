@@ -180,6 +180,45 @@ e `max` del filtro numerico sono validati anche sul server; `step` è un suggeri
 per il controllo HTML. Gli input non validi producono HTTP 422, JSON nelle richieste
 AJAX e una pagina con errori nelle richieste HTML, senza redirect ciclici.
 
+### Accordion dei filtri laterali
+
+Ogni filtro ha un accordion indipendente. Il parametro `accordion` ne configura
+lo stato iniziale:
+
+| Valore | Comportamento |
+| --- | --- |
+| `'open'` (predefinito) | Parzialmente aperto: l'intero contenuto del `details` ha un'altezza massima di 18rem e scorre |
+| `'full-open'` | Aperto completamente, con tutti i campi e le opzioni visibili senza limite di altezza |
+| `'closed'` | Chiuso, con il solo titolo visibile |
+| `false` | Controllo senza accordion |
+
+```php
+'status' => [
+    'type' => 'multiple', 'label' => 'Stato', 'column' => 'status',
+    'options' => ['draft' => 'Bozza', 'sent' => 'Inviato'],
+    'accordion' => 'full-open',
+],
+```
+
+Il limite iniziale si applica al corpo dell'accordion, anche quando una view
+personalizzata contiene più gruppi di campi. Si può personalizzare con la variabile
+CSS `--crud-catalog-filter-height`. «Mostra tutto» espande l'intero contenuto;
+il titolo apre e chiude il filtro. Dopo l'interazione con questi comandi il filtro
+alterna solo apertura completa e chiusura; non torna all'apertura parziale.
+In apertura completa è disponibile anche «Chiudi filtro» in fondo al contenuto.
+La chiusura non cancella le selezioni. Stato e posizione
+di scorrimento restano invariati durante filtri, ordinamento, paginazione e
+navigazione avanti/indietro via AJAX. Un caricamento completo riparte dallo stato
+configurato. Senza JavaScript l'apertura e la chiusura funzionano con `<details>`
+e rispettano l'altezza iniziale configurata.
+
+Anche i controlli personalizzati possono restituire `accordion` da `control()`.
+La view riceve `$inAccordion`: può usarlo per nascondere visivamente un'etichetta
+duplicata, mantenendola associata all'input. Le liste con classe
+`crud-catalog-options` dentro l'accordion non hanno limiti propri: scorre il corpo
+del filtro. Le view personalizzate devono evitare limiti di altezza inline sulle
+liste interne, che impedirebbero di mostrarle completamente.
+
 ## Scope e filtri personalizzati
 
 Uno scope locale riceve **un solo argomento**, il valore normalizzato: stringa,

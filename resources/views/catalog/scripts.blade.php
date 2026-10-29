@@ -5,9 +5,19 @@
     window.__crudCatalogInstalled = true;
     const states = new Map();
 
+    function updateFilter(filter) {
+        const full = filter.dataset.filterExpanded === 'full-open';
+        filter.dataset.filterState = filter.open ? (full ? 'full-open' : 'open') : 'closed';
+        const button = filter.querySelector('[data-catalog-filter-expand]');
+        const content = filter.querySelector('.crud-catalog-filter-content');
+        button.hidden = !filter.open || (!full && content.scrollHeight <= content.clientHeight + 1);
+        button.textContent = full ? button.dataset.collapseLabel : button.dataset.expandLabel;
+    }
+
     function initialize(root) {
         root.dataset.enhanced = 'true';
         root.querySelector('[data-catalog-toggle]').hidden = false;
+        root.querySelectorAll('[data-catalog-filter]').forEach(updateFilter);
     }
 
     function stateFor(root) {
@@ -77,6 +87,19 @@
                 const input = options.querySelector('[name]');
                 if (input) optionsScroll.set(input.name, options.scrollTop);
             });
+            const filterStates = new Map();
+            root.querySelectorAll('[data-catalog-filter]').forEach(filter => {
+                filterStates.set(filter.dataset.catalogFilter, {
+                    open: filter.open, expanded: filter.dataset.filterExpanded,
+                    scroll: filter.querySelector('.crud-catalog-filter-content').scrollTop
+                });
+            });
+            replacement.querySelectorAll('[data-catalog-filter]').forEach(filter => {
+                const previous = filterStates.get(filter.dataset.catalogFilter);
+                if (!previous) return;
+                filter.open = previous.open;
+                filter.dataset.filterExpanded = previous.expanded;
+            });
             const isOpen = root.dataset.filtersOpen === 'true';
             replacement.dataset.filtersOpen = String(isOpen);
             replacement.querySelector('[data-catalog-toggle]').setAttribute('aria-expanded', String(isOpen));
@@ -89,6 +112,10 @@
             replacement.querySelectorAll('.crud-catalog-options').forEach(options => {
                 const input = options.querySelector('[name]');
                 if (input && optionsScroll.has(input.name)) options.scrollTop = optionsScroll.get(input.name);
+            });
+            replacement.querySelectorAll('[data-catalog-filter]').forEach(filter => {
+                const previous = filterStates.get(filter.dataset.catalogFilter);
+                if (previous) filter.querySelector('.crud-catalog-filter-content').scrollTop = previous.scroll;
             });
         } catch (error) {
             if (state.sequence !== sequence || error.name === 'AbortError' || !root.isConnected) return;
@@ -121,12 +148,29 @@
     });
 
     document.addEventListener('click', function (event) {
+        const title = event.target.closest('[data-catalog-filter-title]');
+        if (title) {
+            // Keep the native details toggle; subsequent openings show the entire filter.
+            title.closest('[data-catalog-filter]').dataset.filterExpanded = 'full-open';
+            return;
+        }
+        const expand = event.target.closest('[data-catalog-filter-expand]');
+        if (expand) {
+            const filter = expand.closest('[data-catalog-filter]');
+            const close = filter.dataset.filterExpanded === 'full-open';
+            filter.dataset.filterExpanded = 'full-open';
+            filter.open = !close;
+            if (close) filter.querySelector('[data-catalog-filter-title]').focus();
+            updateFilter(filter);
+            return;
+        }
         const toggle = event.target.closest('[data-catalog-toggle]');
         if (toggle) {
             const root = toggle.closest('[data-crud-catalog]');
             const open = root.dataset.filtersOpen !== 'true';
             root.dataset.filtersOpen = String(open);
             toggle.setAttribute('aria-expanded', String(open));
+            if (open) root.querySelectorAll('[data-catalog-filter]').forEach(updateFilter);
             return;
         }
         const link = event.target.closest('a[data-catalog-link]');
@@ -135,6 +179,15 @@
         if (!root || new URL(link.href).origin !== window.location.origin) return;
         event.preventDefault();
         load(root, link.href, true);
+    });
+
+    // The native details toggle also works with keyboard input and without JavaScript.
+    document.addEventListener('toggle', function (event) {
+        if (event.target.matches('[data-catalog-filter]')) updateFilter(event.target);
+    }, true);
+
+    window.addEventListener('resize', function () {
+        document.querySelectorAll('[data-catalog-filter]').forEach(updateFilter);
     });
 
     document.addEventListener('keydown', function (event) {

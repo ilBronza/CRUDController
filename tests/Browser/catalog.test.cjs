@@ -26,7 +26,7 @@ function browser() {
     const document = {
         activeElement: null,
         addEventListener(type, callback) { listeners[type] = callback; },
-        querySelectorAll() { return [root]; },
+        querySelectorAll(selector) { return selector === '[data-catalog-filter]' ? root.filters : [root]; },
         getElementById(id) { return id === root.id ? root : null; },
     };
     function element() {
@@ -41,16 +41,40 @@ function browser() {
             id: 'crud-catalog', content, isConnected: true, dataset: { errorMessage: 'Loading failed' },
             attributes: {}, parts: {},
             options: ['filters[category][]', 'filters[light_source][]'].map(name => ({
-                scrollTop: 0,
+                scrollTop: 0, scrollHeight: 900, clientHeight: 288,
                 querySelector() { return { name }; },
             })),
             setAttribute(key, value) { this.attributes[key] = value; },
             querySelector(selector) { return this.parts[selector]; },
-            querySelectorAll(selector) { return selector === '.crud-catalog-options' ? this.options : []; },
+            querySelectorAll(selector) {
+                if (selector === '.crud-catalog-options') return this.options;
+                if (selector === '[data-catalog-filter]') return this.filters;
+                return [];
+            },
             matches(selector) { return selector === '[data-crud-catalog]'; },
             contains() { return false; },
             replaceWith(next) { this.isConnected = false; root = next; },
         };
+        node.filters = ['category', 'light_source', 'search', 'variant'].map((key, index) => {
+            const button = element();
+            const title = element();
+            const content = { scrollTop: 0, scrollHeight: key === 'search' ? 60 : 1500, clientHeight: 288 };
+            button.dataset = { expandLabel: 'Show all', collapseLabel: 'Collapse filter' };
+            const filter = {
+                open: true, dataset: { catalogFilter: key, filterExpanded: 'open', filterState: 'open' },
+                button, title, content,
+                querySelector(selector) {
+                    if (selector === '.crud-catalog-filter-content') return content;
+                    if (selector === '[data-catalog-filter-title]') return title;
+                    return button;
+                },
+                querySelectorAll() { return node.options[index] ? [node.options[index]] : []; },
+                matches(selector) { return selector === '[data-catalog-filter]'; },
+            };
+            button.closest = selector => selector === '[data-catalog-filter-expand]' ? button : selector === '[data-catalog-filter]' ? filter : null;
+            title.closest = selector => selector === '[data-catalog-filter-title]' ? title : selector === '[data-catalog-filter]' ? filter : null;
+            return filter;
+        });
         for (const name of ['loading', 'error', 'toggle', 'total']) node.parts[`[data-catalog-${name}]`] = element();
         const form = {
             action: 'https://example.test/catalog', entries: [['sort', 'subject']],
@@ -75,12 +99,20 @@ function browser() {
     return {
         requests, history, window, listeners, windowListeners,
         get root() { return root; },
+        get activeElement() { return document.activeElement; },
         submit(entries) {
             const form = root.parts['[data-catalog-form]'];
             form.entries = entries;
             listeners.submit({ target: form, preventDefault() {} });
         },
         input() { listeners.input({ target: { closest() { return root; }, matches() { return true; } } }); },
+        expand(index = 0) { listeners.click({ target: root.filters[index].button }); },
+        toggleFilter(index = 0) {
+            const filter = root.filters[index];
+            listeners.click({ target: filter.title });
+            filter.open = !filter.open;
+            listeners.toggle({ target: filter });
+        },
         async respond(index, content) {
             requests[index].resolve({ ok: true, text: async () => content });
             await settle();
@@ -182,9 +214,90 @@ test('modified link clicks retain browser navigation behavior', () => {
     const app = browser();
     const link = { href: 'https://example.test/catalog?page=2', closest() { return app.root; }, hasAttribute() { return false; } };
     const event = {
-        target: { closest(selector) { return selector === '[data-catalog-toggle]' ? null : link; } },
+        target: { closest(selector) { return selector === 'a[data-catalog-link]' ? link : null; } },
         button: 0, ctrlKey: true, preventDefault() { throw new Error('Must not intercept modified click'); },
     };
     app.listeners.click(event);
     assert.equal(app.requests.length, 0);
+});
+
+test('initial partial opening becomes full-open or closed after interaction without changing values', () => {
+    const app = browser();
+    const filter = app.root.filters[0];
+    const form = app.root.parts['[data-catalog-form]'];
+    form.entries = [['filters[category][]', 'wash']];
+    assert.equal(filter.dataset.filterState, 'open');
+    assert.equal(filter.button.textContent, 'Show all');
+    app.expand();
+    assert.equal(filter.dataset.filterState, 'full-open');
+    assert.equal(filter.button.textContent, 'Collapse filter');
+    app.toggleFilter();
+    assert.equal(filter.dataset.filterState, 'closed');
+    app.toggleFilter();
+    assert.equal(filter.dataset.filterState, 'full-open');
+    app.expand();
+    assert.equal(filter.dataset.filterState, 'closed');
+    assert.equal(filter.button.hidden, true);
+    assert.equal(app.activeElement, filter.title);
+    app.toggleFilter();
+    assert.equal(filter.dataset.filterState, 'full-open');
+    app.toggleFilter();
+    assert.equal(filter.dataset.filterState, 'closed');
+    assert.equal(app.root.filters[1].dataset.filterState, 'open');
+    assert.deepEqual(form.entries, [['filters[category][]', 'wash']]);
+    assert.equal(app.requests.length, 0);
+    assert.equal(app.history.length, 0);
+});
+
+test('Ajax preserves independent accordion states, including changes while loading', async () => {
+    const app = browser();
+    app.submit([['filters[category][]', 'wash']]);
+    app.expand();
+    app.expand(1);
+    app.toggleFilter(1);
+    await app.respond(0, 'filtered results');
+    assert.equal(app.root.filters[0].dataset.filterState, 'full-open');
+    assert.equal(app.root.filters[1].dataset.filterState, 'closed');
+    assert.equal(app.root.filters[2].dataset.filterState, 'open');
+    app.toggleFilter(1);
+    assert.equal(app.root.filters[1].dataset.filterState, 'full-open');
+    app.windowListeners.popstate();
+    await app.respond(1, 'previous results');
+    assert.equal(app.root.filters[0].dataset.filterState, 'full-open');
+    assert.equal(app.root.filters[1].dataset.filterState, 'full-open');
+    assert.equal(app.history.length, 1);
+});
+
+test('expansion controls measure the entire content, including custom controls without option lists', () => {
+    const app = browser();
+    assert.equal(app.root.filters[0].button.hidden, false);
+    assert.equal(app.root.filters[2].button.hidden, true);
+    assert.equal(app.root.filters[3].button.hidden, false);
+    app.expand(3);
+    assert.equal(app.root.filters[3].dataset.filterState, 'full-open');
+    app.root.filters[0].content.scrollHeight = 100;
+    app.windowListeners.resize();
+    assert.equal(app.root.filters[0].button.hidden, true);
+    app.root.filters[0].content.scrollHeight = 900;
+    app.windowListeners.resize();
+    assert.equal(app.root.filters[0].button.hidden, false);
+});
+
+test('the summary closes an initially partial custom filter and reopens it fully', () => {
+    const app = browser();
+    app.toggleFilter(3);
+    assert.equal(app.root.filters[3].dataset.filterState, 'closed');
+    app.toggleFilter(3);
+    assert.equal(app.root.filters[3].dataset.filterState, 'full-open');
+    assert.equal(app.requests.length, 0);
+});
+
+test('Ajax retains scrolling of the entire partially open filter', async () => {
+    const app = browser();
+    app.root.filters[3].content.scrollTop = 350;
+    app.submit([['filters[variant][pixel_pitch][]', '1.5']]);
+    app.root.filters[3].content.scrollTop = 480;
+    await app.respond(0, 'filtered variants');
+    assert.equal(app.root.filters[3].content.scrollTop, 480);
+    assert.equal(app.root.filters[3].dataset.filterState, 'open');
 });

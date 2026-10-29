@@ -1,5 +1,5 @@
 <fieldset class="uk-fieldset uk-margin">
-    <legend class="uk-form-label">{{ $control['label'] }}</legend>
+    <legend @class(['uk-form-label', 'uk-hidden-visually' => $inAccordion ?? false])>{{ $control['label'] }}</legend>
     <div class="crud-catalog-range">
         @foreach(['min', 'max'] as $bound)
             <div>

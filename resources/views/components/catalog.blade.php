@@ -15,7 +15,7 @@
                         <input type="hidden" name="{{ $key }}" value="{{ is_bool($contextValue) ? (int) $contextValue : $contextValue }}">
                     @endforeach
                     @foreach($catalog->controls as $key => $control)
-                        @include($control['view'], ['control' => $control, 'value' => $catalog->values[$key] ?? null, 'inputId' => $id . '-' . $key])
+                        @include('crud::catalog.filters.accordion', ['control' => $control, 'value' => $catalog->values[$key] ?? null, 'inputId' => $id . '-' . $key])
                     @endforeach
                     <button type="submit" class="uk-button uk-button-primary uk-width-1-1">{{ __('crud::catalog.apply') }}</button>
                     <a href="{{ $catalog->resetUrl() }}" data-catalog-link class="uk-button uk-button-text uk-margin-small-top">{{ __('crud::catalog.reset') }}</a>

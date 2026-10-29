@@ -2,6 +2,7 @@
 
 return [
     'filters' => 'Filtri', 'apply' => 'Applica filtri', 'reset' => 'Azzera filtri',
+    'show_all_options' => 'Mostra tutto', 'collapse_filter' => 'Chiudi filtro',
     'sort' => 'Ordina per', 'default_sort' => 'Ordine predefinito',
     'results' => '{0} Nessun risultato|{1} 1 risultato|[2,*] :count risultati',
     'active_filters' => 'Filtri attivi', 'remove' => 'Rimuovi :filter',
