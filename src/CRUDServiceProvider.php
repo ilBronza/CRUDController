@@ -11,6 +11,7 @@ use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Commands\MakeArchiveMigrationCommand;
 use IlBronza\CRUD\Commands\MakeCrudEntityCommand;
 use IlBronza\CRUD\Commands\PinIlbronzaPackagesCommand;
+use IlBronza\CRUD\Commands\TranslatableFieldsCommand;
 use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
@@ -145,6 +146,7 @@ class CRUDServiceProvider extends ServiceProvider
             MakeArchiveMigrationCommand::class,
             MakeCrudEntityCommand::class,
             PinIlbronzaPackagesCommand::class,
+            TranslatableFieldsCommand::class,
         ]);
 
         Response::macro('success', function (string $message = null) {

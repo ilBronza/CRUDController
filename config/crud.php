@@ -23,6 +23,8 @@ return [
 	// Lists (['it', 'en']) and labelled maps (['it' => 'Italiano', 'en' => 'English']) are supported.
 	'translatableFields' => [
 		'locales' => null,
+		// Extra models for crud:translations, in addition to app models and *.models.*.class.
+		'models' => [],
 	],
 
 	'ajaxSearch' => [

@@ -265,6 +265,11 @@ class QuotationRelationManager Extends RelationshipsManager
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.
 
+## Colonne traducibili
+
+Per controllare e generare le colonne dei cast `TranslatableField`, vedi
+[la guida a crud:translations](docs/translatable-columns.md).
+
 ## Testing
 
 ``` bash

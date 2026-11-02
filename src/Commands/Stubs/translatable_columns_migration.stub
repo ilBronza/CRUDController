@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+// crud:translations {{ metadata }}
+return new class extends Migration
+{
+    protected $connection = {{ connection }};
+
+    public function up(): void
+    {
+        Schema::connection($this->getConnection())->table({{ table }}, function (Blueprint $table) {
+{{ columns }}
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::connection($this->getConnection())->table({{ table }}, function (Blueprint $table) {
+            $table->dropColumn({{ column_names }});
+        });
+    }
+};
