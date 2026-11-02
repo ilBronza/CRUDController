@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Helpers\ModelManagers\Traits;
 
+use IlBronza\CRUD\Helpers\Forms\TranslatableFormFields;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetParametersFile;
 use IlBronza\Form\Helpers\FieldsetsProvider\FieldsetsProvider;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ trait ModelManagersSettersAndGettersTraits
 	public function setFieldsetsProvider()
 	{
 		$this->fieldsetsProvider = $this->initializeFieldsetsProvider();
+
+		TranslatableFormFields::configure($this->fieldsetsProvider);
 	}
 
 	public function getFieldsetsProvider() : FieldsetsProvider

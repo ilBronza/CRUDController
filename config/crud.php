@@ -19,6 +19,12 @@ return [
 	 */
 	'ajaxSearchFields' => [],
 
+	// Null uses uikittemplate.availableLanguages; the base locale is always included.
+	// Lists (['it', 'en']) and labelled maps (['it' => 'Italiano', 'en' => 'English']) are supported.
+	'translatableFields' => [
+		'locales' => null,
+	],
+
 	'ajaxSearch' => [
 		'per_model_limit' => 20,
 		'total_limit' => 100,

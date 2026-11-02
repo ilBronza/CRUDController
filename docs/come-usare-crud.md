@@ -579,3 +579,74 @@ class KmreadingCreateStoreController extends KmreadingCRUD
 ## Checklist per una nuova entità
 
 Creare il model con `CRUDModelTrait`; aggiungere la chiave nel config con `class`, `table`, `fieldsGroupsFiles`, `parametersFiles`, `controllers`; creare la classe `<Entità>CRUD` con `$configModelClassName`; creare i cinque controller (Index, CreateStore, EditUpdate, Show, Destroy); creare il FieldsGroup per l'index e i Fieldsets per i form; se serve la show con relazioni, creare il RelationshipsManager; dichiarare le route con `getController()`.
+
+## Campi traducibili nei form create/edit
+
+Un attributo con il cast `IlBronza\CRUD\Models\Casts\TranslatableField` viene
+espanso automaticamente dai model manager standard di CRUD nei form di creazione
+e modifica e nei corrispondenti provider di validazione e salvataggio.
+
+```php
+use IlBronza\CRUD\Models\Casts\TranslatableField;
+
+protected $casts = [
+    'title' => TranslatableField::class,
+    'body' => TranslatableField::class,
+];
+```
+
+Nel `FieldsetParametersFile` i campi si dichiarano una sola volta:
+
+```php
+'content' => [
+    'fields' => [
+        'title' => ['type' => 'text', 'rules' => 'required|string|max:180', 'label' => 'Titolo'],
+        'body' => ['type' => 'textarea', 'rules' => 'nullable|string|max:50000', 'label' => 'Testo'],
+        'status' => ['type' => 'text', 'rules' => 'required|in:draft,ready'],
+    ],
+],
+```
+
+La lingua base è `config('app.base_locale', 'it')`. Le lingue dei form si possono
+configurare in `crud.translatableFields.locales` come elenco o mappa con etichette:
+
+```php
+'translatableFields' => [
+    'locales' => ['it' => 'Italiano', 'en' => 'English'],
+],
+```
+
+Con `locales => null` si usa `uikittemplate.availableLanguages`; in assenza di
+entrambe le configurazioni è disponibile soltanto la lingua base. La lingua base
+è sempre inclusa per prima, anche quando non compare nella configurazione.
+
+In ciascun fieldset i soli attributi traducibili vengono raccolti nei tab per
+lingua, usando lo switcher UIkit già supportato da Form. I campi comuni e i gruppi
+annidati mantengono le proprie impostazioni. Con una sola lingua i campi rimangono
+nel fieldset. Per ogni lingua secondaria il nome viene prefissato, ad esempio
+`en_title` e `en_body`; tali colonne devono essere predisposte dalla migrazione
+dell'applicazione prima di assegnare il cast.
+
+I valori mostrati provengono dagli attributi grezzi del model, inclusi eventuali
+valori impostati prima del rendering. Il tab italiano legge sempre `title`, anche
+se la lingua corrente è inglese. Valori `null`, stringhe vuote e `"0"` vengono
+mostrati senza consultare il cast; i valori di `old()` hanno la consueta precedenza.
+I default del campo originale valgono solo per la lingua base.
+
+Le regole della lingua base vengono conservate. Le traduzioni generate sono
+opzionali: vengono rimosse le regole di obbligatorietà (`required`, `required_*`,
+`present`, `present_*`, `filled`) e aggiunto `nullable`, mantenendo tipo e limiti.
+Ruoli, permessi, visibilità, sola lettura e disabilitazione vengono ereditati dal
+campo dichiarato. Una traduzione dichiarata esplicitamente nel file dei parametri
+mantiene il proprio layout e le proprie regole e non viene duplicata.
+
+La stessa espansione alimenta la validazione, la trasformazione dei valori e il
+binding dei parametri, usando sempre colonne esplicite. Un campo omesso dalla
+richiesta non cancella una traduzione esistente; un valore `null` esplicito la
+svuota. Dopo un errore di validazione viene aperto il primo tab interessato per
+ogni gruppo. Anche i controlli HTML non validi rendono visibile il proprio tab.
+
+L'integrazione è limitata ai provider `create`, `edit`, `store` e `update`; i model
+senza il cast e i provider `show` non vengono modificati. I form Blade scritti a
+mano, che non passano dai model manager CRUD, richiedono un collegamento esplicito
+al sistema dei form. Non vengono create colonne o assegnati cast ai model ospiti.

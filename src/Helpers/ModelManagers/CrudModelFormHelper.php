@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Helpers\ModelManagers;
 
 use App\Http\Controllers\Controller;
+use IlBronza\CRUD\Helpers\Forms\TranslatableFormFields;
 use IlBronza\CRUD\Helpers\CrudTranslationHelper;
 use IlBronza\CRUD\Helpers\ModelManagers\Traits\ModelManagersSettersAndGettersTraits;
 use IlBronza\Form\Form;
@@ -81,6 +82,8 @@ abstract class CrudModelFormHelper implements CrudModelManager
 		// );
 
 		$this->getFieldsetsProvider()->setFieldsetsCollectionToForm();
+
+		TranslatableFormFields::attachToForm($this->getForm(), $this->getFieldsetsProvider());
 
 		return $this->getForm();
 	}
