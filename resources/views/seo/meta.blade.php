@@ -1,11 +1,16 @@
-@foreach($model->getMetaTags($locale ?? null) as $name => $value)
-    @if($name === 'title')
-        <title>{{ $value }}</title>
-    @elseif($name === 'canonical')
-        <link rel="canonical" href="{{ $value }}">
-    @elseif(strpos($name, 'og:') === 0)
-        <meta property="{{ $name }}" content="{{ $value }}">
-    @else
-        <meta name="{{ $name }}" content="{{ $value }}">
-    @endif
-@endforeach
+@if(app()->bound('uikittemplate.head'))
+    @php($seoHeadMetadata = app('uikittemplate.head')->setSeoModel($model, $locale ?? null)->forContext($frontendContext ?? null))
+    @include('uikittemplate-head::metadata', ['headMetadata' => $seoHeadMetadata])
+@else
+    @foreach($model->getMetaTags($locale ?? null) as $name => $value)
+        @if($name === 'title')
+            <title>{{ $value }}</title>
+        @elseif($name === 'canonical')
+            <link rel="canonical" href="{{ $value }}">
+        @elseif(strpos($name, 'og:') === 0)
+            <meta property="{{ $name }}" content="{{ $value }}">
+        @else
+            <meta name="{{ $name }}" content="{{ $value }}">
+        @endif
+    @endforeach
+@endif

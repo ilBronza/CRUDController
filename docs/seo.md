@@ -12,17 +12,89 @@ $product->unsetRelation('seo'); // se la relazione era già stata caricata
 $meta = $product->getMetaTags('it-IT');
 ```
 
-Nel layout, dentro head:
+## Integrazione con UikitTemplate
 
-```blade
-@include('crud::seo.meta', ['model' => $product, 'locale' => app()->getLocale()])
+Nei layout UikitTemplate, il modello con `HasSeo` viene letto automaticamente
+quando è passato come `FrontendContext::page`:
+
+```php
+$frontendContext = new \IlBronza\UikitTemplate\Frontend\FrontendContext(
+    locale: $contentLocale,
+    title: 'Titolo generico della pagina',
+    page: $product,
+);
 ```
 
-Impostare separatamente `<html lang="{{ app()->getLocale() }}">`. Per liste usare `with('seo')` per evitare query per ogni entità.
+Il titolo SEO, la descrizione, i robots, il canonical, Open Graph e Twitter card
+arrivano al head nella lingua del contesto. Non è necessario ripassare gli stessi
+dati in `meta`, né includere un altro partial SEO. La lingua del traduttore
+applicativo resta invariata.
+
+Per pagine senza contesto frontend, registrare il modello nel controller prima
+del rendering:
+
+```php
+$head = app('uikittemplate')->head()->setSeoModel($product, $contentLocale);
+
+// Gli override del controller hanno precedenza, anche se impostati prima del modello.
+$head->setTitle('Titolo specifico')
+    ->setDescription('Descrizione specifica')->setRobots('index, follow')
+    ->setCanonical($canonicalUrl)
+    ->setOpenGraphTitle('Titolo social')->setOpenGraphImage($shareImageUrl)
+    ->setTwitterTitle('Titolo Twitter')
+    ->setHrefLink('en', 'https://example.com/en/custom-slug');
+$head->addJsonLd($articleSchema);
+$head->setJsonLdProperty('headline', 'Titolo per i dati strutturati');
+```
+
+Il modello fornisce i default; `FrontendContext::meta` e i setter del controller
+possono sovrascriverli. `setMeta($product->getMetaTags($contentLocale))` continua a
+essere supportato quando si preferisce passare esplicitamente l'array completo.
+Il renderer comune emette una sola copia di titolo, canonical e metadati.
+
+Gli override sono indipendenti e limitati alla richiesta: non modificano i record
+SEO. Cambiare `description` non cambia anche le descrizioni Open Graph o Twitter.
+Sono disponibili setter dedicati per tutti i campi del trait, come
+`setOpenGraphDescription/Url/Type/Image/ImageAlt/Locale` e
+`setTwitterCard/Title/Description/Image/ImageAlt`, oltre a
+`setOpenGraphSiteName`, `setTwitterSite` e `setTwitterCreator`.
+Per ulteriori proprietà usare `setOpenGraphProperty($property, $value)` e
+`setTwitterProperty($property, $value)`. Un valore `null` su titolo, descrizione,
+robots o proprietà social omette quel tag, anche quando il modello lo fornisce.
+`setHrefLink($locale, $url)` modifica un solo alternate; `null` rimuove quella
+lingua e lascia le altre invariate. I setter di gruppo vanno chiamati prima delle
+correzioni puntuali dello stesso gruppo.
+
+Se né modello né controller/config forniscono un canonical, UikitTemplate usa
+l'URL assoluto corrente senza query string. Gli alternate non forniti vengono
+generati prefissando il canonical con le lingue di
+`uikittemplate.availableLanguages`, sostituendo l'eventuale prefisso già presente.
+Il fallback si applica solo al head: `SeoUrlResolver` rimane indipendente dalla
+richiesta, anche quando viene usato per generare sitemap.
+
+Per slug differenti tra lingue, lingua base senza prefisso o traduzioni non tutte
+disponibili, passare la mappa reale in `FrontendContext::languageUrls` oppure
+`$head->setHrefLinks($languageUrls)`. `setHrefLinks([])` disattiva gli alternate.
+La presenza di un record SEO non certifica la pubblicazione di una traduzione.
+
+Nei layout personalizzati rimane disponibile il partial, da includere dentro head:
+
+```blade
+@include('crud::seo.meta', ['model' => $product, 'locale' => $contentLocale])
+```
+
+Con UikitTemplate il partial usa lo stesso renderer del head. Senza gli helper
+UikitTemplate mantiene il rendering autonomo dei metadati del trait.
+Impostare separatamente `<html lang="{{ $contentLocale }}">`; il layout frontend
+usa già la lingua di `FrontendContext`. Per liste usare `with('seo')` per evitare
+query per ogni entità.
 
 Personalizzare `getDefaultSeoTitle()`, `getDefaultSeoDescription()` e `getDefaultSeoUrl(?string $locale = null)` sul modello. Il titolo usa altrimenti title/name; descrizione e URL non vengono dedotti. Gli override Open Graph e Twitter ereditano titolo e descrizione SEO. I valori vuoti non vengono renderizzati. Usare URL assoluti pubblici per canonical e immagini.
 
-Non viene effettuato fallback tra lingue diverse. `og:locale` viene emesso solo per locale con lingua e regione (es. it-IT), mentre locale brevi come it restano validi per la selezione dei dati. Hreflang richiede gli URL delle traduzioni effettivamente pubblicate e va gestito dal layout dell'applicazione. La presenza di un record SEO non certifica la pubblicazione di una traduzione.
+Non viene effettuato fallback tra lingue diverse. Senza locale esplicito, il trait
+usa l'attributo di richiesta `frontend.locale`, con fallback su `app()->getLocale()`.
+`og:locale` viene emesso solo per locale con lingua e regione (es. it-IT), mentre
+locale brevi come it restano validi per la selezione dei dati.
 
 I record SEO non vengono eliminati automaticamente alla cancellazione del modello: l'applicazione può gestire la pulizia secondo le proprie regole di soft delete e ripristino.
 

@@ -14,7 +14,7 @@ trait HasSeo
 
     public function getSeo(?string $locale = null): ?Seo
     {
-        $locale = $locale ?? app()->getLocale();
+        $locale = $locale ?? request()->attributes->get('frontend.locale', app()->getLocale());
 
         return $this->relationLoaded('seo')
             ? $this->getRelation('seo')->firstWhere('locale', $locale)
@@ -39,7 +39,7 @@ trait HasSeo
 
     public function getMetaTags(?string $locale = null): array
     {
-        $locale = $locale ?? app()->getLocale();
+        $locale = $locale ?? request()->attributes->get('frontend.locale', app()->getLocale());
         $seo = $this->getSeo($locale);
         $title = $seo->title ?? $this->getDefaultSeoTitle();
         $description = $seo->description ?? $this->getDefaultSeoDescription();
