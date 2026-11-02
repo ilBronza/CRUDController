@@ -15,6 +15,9 @@ use InvalidArgumentException;
 
 class Catalog
 {
+    public const FILTER_MODE_AJAX = 'ajax';
+    public const FILTER_MODE_FRONTEND = 'frontend';
+
     public array $controls = [];
     public array $values = [];
     public array $activeFilters = [];
@@ -22,9 +25,13 @@ class Catalog
     public string $sort;
     public string $cardView;
     public LengthAwarePaginator $results;
+    public ?FrontendCatalog $frontend = null;
 
-    private function __construct(public string $path, public array $context)
+    private function __construct(public string $path, public array $context, public string $filterMode)
     {
+        if (! in_array($filterMode, [self::FILTER_MODE_AJAX, self::FILTER_MODE_FRONTEND], true))
+            throw new InvalidArgumentException('Invalid catalog filter mode.');
+
         foreach ($context as $key => $value) {
             if (! is_string($key) || ! preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $key) ||
                 in_array($key, ['filters', 'sort', 'page'], true) || ! is_scalar($value))
@@ -32,9 +39,9 @@ class Catalog
         }
     }
 
-    public static function make(CatalogDefinitionInterface $definition, Request $request, array $context = []): self
+    public static function make(CatalogDefinitionInterface $definition, Request $request, array $context = [], string $filterMode = self::FILTER_MODE_AJAX): self
     {
-        $catalog = new self($request->url(), $context);
+        $catalog = new self($request->url(), $context, $filterMode);
         try {
             $catalog->build($definition, $request);
         } catch (ValidationException $exception) {
@@ -116,6 +123,9 @@ class Catalog
         // Normalize only the current page, never the entire filtered result set.
         $this->results->setCollection($this->results->getCollection()->map(fn (CatalogItemInterface $model) => $model->toCatalogItem()));
         $this->cardView = $definition->cardView();
+
+        if ($this->filterMode === self::FILTER_MODE_FRONTEND)
+            $this->frontend = new FrontendCatalog($definition, $base, $filters, $this->controls);
 
         foreach ($this->values as $key => $value) {
             foreach ($filters[$key]->selections($value) as $selection) {

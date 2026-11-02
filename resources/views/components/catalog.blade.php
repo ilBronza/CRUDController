@@ -1,6 +1,7 @@
 @props(['catalog', 'id' => 'crud-catalog'])
 
 <section id="{{ $id }}" {{ $attributes->class(['crud-catalog']) }} data-crud-catalog aria-busy="false"
+    data-filter-mode="{{ $catalog->filterMode }}"
     data-error-message="{{ __('crud::catalog.load_error') }}">
     <div class="crud-catalog-layout">
         <aside class="crud-catalog-sidebar" aria-label="{{ __('crud::catalog.filters') }}">
@@ -18,7 +19,7 @@
                         @include('crud::catalog.filters.accordion', ['control' => $control, 'value' => $catalog->values[$key] ?? null, 'inputId' => $id . '-' . $key])
                     @endforeach
                     <button type="submit" class="uk-button uk-button-primary uk-width-1-1">{{ __('crud::catalog.apply') }}</button>
-                    <a href="{{ $catalog->resetUrl() }}" data-catalog-link class="uk-button uk-button-text uk-margin-small-top">{{ __('crud::catalog.reset') }}</a>
+                    <a href="{{ $catalog->resetUrl() }}" data-catalog-link data-catalog-reset class="uk-button uk-button-text uk-margin-small-top">{{ __('crud::catalog.reset') }}</a>
                 </form>
             </div>
         </aside>
@@ -34,14 +35,12 @@
                     </select>
                 </div>
             </div>
-            @if($catalog->activeFilters)
-                <ul class="uk-list crud-catalog-active" aria-label="{{ __('crud::catalog.active_filters') }}">
-                    @foreach($catalog->activeFilters as $selection)
-                        <li><a href="{{ $selection['url'] }}" data-catalog-link class="uk-button uk-button-default uk-button-small"
-                            aria-label="{{ __('crud::catalog.remove', ['filter' => $selection['label']]) }}">{{ $selection['label'] }} <span aria-hidden="true">×</span></a></li>
-                    @endforeach
-                </ul>
-            @endif
+            <ul class="uk-list crud-catalog-active" data-catalog-active aria-label="{{ __('crud::catalog.active_filters') }}" @if(! $catalog->activeFilters) hidden @endif>
+                @foreach($catalog->activeFilters as $selection)
+                    <li><a href="{{ $selection['url'] }}" data-catalog-link class="uk-button uk-button-default uk-button-small"
+                        aria-label="{{ __('crud::catalog.remove', ['filter' => $selection['label']]) }}">{{ $selection['label'] }} <span aria-hidden="true">×</span></a></li>
+                @endforeach
+            </ul>
             <p data-catalog-loading role="status" hidden>{{ __('crud::catalog.loading') }}</p>
             <div data-catalog-error role="alert" class="uk-alert-danger uk-padding-small" hidden></div>
             <div class="crud-catalog-grid">
@@ -51,17 +50,28 @@
                     <div class="crud-catalog-empty uk-placeholder uk-text-center">
                         <p>{{ __('crud::catalog.empty') }}</p>
                         @if($catalog->activeFilters)
-                            <a href="{{ $catalog->resetUrl() }}" data-catalog-link>{{ __('crud::catalog.reset') }}</a>
+                            <a href="{{ $catalog->resetUrl() }}" data-catalog-link data-catalog-reset>{{ __('crud::catalog.reset') }}</a>
                         @endif
                     </div>
                 @endforelse
             </div>
-            {{ $catalog->results->onEachSide(1)->links('crud::catalog.pagination') }}
+            <div data-catalog-pagination>{{ $catalog->results->onEachSide(1)->links('crud::catalog.pagination') }}</div>
         </div>
     </div>
+    @if($catalog->frontend)
+        <script type="application/json" data-catalog-frontend>{!! json_encode($catalog->frontend->payload($catalog), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!}</script>
+        @foreach($catalog->frontend->items as $item)
+            <template data-catalog-frontend-item><div class="crud-catalog-frontend-item">
+                @include($catalog->cardView, ['item' => $item, 'catalog' => $catalog])
+            </div></template>
+        @endforeach
+    @endif
 </section>
 
 @once
     @include('crud::catalog.styles')
+    @if($catalog->frontend)
+        @include('crud::catalog.frontend-scripts')
+    @endif
     @include('crud::catalog.scripts')
 @endonce

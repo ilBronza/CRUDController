@@ -6,11 +6,13 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../../resources/views/catalog/scripts.blade.php'), 'utf8')
     .replace(/^<script>\s*/, '').replace(/<\/script>\s*$/, '');
+const frontendSource = fs.readFileSync(path.join(__dirname, '../../resources/views/catalog/frontend-scripts.blade.php'), 'utf8')
+    .replace(/^<script>\s*/, '').replace(/<\/script>\s*$/, '');
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
 // A controlled transport deliberately delivers responses even after abort(),
 // reproducing the stale-response race independently of browser cancellation.
-function browser() {
+function browser({ frontend = null, href, transport = true } = {}) {
     const listeners = {};
     const windowListeners = {};
     const requests = [];
@@ -18,8 +20,11 @@ function browser() {
     let root;
     const window = {
         AbortController,
-        location: { href: 'https://example.test/catalog?page=3', origin: 'https://example.test', assign(url) { this.href = url; } },
-        history: { pushState(_state, _title, url) { history.push(url); window.location.href = url; } },
+        location: { href: href || 'https://example.test/catalog?page=3', origin: 'https://example.test', assign(url) { this.href = url; } },
+        history: {
+            pushState(_state, _title, url) { history.push(url); window.location.href = url; },
+            replaceState(_state, _title, url) { window.location.href = url; },
+        },
         addEventListener(type, callback) { windowListeners[type] = callback; },
         matchMedia() { return { matches: true }; },
     };
@@ -28,17 +33,20 @@ function browser() {
         addEventListener(type, callback) { listeners[type] = callback; },
         querySelectorAll(selector) { return selector === '[data-catalog-filter]' ? root.filters : [root]; },
         getElementById(id) { return id === root.id ? root : null; },
+        createElement() { return element(); },
     };
     function element() {
         return {
-            hidden: true, attributes: {}, textContent: '',
+            hidden: true, attributes: {}, textContent: '', children: [], isConnected: true,
             setAttribute(key, value) { this.attributes[key] = value; },
+            append(...nodes) { this.children.push(...nodes); },
+            replaceChildren(...nodes) { this.children = nodes; },
             focus() { document.activeElement = this; },
         };
     }
     function makeRoot(content) {
         const node = {
-            id: 'crud-catalog', content, isConnected: true, dataset: { errorMessage: 'Loading failed' },
+            id: 'crud-catalog', content, isConnected: true, dataset: { errorMessage: 'Loading failed', filterMode: frontend ? 'frontend' : 'ajax' },
             attributes: {}, parts: {},
             options: ['filters[category][]', 'filters[light_source][]'].map(name => ({
                 scrollTop: 0, scrollHeight: 900, clientHeight: 288,
@@ -49,6 +57,8 @@ function browser() {
             querySelectorAll(selector) {
                 if (selector === '.crud-catalog-options') return this.options;
                 if (selector === '[data-catalog-filter]') return this.filters;
+                if (selector === 'template[data-catalog-frontend-item]') return this.templates;
+                if (selector === '[data-catalog-reset]') return [this.reset];
                 return [];
             },
             matches(selector) { return selector === '[data-crud-catalog]'; },
@@ -76,8 +86,21 @@ function browser() {
             return filter;
         });
         for (const name of ['loading', 'error', 'toggle', 'total']) node.parts[`[data-catalog-${name}]`] = element();
+        for (const selector of ['.crud-catalog-grid', '[data-catalog-active]', '[data-catalog-pagination]']) node.parts[selector] = element();
+        node.parts['[data-catalog-frontend]'] = { textContent: JSON.stringify(frontend) };
+        node.templates = (frontend?.items || []).map((_, index) => ({ content: { firstElementChild: { index } } }));
+        node.reset = element();
+        const inputs = [
+            { name: 'sort', value: 'subject', type: 'select-one' },
+            { name: 'filters[search]', value: '', type: 'search' },
+            { name: 'filters[approved]', value: '', type: 'select-one' },
+            { name: 'filters[amount][min]', value: '', type: 'number' },
+            { name: 'filters[amount][max]', value: '', type: 'number' },
+            ...['draft', 'sent'].map(value => ({ name: 'filters[status][]', value, type: 'checkbox', checked: false })),
+        ];
         const form = {
             action: 'https://example.test/catalog', entries: [['sort', 'subject']],
+            elements: inputs,
             closest() { return node; },
             matches(selector) { return selector === '[data-catalog-form]'; },
             reportValidity() { return true; },
@@ -87,7 +110,7 @@ function browser() {
     }
     root = makeRoot('initial results');
     const fetch = (url, options) => new Promise((resolve, reject) => requests.push({ url, options, resolve, reject }));
-    window.fetch = fetch;
+    if (transport) window.fetch = fetch;
     class FormData {
         constructor(form) { this.entries = form.entries; }
         [Symbol.iterator]() { return this.entries[Symbol.iterator](); }
@@ -95,11 +118,22 @@ function browser() {
     class DOMParser {
         parseFromString(html) { return { getElementById() { return makeRoot(html); } }; }
     }
-    vm.runInNewContext(source, { window, document, fetch, FormData, DOMParser, URL, AbortController, Map });
+    vm.runInNewContext(frontendSource + '\n' + source, { window, document, fetch, FormData, DOMParser, URL, AbortController, Map });
     return {
         requests, history, window, listeners, windowListeners,
         get root() { return root; },
         get activeElement() { return document.activeElement; },
+        get visible() { return root.parts['.crud-catalog-grid'].children.filter(node => node.index !== undefined).map(node => node.index); },
+        click(link) {
+            listeners.click({
+                target: { closest(selector) { return selector === 'a[data-catalog-link]' ? link : null; } },
+                button: 0, preventDefault() {},
+            });
+        },
+        change(entries) {
+            root.parts['[data-catalog-form]'].entries = entries;
+            listeners.change({ target: { closest() { return root; }, matches() { return true; } } });
+        },
         submit(entries) {
             const form = root.parts['[data-catalog-form]'];
             form.entries = entries;
@@ -133,6 +167,110 @@ test('GET form state retains zero and context, removes blanks and resets page', 
     assert.equal(app.root.content, 'filtered results');
     assert.equal(app.history.length, 1);
     assert.equal(app.root.attributes['aria-busy'], 'false');
+});
+
+function frontendConfig() {
+    return {
+        filters: {
+            search: { type: 'text', label: 'Search' },
+            status: { type: 'multiple', label: 'Status', options: { draft: 'Draft', sent: '<Sent>' } },
+            amount: { type: 'number-range', label: 'Amount', min: 0 },
+            approved: { type: 'boolean', label: 'Approved' },
+        },
+        sorts: { subject: { column: 'subject' }, amount_desc: { column: 'amount', direction: 'desc' } },
+        defaultSort: 'subject', perPage: 2, context: { project: 'authorized' },
+        items: [
+            { filters: { search: ['Alpha 10%_!', 'First'], status: 'draft', amount: 0, approved: false }, sorts: { subject: 'Alpha', amount_desc: '0.00' } },
+            { filters: { search: ['Beta', null], status: 'sent', amount: '25.50', approved: 1 }, sorts: { subject: 'Beta', amount_desc: '25.50' } },
+            { filters: { search: ['Gamma', 'ALPHA 10%_!'], status: 'draft', amount: '0', approved: '0' }, sorts: { subject: 'Gamma', amount_desc: '0.00' } },
+            { filters: { search: 'Delta', status: 'sent', amount: null, approved: null }, sorts: { subject: 'Delta', amount_desc: null } },
+            { filters: { search: 'Epsilon', status: 'draft', amount: 100, approved: true }, sorts: { subject: 'Epsilon', amount_desc: '100.00' } },
+        ],
+        messages: {
+            zero: 'No results', one: '1 result', many: ':count results', empty: 'Nothing matches',
+            remove: 'Remove :filter', previous: 'Previous', next: 'Next', pagination: 'Pages', page: 'Page :page',
+            yes: 'Yes', no: 'No', from: 'from :value', to: 'to :value', invalid: 'Invalid filters', range: 'Invalid range',
+        },
+    };
+}
+
+test('frontend combines filters across all loaded pages without any transport', () => {
+    const app = browser({ frontend: frontendConfig(), href: 'https://example.test/catalog', transport: false });
+    assert.deepEqual(app.visible, [0, 1]);
+    app.submit([
+        ['filters[search]', ' alpha 10%_! '], ['filters[status][]', 'draft'],
+        ['filters[approved]', '0'], ['filters[amount][min]', '0'], ['filters[amount][max]', '0'],
+    ]);
+    assert.deepEqual(app.visible, [0, 2]);
+    assert.equal(app.root.parts['[data-catalog-total]'].textContent, '2 results');
+    assert.equal(app.requests.length, 0);
+    assert.equal(new URL(app.history[0]).searchParams.get('project'), 'authorized');
+    assert.equal(app.root.parts['[data-catalog-error]'].hidden, true);
+});
+
+test('frontend sorts decimals, paginates locally and retains deterministic ties', () => {
+    const app = browser({ frontend: frontendConfig(), href: 'https://example.test/catalog' });
+    app.change([['sort', 'amount_desc']]);
+    assert.deepEqual(app.visible, [4, 1]);
+    const nav = app.root.parts['[data-catalog-pagination]'].children[0];
+    const next = nav.children[0].children.at(-1).children[0];
+    next.closest = () => app.root;
+    next.hasAttribute = () => false;
+    app.click(next);
+    assert.deepEqual(app.visible, [0, 2]);
+    assert.equal(new URL(app.window.location.href).searchParams.get('page'), '2');
+    assert.equal(app.requests.length, 0);
+});
+
+test('frontend removes individual selections and resets while preserving current sort and context', () => {
+    const app = browser({ frontend: frontendConfig(), href: 'https://example.test/catalog' });
+    app.submit([['filters[status][]', 'draft'], ['filters[status][]', 'sent'], ['filters[approved]', '0'], ['sort', 'amount_desc']]);
+    const active = app.root.parts['[data-catalog-active]'];
+    assert.equal(active.children[1].children[0].textContent, 'Status: <Sent> ×');
+    const removeDraft = active.children[0].children[0];
+    removeDraft.closest = () => app.root;
+    removeDraft.hasAttribute = () => false;
+    app.click(removeDraft);
+    assert.deepEqual(app.visible, []);
+    assert.equal(app.root.parts['[data-catalog-total]'].textContent, 'No results');
+    app.root.reset.closest = () => app.root;
+    app.root.reset.hasAttribute = () => false;
+    app.click(app.root.reset);
+    assert.deepEqual(app.visible, [4, 1]);
+    assert.equal(active.hidden, true);
+    assert.equal(new URL(app.window.location.href).searchParams.get('sort'), 'amount_desc');
+    assert.equal(new URL(app.window.location.href).searchParams.get('project'), 'authorized');
+    assert.equal(app.requests.length, 0);
+});
+
+test('frontend restores URL filters, checkboxes and pagination through browser history without requests', () => {
+    const app = browser({ frontend: frontendConfig(), href: 'https://example.test/catalog?sort=amount_desc' });
+    app.window.location.href = 'https://example.test/catalog?filters[status][0]=draft&filters[approved]=0&page=2';
+    app.windowListeners.popstate();
+    assert.deepEqual(app.visible, [0, 2]); // Out-of-range page is clamped to the last matching page.
+    const inputs = app.root.parts['[data-catalog-form]'].elements;
+    assert.equal(inputs.find(input => input.name === 'sort').value, 'subject');
+    assert.equal(inputs.find(input => input.name === 'filters[approved]').value, '0');
+    assert.equal(inputs.find(input => input.type === 'checkbox' && input.value === 'draft').checked, true);
+    assert.equal(inputs.find(input => input.type === 'checkbox' && input.value === 'sent').checked, false);
+    assert.equal(app.history.length, 0);
+    assert.equal(app.requests.length, 0);
+});
+
+test('frontend keeps the previous results and URL when a range or selection is invalid', () => {
+    const app = browser({ frontend: frontendConfig(), href: 'https://example.test/catalog' });
+    app.submit([['filters[amount][min]', '30'], ['filters[amount][max]', '20']]);
+    assert.deepEqual(app.visible, [0, 1]);
+    assert.equal(app.root.parts['[data-catalog-error]'].textContent, 'Invalid range');
+    app.submit([['filters[status][]', '__proto__']]);
+    assert.equal(app.root.parts['[data-catalog-error]'].textContent, 'Invalid filters');
+    app.submit([['filters[amount][min]', '0x10']]);
+    assert.equal(app.root.parts['[data-catalog-error]'].textContent, 'Invalid range');
+    app.submit([['filters[amount][max]', '0']]);
+    assert.deepEqual(app.visible, [0, 2]);
+    assert.equal(app.root.parts['[data-catalog-error]'].hidden, true);
+    assert.equal(app.history.length, 1);
+    assert.equal(app.requests.length, 0);
 });
 
 test('filter lists retain independent scroll positions, including scrolling while loading', async () => {

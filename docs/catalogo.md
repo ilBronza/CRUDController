@@ -3,6 +3,8 @@
 Il catalogo mostra una query Eloquent come griglia di schede, con filtri laterali,
 ricerca, ordinamento, conteggio e paginazione sul database. Non registra route:
 l'applicazione decide URL, middleware, policy e perimetro consultabile.
+Ogni controller può scegliere la modalità AJAX (predefinita) oppure frontend,
+che applica filtri, ordinamento e paginazione sui dati caricati inizialmente.
 
 ## Contratti e responsabilità
 
@@ -153,6 +155,71 @@ ospite carica UIkit. I controlli sono HTML GET con classi UIkit: non istanziano 
 form CRUD di modifica, che hanno stato del modello, old input e comportamenti di
 salvataggio differenti. Un controllo FormField del progetto può essere integrato
 tramite una view del filtro, conservando nomi degli input e stato del catalogo.
+
+## Scegliere la modalità nel controller
+
+Il quarto argomento di `Catalog::make()` seleziona la modalità per quel controller:
+
+```php
+$catalog = Catalog::make(
+    new DocumentCatalogParameters((int) $request->user()->tenant_id),
+    $request,
+    filterMode: Catalog::FILTER_MODE_FRONTEND,
+);
+```
+
+Usare `Catalog::FILTER_MODE_AJAX` (oppure omettere `filterMode`) per il
+comportamento attuale. Sono accettate anche le stringhe `'ajax'` e `'frontend'`.
+La modalità è configurata nel codice del controller e non viene letta dall'URL;
+non cambia `CatalogDefinitionInterface` o le definizioni esistenti.
+
+| Modalità | Caricamento e filtri | Paginazione e ordinamento |
+| --- | --- | --- |
+| `ajax` | Ogni applicazione invia una GET; il database applica i filtri | Sul database, con caricamento della pagina richiesta |
+| `frontend` | La risposta iniziale contiene tutte le schede della query di base autorizzata; i filtri successivi agiscono nel browser | Locali, con la dimensione pagina di `perPage()` |
+
+In frontend lo snapshot comprende anche le righe escluse dai filtri iniziali e
+quelle oltre la pagina corrente: azzerare un filtro ripristina i dati già caricati,
+senza fetch. Il codice invia solo le schede e i valori necessari ai filtri e agli
+ordinamenti, senza serializzare l'intero modello. `with()` si applica anche allo
+snapshot. La query di base deve già delimitare i dati consultabili dall'utente.
+Il caricamento completo è adatto a insiemi contenuti; per cataloghi grandi usare
+AJAX. Gli aggiornamenti del database diventano visibili ricaricando la pagina.
+
+I quattro filtri standard su `column`/`columns` funzionano automaticamente.
+La ricerca locale ignora le maiuscole e considera `%`, `_`, `!` come testo
+letterale; il confronto degli accenti dipende dal browser e può differire dalla
+collation SQL. Ordinamenti locali numerici confrontano numeri e stringhe numeriche;
+per ordinare stringhe numeriche come testo aggiungere `'type' => 'text'` alla
+definizione dell'ordinamento. A parità di valore resta l'ordine della chiave primaria.
+
+Gli scope SQL richiedono un `frontendValue` esplicito che restituisca il valore
+equivalente per il confronto locale. Per esempio, uno scope su una relazione:
+
+```php
+'regions' => [
+    'type' => 'multiple', 'scope' => 'inRegions',
+    'options' => ['north' => 'Nord', 'south' => 'Sud'],
+    'frontendValue' => fn (Document $document) => $document->customer?->region,
+],
+// Aggiungere 'customer' a with() per precaricare la relazione.
+```
+
+`frontendValue` può restituire una lista per filtri multipli o ricerche su più
+campi, oppure un singolo testo, numero, booleano o `null`. Per una sottoclasse
+personalizzata di un filtro standard dichiarare anche `frontendType` con uno dei
+tipi `text`, `multiple`, `number-range`, `boolean`, e un estrattore equivalente
+alla semantica SQL. In alternativa sovrascrivere `frontendType()` e
+`frontendValue()`. Filtri che implementano direttamente `CatalogFilterInterface`
+devono implementare anche `FrontendCatalogFilterInterface`. Una configurazione
+SQL senza un equivalente frontend esplicito genera un'eccezione in modalità frontend;
+continua a funzionare in AJAX.
+
+URL, filtri attivi rimovibili, reset e Indietro/Avanti funzionano in entrambe le
+modalità. Select e checkbox si applicano subito; testo e intervalli con Invio o
+“Applica filtri”. Senza JavaScript rimane disponibile il form GET con filtri e
+paginazione sul server. Le schede personalizzate devono usare listener delegati
+anche in frontend, perché vengono inserite da template HTML.
 
 ## Parametri e semantica dei filtri
 
@@ -347,7 +414,7 @@ il normalizzatore. Classi CSS e variabili `--crud-catalog-sidebar-width` e
 ## Navigazione e limiti della prima versione
 
 - Un modello Eloquent e una query di base per catalogo; nessuna unione tra tipi
-  diversi. La paginazione esegue conteggio e lettura della pagina sul database:
+  diversi. In AJAX la paginazione esegue conteggio e lettura della pagina sul database:
   “una query” indica una definizione di insieme, non un solo round trip SQL.
 - Ogni ordinamento aggiunge la chiave primaria come spareggio. La query di base
   deve restituire una riga per modello; usare `whereHas` per filtrare relazioni
@@ -357,7 +424,7 @@ il normalizzatore. Classi CSS e variabili `--crud-catalog-sidebar-width` e
 - GET e paginazione funzionano senza JavaScript. Il form non contiene la pagina,
   quindi inviare filtri o ordinamento riparte dalla prima. Senza JavaScript,
   scegliere l'ordinamento e premere “Applica filtri”.
-- Con JavaScript, checkbox e select aggiornano subito; ricerca e intervalli si
+- In AJAX con JavaScript, checkbox e select aggiornano subito; ricerca e intervalli si
   applicano con Invio o “Applica filtri”. Fetch sostituisce il componente estratto
   dalla risposta HTML e aggiorna la cronologia. Indietro/Avanti ripristinano lo
   stato. Annullamento delle richieste e numero di sequenza impediscono risposte

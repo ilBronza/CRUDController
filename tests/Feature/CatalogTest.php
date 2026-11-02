@@ -303,4 +303,104 @@ class CatalogTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         FilterFactory::makeMany(['status' => ['type' => 'multiple', 'column' => 'status', 'scope' => 'anyStatus']]);
     }
+
+    private function frontendDefinition(): DocumentCatalogParameters
+    {
+        return new class extends DocumentCatalogParameters {
+            public function getFiltersParameters(): array
+            {
+                $filters = parent::getFiltersParameters();
+                $filters['regions']['frontendValue'] = fn (CatalogDocument $model) => $model->customer?->region;
+                return $filters;
+            }
+
+            public function with(): array { return ['customer']; }
+        };
+    }
+
+    public function test_ajax_remains_the_default_and_does_not_load_a_frontend_snapshot(): void
+    {
+        $catalog = $this->catalog();
+        $this->assertSame(Catalog::FILTER_MODE_AJAX, $catalog->filterMode);
+        $this->assertNull($catalog->frontend);
+        $html = view('catalog-fixtures::catalog', compact('catalog'))->render();
+        $this->assertStringContainsString('data-filter-mode="ajax"', $html);
+        $this->assertStringNotContainsString('type="application/json" data-catalog-frontend', $html);
+    }
+
+    public function test_frontend_snapshot_contains_all_authorized_rows_even_on_a_filtered_later_page(): void
+    {
+        $ids = [];
+        for ($i = 0; $i < 5; $i++)
+            $ids[] = $this->document(['status' => $i === 0 ? 'sent' : 'draft'])->id;
+        $this->document(['tenant_id' => 2, 'subject' => 'Secret tenant']);
+
+        $catalog = Catalog::make($this->frontendDefinition(), Request::create('/catalog-documents', 'GET', [
+            'filters' => ['status' => ['draft']], 'page' => 2, 'sort' => 'amount_desc',
+        ]), ['project' => 'authorized'], filterMode: Catalog::FILTER_MODE_FRONTEND);
+
+        $this->assertSame(4, $catalog->results->total()); // GET fallback remains filtered and paginated.
+        $this->assertCount(2, $catalog->results);
+        $this->assertSame($ids, array_column($catalog->frontend->items, 'key'));
+        $payload = $catalog->frontend->payload($catalog);
+        $this->assertSame('subject', $payload['defaultSort']);
+        $this->assertSame(2, $payload['perPage']);
+        $this->assertSame(':count risultati', $payload['messages']['many']);
+        $this->assertSame(['project' => 'authorized'], (array) $payload['context']);
+        $this->assertArrayNotHasKey('tenant_id', $payload['items'][0]);
+        $this->assertSame('sent', $payload['items'][0]['filters']['status']);
+        $this->assertArrayNotHasKey('frontendValue', (array) $payload['filters']->regions);
+        $html = view('catalog-fixtures::catalog', compact('catalog'))->render();
+        $this->assertSame(5, substr_count($html, '<template data-catalog-frontend-item>'));
+        $this->assertStringContainsString('data-filter-mode="frontend"', $html);
+        $this->assertStringNotContainsString('Secret tenant', $html);
+    }
+
+    public function test_frontend_snapshot_handles_scopes_with_explicit_values_and_safe_json(): void
+    {
+        $customer = CatalogCustomer::create(['tenant_id' => 1, 'company_name' => 'Nord Srl', 'region' => 'north']);
+        $this->document(['customer_id' => $customer->id, 'subject' => '</script><script>alert(1)</script>']);
+        $catalog = Catalog::make($this->frontendDefinition(), Request::create('/catalog-documents'), filterMode: 'frontend');
+        $this->assertSame('north', $catalog->frontend->data[0]['filters']['regions']);
+        $this->assertSame(['</script><script>alert(1)</script>', null], $catalog->frontend->data[0]['filters']['search']);
+        $html = view('catalog-fixtures::catalog', compact('catalog'))->render();
+        $this->assertStringNotContainsString('</script><script>alert(1)</script>', $html);
+        $this->assertStringContainsString('\\u003C', $html);
+    }
+
+    public function test_frontend_rejects_sql_only_scope_filters_even_when_inactive(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Declare a frontendValue for scope filter regions');
+        Catalog::make(new DocumentCatalogParameters(), Request::create('/catalog-documents'), filterMode: 'frontend');
+    }
+
+    public function test_filter_mode_cannot_be_selected_through_request_parameters(): void
+    {
+        $this->assertSame('ajax', $this->catalog(['filterMode' => 'frontend'])->filterMode);
+        $this->expectException(InvalidArgumentException::class);
+        Catalog::make(new DocumentCatalogParameters(), Request::create('/catalog-documents'), filterMode: 'other');
+    }
+
+    public function test_frontend_custom_filters_explicitly_describe_their_equivalent_value(): void
+    {
+        $this->document(['amount' => 60]);
+        $definition = new class extends DocumentCatalogParameters {
+            public function getFiltersParameters(): array
+            {
+                return ['large' => new class('large', [
+                    'frontendType' => 'boolean',
+                    'frontendValue' => fn (CatalogDocument $model) => $model->amount >= 50,
+                ]) extends BooleanFilter {
+                    protected function applyValue(Builder $query, mixed $value): void
+                    {
+                        $query->where('amount', $value ? '>=' : '<', 50);
+                    }
+                }];
+            }
+        };
+        $catalog = Catalog::make($definition, Request::create('/catalog-documents'), filterMode: 'frontend');
+        $this->assertTrue($catalog->frontend->data[0]['filters']['large']);
+        $this->assertSame('boolean', $catalog->frontend->filters['large']['type']);
+    }
 }

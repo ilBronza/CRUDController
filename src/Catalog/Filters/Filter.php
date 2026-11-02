@@ -3,12 +3,14 @@
 namespace IlBronza\CRUD\Catalog\Filters;
 
 use IlBronza\CRUD\Interfaces\CatalogFilterInterface;
+use IlBronza\CRUD\Interfaces\FrontendCatalogFilterInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
-abstract class Filter implements CatalogFilterInterface
+abstract class Filter implements CatalogFilterInterface, FrontendCatalogFilterInterface
 {
     protected string $view;
 
@@ -81,5 +83,46 @@ abstract class Filter implements CatalogFilterInterface
     public function selections(mixed $value): array
     {
         return [['label' => $this->label() . ': ' . (string) $value]];
+    }
+
+    public function frontendType(): string
+    {
+        $type = $this->parameters['frontendType'] ?? match (static::class) {
+            TextFilter::class => 'text',
+            MultipleFilter::class => 'multiple',
+            NumberRangeFilter::class => 'number-range',
+            BooleanFilter::class => 'boolean',
+            default => null,
+        };
+
+        if (! in_array($type, ['text', 'multiple', 'number-range', 'boolean'], true))
+            throw new InvalidArgumentException("Declare a frontendType or override frontendType() for {$this->name}.");
+
+        if (isset($this->parameters['scope']) && ! isset($this->parameters['frontendValue']))
+            throw new InvalidArgumentException("Declare a frontendValue for scope filter {$this->name}.");
+
+        return $type;
+    }
+
+    public function frontendValue(Model $model): mixed
+    {
+        if (isset($this->parameters['frontendValue'])) {
+            if (! is_callable($this->parameters['frontendValue']))
+                throw new InvalidArgumentException("Invalid frontendValue for {$this->name}.");
+
+            return ($this->parameters['frontendValue'])($model);
+        }
+
+        $columns = $this->parameters['columns'] ?? [$this->parameters['column'] ?? null];
+        $values = [];
+        foreach ($columns as $column) {
+            if (! is_string($column) || $column === '')
+                throw new InvalidArgumentException("Missing frontend column for {$this->name}.");
+
+            $values[] = $model->getAttribute(str_starts_with($column, $model->getTable() . '.')
+                ? substr($column, strlen($model->getTable()) + 1) : $column);
+        }
+
+        return count($values) === 1 ? $values[0] : $values;
     }
 }

@@ -4,6 +4,7 @@
     .crud-catalog-layout { display: grid; grid-template-columns: var(--crud-catalog-sidebar-width) minmax(0, 1fr); gap: var(--crud-catalog-gap); align-items: start; }
     .crud-catalog-sidebar { padding: 1.25rem; border: 1px solid #e5e5e5; border-radius: .25rem; }
     .crud-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: var(--crud-catalog-gap); }
+    .crud-catalog-frontend-item { display: grid; min-width: 0; }
     .crud-catalog-card { min-width: 0; overflow: hidden; overflow-wrap: anywhere; }
     .crud-catalog-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
     .crud-catalog-empty { grid-column: 1 / -1; }

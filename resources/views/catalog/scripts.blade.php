@@ -1,7 +1,7 @@
 <script>
 (function () {
     'use strict';
-    if (window.__crudCatalogInstalled || !window.fetch || !window.AbortController) return;
+    if (window.__crudCatalogInstalled) return;
     window.__crudCatalogInstalled = true;
     const states = new Map();
 
@@ -15,6 +15,7 @@
     }
 
     function initialize(root) {
+        if (root.dataset.filterMode === 'frontend') window.CrudCatalogFrontend.initialize(root);
         root.dataset.enhanced = 'true';
         root.querySelector('[data-catalog-toggle]').hidden = false;
         root.querySelectorAll('[data-catalog-filter]').forEach(updateFilter);
@@ -50,6 +51,14 @@
     async function load(root, target, push) {
         const url = new URL(target, window.location.href);
         if (url.origin !== window.location.origin) return;
+        if (root.dataset.filterMode === 'frontend') {
+            window.CrudCatalogFrontend.load(root, url, push);
+            return;
+        }
+        if (!window.fetch || !window.AbortController) {
+            window.location.assign(url.href);
+            return;
+        }
         cancel(root);
         const state = stateFor(root);
         const sequence = state.sequence;
