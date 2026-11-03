@@ -113,6 +113,46 @@ return [
 
 	/*
 	|--------------------------------------------------------------------------
+	| Sitemap generation
+	|--------------------------------------------------------------------------
+	|
+	| Register named SitemapProvider classes or factories. With group_by_locale
+	| enabled (default), each provider is instantiated per locale and written as
+	| sitemap-{locale}-{name}.xml; sitemap.xml becomes the index.
+	|
+	| Provider classes may accept constructor args `locale` and `section`
+	| (the config key). Factories receive ($locale, $section).
+	|
+	*/
+	'sitemap' => [
+		'path' => env('CRUD_SITEMAP_PATH'),
+		'include_hreflang_alternates' => false,
+		'group_by_locale' => true,
+		// null → uikittemplate.availableLanguages, then app.locale
+		'locales' => null,
+		// Callable [Class::class, 'method'] or class with resolve($route, $locale, $parameters)
+		'url_resolver' => null,
+		'providers' => [
+			// Array drivers (routes|eloquent) or SitemapProvider class / factory:
+			// 'static' => [
+			//     'driver' => 'routes',
+			//     'routes' => [
+			//         'home' => ['changefreq' => 'daily', 'priority' => 1.0],
+			//         'about' => ['changefreq' => 'weekly', 'priority' => 0.8],
+			//     ],
+			// ],
+			// 'products' => [
+			//     'driver' => 'eloquent',
+			//     'model' => App\Models\Product::class,
+			//     'scopes' => ['visible'],
+			//     'changefreq' => 'weekly',
+			//     'priority' => 0.9,
+			// ],
+		],
+	],
+
+	/*
+	|--------------------------------------------------------------------------
 	| IlBronza packages version pin
 	|--------------------------------------------------------------------------
 	|

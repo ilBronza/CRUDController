@@ -189,24 +189,45 @@ class ProductSitemapProvider implements \IlBronza\CRUD\Interfaces\SitemapProvide
 }
 ```
 
-Generazione e salvataggio a carico dell'applicazione (nessuna route pubblica aggiunta automaticamente):
+Registrare i provider in `config/crud.php` (array `driver` oppure classi `SitemapProvider`) e generare i file con Artisan:
 
 ```php
-$resolver = app(\IlBronza\CRUD\Seo\SeoUrlResolver::class);
-$generator = new \IlBronza\CRUD\Sitemap\SitemapGenerator(
-    new \IlBronza\CRUD\Sitemap\SeoSitemapAdapter($resolver)
-);
-$urls = [];
-foreach ($generator->documents([new ProductSitemapProvider]) as $index => $xml) {
-    $filename = 'sitemap-' . ($index + 1) . '.xml';
-    // Salvare $xml nello storage pubblico scelto.
-    $urls[] = url($filename);
-}
-$indexXml = $generator->index($urls);
+// config/crud.php
+'sitemap' => [
+    'url_resolver' => [App\Support\FrontendPage::class, 'url'], // opzionale per driver routes
+    'providers' => [
+        'static' => [
+            'driver' => 'routes',
+            'routes' => [
+                'home' => ['changefreq' => 'daily', 'priority' => 1.0],
+                'about' => ['changefreq' => 'weekly', 'priority' => 0.8],
+            ],
+        ],
+        'products' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Product::class,
+            'scopes' => ['visible'],
+            'changefreq' => 'weekly',
+            'priority' => 0.9,
+            // opzionale: altre query eloquenti nello stesso urlset
+            // 'extra' => [['model' => ..., 'scopes' => [...], 'where_has' => [...], 'url_model' => 'product', 'url_query' => ['variant' => 'slug']]],
+        ],
+    ],
+],
 ```
 
-Di default la sitemap non emette `xhtml:link` hreflang: gli alternate appartengono all'`<head>` HTML. Per ripristinare gli alternate in XML passare `includeHreflangAlternates: true` al costruttore di `SitemapGenerator`. `noindex`, `none` e canonical diversi dall'URL pubblico escludono comunque la traduzione dal documento. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
+I model usati dal driver `eloquent` devono esporre `getPublicUrl($locale, $query = [])` oppure `getDefaultSeoUrl($locale)`.
 
-Il generatore limita ogni documento a 50.000 URL e 50 MiB non compressi, esegue escaping XML e deduplica globalmente gli URL (vince la prima voce). La memoria mantiene il documento corrente e gli URL già incontrati. Pubblicazione atomica, pulizia dei file precedenti e scheduling restano responsabilità dell'applicazione. Con sorgenti vuote non vengono prodotti urlset.
+```bash
+php artisan sitemap:generate
+# oppure
+php artisan sitemap:generate --path=/absolute/path/sitemap.xml
+```
+
+Con `group_by_locale` attivo (default) ogni provider viene risolto per locale e scritto come `sitemap-{locale}-{name}.xml`; `sitemap.xml` è l'index. Senza locale (lista vuota) viene scritto solo un index vuoto. Writer, `SitemapPage`, `PublicUrlSitemapItem` e i driver config sono nel package.
+
+Di default la sitemap non emette `xhtml:link` hreflang: gli alternate appartengono all'`<head>` HTML. Per ripristinare gli alternate in XML impostare `crud.sitemap.include_hreflang_alternates` oppure passare `includeHreflangAlternates: true` a `SitemapGenerator`. `noindex`, `none` e canonical diversi dall'URL pubblico escludono comunque la traduzione dal documento. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
+
+Il generatore limita ogni documento a 50.000 URL e 50 MiB non compressi, esegue escaping XML e deduplica globalmente gli URL (vince la prima voce). La memoria mantiene il documento corrente e gli URL già incontrati. Con sorgenti vuote non vengono prodotti urlset figli.
 
 Verifica autonoma: `php tests/Standalone/sitemap.php`.

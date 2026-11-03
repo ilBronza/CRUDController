@@ -11,7 +11,9 @@ use IlBronza\CRUD\Commands\CrudController;
 use IlBronza\CRUD\Commands\MakeArchiveMigrationCommand;
 use IlBronza\CRUD\Commands\MakeCrudEntityCommand;
 use IlBronza\CRUD\Commands\PinIlbronzaPackagesCommand;
+use IlBronza\CRUD\Commands\GenerateSitemapCommand;
 use IlBronza\CRUD\Commands\TranslatableFieldsCommand;
+use IlBronza\CRUD\Sitemap\SitemapWriter;
 use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
@@ -143,6 +145,7 @@ class CRUDServiceProvider extends ServiceProvider
             ControllerCrudParametersTraitCommand::class,
             CrudBelongsToController::class,
             CrudController::class,
+            GenerateSitemapCommand::class,
             MakeArchiveMigrationCommand::class,
             MakeCrudEntityCommand::class,
             PinIlbronzaPackagesCommand::class,
@@ -198,6 +201,10 @@ class CRUDServiceProvider extends ServiceProvider
 
         $this->app->singleton('MetaManager', function ($app) {
             return new MetaManager;
+        });
+
+        $this->app->singleton(SitemapWriter::class, function ($app) {
+            return new SitemapWriter($app);
         });
     }
 
