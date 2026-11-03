@@ -35,6 +35,13 @@ class SeoSitemapAdapter
             $urls[$locale] = $url;
         }
         foreach ($urls as $locale => $url)
-            yield new SitemapEntry($url, $locale, $urls, $model->getSitemapLastModified());
+            yield new SitemapEntry(
+                $url,
+                $locale,
+                $urls,
+                $model->getSitemapLastModified(),
+                $model->getSitemapChangeFrequency(),
+                $model->getSitemapPriority(),
+            );
     }
 }

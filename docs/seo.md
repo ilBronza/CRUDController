@@ -163,9 +163,19 @@ public function getSitemapLastModified(): ?\DateTimeInterface
 {
     return $this->updated_at; // includere eventuali modifiche SEO significative
 }
+
+public function getSitemapChangeFrequency(): ?\IlBronza\CRUD\Enums\SitemapChangeFrequency
+{
+    return \IlBronza\CRUD\Enums\SitemapChangeFrequency::Weekly; // o null per omettere
+}
+
+public function getSitemapPriority(): ?float
+{
+    return 0.8; // 0.0–1.0, o null per omettere
+}
 ```
 
-`publishedLocales()`, `isPublished()` e `isPrivate()` sono esempi di logica dell'applicazione, da implementare secondo il dominio. Ogni URL deve essere assoluto HTTP(S), senza fragment. Usare gli stessi locale dei record SEO; gli underscore vengono convertiti in trattini solo nell'output hreflang.
+`publishedLocales()`, `isPublished()` e `isPrivate()` sono esempi di logica dell'applicazione, da implementare secondo il dominio. Ogni URL deve essere assoluto HTTP(S), senza fragment. Usare gli stessi locale dei record SEO; gli underscore vengono convertiti in trattini nella normalizzazione del locale. `changefreq` e `priority` sono opzionali nel protocollo.
 
 Registrare le sorgenti implementando `IlBronza\CRUD\Interfaces\SitemapProvider`:
 
@@ -195,7 +205,7 @@ foreach ($generator->documents([new ProductSitemapProvider]) as $index => $xml) 
 $indexXml = $generator->index($urls);
 ```
 
-Ogni traduzione ammessa include gli alternate reciproci e se stessa. `noindex`, `none` e canonical diversi dall'URL pubblico escludono la traduzione anche dagli alternate. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
+Di default la sitemap non emette `xhtml:link` hreflang: gli alternate appartengono all'`<head>` HTML. Per ripristinare gli alternate in XML passare `includeHreflangAlternates: true` al costruttore di `SitemapGenerator`. `noindex`, `none` e canonical diversi dall'URL pubblico escludono comunque la traduzione dal documento. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
 
 Il generatore limita ogni documento a 50.000 URL e 50 MiB non compressi, esegue escaping XML e deduplica globalmente gli URL (vince la prima voce). La memoria mantiene il documento corrente e gli URL già incontrati. Pubblicazione atomica, pulizia dei file precedenti e scheduling restano responsabilità dell'applicazione. Con sorgenti vuote non vengono prodotti urlset.
 
