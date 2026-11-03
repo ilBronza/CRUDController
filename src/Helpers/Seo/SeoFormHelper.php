@@ -2,7 +2,9 @@
 
 namespace IlBronza\CRUD\Helpers\Seo;
 
+use IlBronza\CRUD\Models\Seo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class SeoFormHelper
@@ -34,10 +36,12 @@ class SeoFormHelper
     }
 
     // Call after saving the parent, within its transaction, for both create and edit.
-    public static function save(Model $model, array $data)
+    public static function save(Model $model, array $data): Seo
     {
         if (! $model->exists)
             throw new \LogicException('Save the parent before its SEO.');
+        if (! method_exists($model, 'seo'))
+            throw new \LogicException('The model must use HasSeo (or expose seo()) before saving SEO.');
         $rules = [];
         foreach (static::rules() as $field => $rule)
             $rules['seo.' . $field] = $rule;
@@ -45,6 +49,16 @@ class SeoFormHelper
         $seo = $model->seo()->updateOrCreate(['locale' => $validated['locale']], $validated);
         $model->unsetRelation('seo');
         return $seo;
+    }
+
+    // No-op when the request has no seo payload; otherwise validates and persists.
+    public static function saveFromRequest(Model $model, Request $request): ?Seo
+    {
+        if (! $request->has('seo')) {
+            return null;
+        }
+
+        return static::save($model, $request->input('seo'));
     }
 
     public static function url(Model $model, string $action = 'index', ?string $locale = null): string
