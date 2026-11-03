@@ -128,6 +128,12 @@ return [
 	'sitemap' => [
 		'path' => env('CRUD_SITEMAP_PATH'),
 		'output' => env('CRUD_SITEMAP_OUTPUT', 'index'), // index|single
+		// When true, sitemap:generate adds Sitemap: <url> to robots.txt; when false, removes it.
+		'indexable' => env('CRUD_SITE_INDEXABLE', true),
+		'robots' => [
+			'sync' => env('CRUD_SITEMAP_ROBOTS_SYNC', true),
+			'path' => env('CRUD_SITEMAP_ROBOTS_PATH'), // null → public_path('robots.txt')
+		],
 		'include_hreflang_alternates' => false,
 		'group_by_locale' => true,
 		// null → uikittemplate.availableLanguages, then app.locale

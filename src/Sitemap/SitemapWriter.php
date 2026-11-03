@@ -36,9 +36,18 @@ class SitemapWriter
         );
         $this->cleanupPrevious($path);
 
-        return $this->outputMode() === self::OUTPUT_SINGLE
+        $written = $this->outputMode() === self::OUTPUT_SINGLE
             ? $this->writeSingle($path, $directory, $generator, $providers)
             : $this->writeIndex($path, $directory, $generator, $providers);
+
+        if ($this->shouldSyncRobots()) {
+            $robotsPath = $this->syncRobotsTxt($path);
+            if ($robotsPath !== null) {
+                $written[] = $robotsPath;
+            }
+        }
+
+        return $written;
     }
 
     /**
@@ -199,6 +208,41 @@ class SitemapWriter
         }
 
         throw new \InvalidArgumentException('Invalid sitemap provider for section '.$section);
+    }
+
+    protected function shouldSyncRobots(): bool
+    {
+        return (bool) config('crud.sitemap.robots.sync', true);
+    }
+
+    /** @return string|null Absolute robots.txt path when written. */
+    protected function syncRobotsTxt(string $sitemapPath): ?string
+    {
+        $robotsPath = config('crud.sitemap.robots.path') ?: public_path('robots.txt');
+        $indexable = (bool) config('crud.sitemap.indexable', true);
+        $sitemapUrl = url(str_replace('\\', '/', basename($sitemapPath)));
+
+        $raw = is_file($robotsPath) ? (string) file_get_contents($robotsPath) : "User-agent: *\nDisallow:\n";
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [];
+        $lines = array_values(array_filter(
+            $lines,
+            static fn ($line) => ! preg_match('/^\s*Sitemap\s*:/i', (string) $line),
+        ));
+
+        while ($lines !== [] && trim((string) end($lines)) === '') {
+            array_pop($lines);
+        }
+
+        if ($indexable) {
+            if ($lines !== [] && trim((string) end($lines)) !== '') {
+                $lines[] = '';
+            }
+            $lines[] = 'Sitemap: '.$sitemapUrl;
+        }
+
+        $this->atomicPut($robotsPath, implode("\n", $lines)."\n");
+
+        return $robotsPath;
     }
 
     private function cleanupPrevious(string $path): void
