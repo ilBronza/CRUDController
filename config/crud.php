@@ -116,16 +116,18 @@ return [
 	| Sitemap generation
 	|--------------------------------------------------------------------------
 	|
-	| Register named SitemapProvider classes or factories. With group_by_locale
-	| enabled (default), each provider is instantiated per locale and written as
-	| sitemap-{locale}-{name}.xml; sitemap.xml becomes the index.
-	|
-	| Provider classes may accept constructor args `locale` and `section`
-	| (the config key). Factories receive ($locale, $section).
+	| Register named SitemapProvider classes, factories, or driver arrays.
+	| output:
+	|   - index  → sitemap.xml index + sitemap-{locale}-{name}.xml urlsets
+	|   - single → one sitemap.xml urlset with every URL (chunks + index only if >50k)
+	| With group_by_locale enabled (default), providers are resolved per locale.
+	| Provider classes may accept `locale` and `section`; factories receive
+	| ($locale, $section).
 	|
 	*/
 	'sitemap' => [
 		'path' => env('CRUD_SITEMAP_PATH'),
+		'output' => env('CRUD_SITEMAP_OUTPUT', 'index'), // index|single
 		'include_hreflang_alternates' => false,
 		'group_by_locale' => true,
 		// null → uikittemplate.availableLanguages, then app.locale

@@ -224,7 +224,11 @@ php artisan sitemap:generate
 php artisan sitemap:generate --path=/absolute/path/sitemap.xml
 ```
 
-Con `group_by_locale` attivo (default) ogni provider viene risolto per locale e scritto come `sitemap-{locale}-{name}.xml`; `sitemap.xml` è l'index. Senza locale (lista vuota) viene scritto solo un index vuoto. Writer, `SitemapPage`, `PublicUrlSitemapItem` e i driver config sono nel package.
+`crud.sitemap.output`:
+- `index` (default): `sitemap.xml` è un index; ogni provider/lingua diventa `sitemap-{locale}-{name}.xml`
+- `single`: un solo `sitemap.xml` urlset con tutti gli URL; se si supera il limite protocollo si torna a chunk + index
+
+Con `group_by_locale` attivo (default) ogni provider viene risolto per locale. Senza locale (lista vuota) in modalità `index` viene scritto un index vuoto, in `single` un urlset vuoto. Writer, `SitemapPage`, `PublicUrlSitemapItem` e i driver config sono nel package.
 
 Di default la sitemap non emette `xhtml:link` hreflang: gli alternate appartengono all'`<head>` HTML. Per ripristinare gli alternate in XML impostare `crud.sitemap.include_hreflang_alternates` oppure passare `includeHreflangAlternates: true` a `SitemapGenerator`. `noindex`, `none` e canonical diversi dall'URL pubblico escludono comunque la traduzione dal documento. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
 

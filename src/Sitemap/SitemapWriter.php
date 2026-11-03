@@ -7,15 +7,19 @@ use Illuminate\Contracts\Container\Container;
 
 class SitemapWriter
 {
+    public const OUTPUT_INDEX = 'index';
+
+    public const OUTPUT_SINGLE = 'single';
+
     public function __construct(
         private readonly ?Container $container = null,
         private readonly ?SitemapGenerator $generator = null,
     ) {}
 
     /**
-     * Write sitemap.xml (index) and named urlset files.
+     * Write sitemap.xml and optional named urlset files.
      *
-     * @param  array<string, class-string|callable|SitemapProvider>|null  $providers
+     * @param  array<string, class-string|callable|array|SitemapProvider>|null  $providers
      * @return list<string> Absolute paths of written files.
      */
     public function write(?string $path = null, ?array $providers = null): array
@@ -32,6 +36,17 @@ class SitemapWriter
         );
         $this->cleanupPrevious($path);
 
+        return $this->outputMode() === self::OUTPUT_SINGLE
+            ? $this->writeSingle($path, $directory, $generator, $providers)
+            : $this->writeIndex($path, $directory, $generator, $providers);
+    }
+
+    /**
+     * @param  array<string, class-string|callable|array|SitemapProvider>|null  $providers
+     * @return list<string>
+     */
+    protected function writeIndex(string $path, string $directory, SitemapGenerator $generator, ?array $providers): array
+    {
         $written = [];
         $indexUrls = [];
 
@@ -59,7 +74,52 @@ class SitemapWriter
     }
 
     /**
-     * @param  array<string, class-string|callable|SitemapProvider>|null  $providers
+     * @param  array<string, class-string|callable|array|SitemapProvider>|null  $providers
+     * @return list<string>
+     */
+    protected function writeSingle(string $path, string $directory, SitemapGenerator $generator, ?array $providers): array
+    {
+        $providerList = array_values($this->entries($providers));
+        $documents = iterator_to_array($generator->documents($providerList), false);
+
+        if ($documents === []) {
+            $empty = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>';
+            $this->atomicPut($path, $empty);
+
+            return [$path];
+        }
+
+        if (count($documents) === 1) {
+            $this->atomicPut($path, $documents[0]);
+
+            return [$path];
+        }
+
+        // Protocol limit exceeded: fall back to chunk files + index.
+        $written = [];
+        $indexUrls = [];
+        foreach ($documents as $index => $xml) {
+            $basename = 'sitemap-'.($index + 1).'.xml';
+            $chunkPath = $directory.DIRECTORY_SEPARATOR.$basename;
+            $this->atomicPut($chunkPath, $xml);
+            $written[] = $chunkPath;
+            $indexUrls[] = url($basename);
+        }
+        $this->atomicPut($path, $generator->index($indexUrls));
+        $written[] = $path;
+
+        return $written;
+    }
+
+    protected function outputMode(): string
+    {
+        $mode = config('crud.sitemap.output', self::OUTPUT_INDEX);
+
+        return $mode === self::OUTPUT_SINGLE ? self::OUTPUT_SINGLE : self::OUTPUT_INDEX;
+    }
+
+    /**
+     * @param  array<string, class-string|callable|array|SitemapProvider>|null  $providers
      * @return array<string, SitemapProvider>
      */
     protected function entries(?array $providers = null): array
