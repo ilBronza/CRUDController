@@ -89,7 +89,7 @@ Impostare separatamente `<html lang="{{ $contentLocale }}">`; il layout frontend
 usa già la lingua di `FrontendContext`. Per liste usare `with('seo')` per evitare
 query per ogni entità.
 
-Personalizzare `getDefaultSeoTitle()`, `getDefaultSeoDescription()` e `getDefaultSeoUrl(?string $locale = null)` sul modello. Il titolo usa altrimenti title/name; descrizione e URL non vengono dedotti. Gli override Open Graph e Twitter ereditano titolo e descrizione SEO. I valori vuoti non vengono renderizzati. Usare URL assoluti pubblici per canonical e immagini.
+Personalizzare `getDefaultSeoTitle()`, `getDefaultSeoDescription()`, `getDefaultSeoUrl(?string $locale = null)`, `getDefaultSeoOgType()`, `getDefaultSeoSiteName()` e `getDefaultSeoImage(?string $locale = null)` sul modello. Il titolo usa altrimenti title/name; la descrizione resta vuota di default (i package dominio possono fornire un cascade, es. Products con short_description/description). L'URL di default usa `getPublicUrl($locale)` se il modello lo espone. Il tipo Open Graph di default è `article` (`product` quando il dominio espone un prezzo pubblico). `og:site_name` usa `uikittemplate.head.siteName` o `app.name`. `getDefaultSeoImage()` può restituire `['url' => ..., 'width' => ..., 'height' => ..., 'alt' => ...]`; Open Graph usa url/width/height/alt, Twitter card solo l'URL dell'immagine. Gli override Open Graph e Twitter ereditano titolo e descrizione SEO. I valori vuoti non vengono renderizzati. Usare URL assoluti pubblici per canonical e immagini.
 
 Non viene effettuato fallback tra lingue diverse. Senza locale esplicito, il trait
 usa l'attributo di richiesta `frontend.locale`, con fallback su `app()->getLocale()`.
@@ -128,14 +128,18 @@ I campi sono raggruppati sotto `seo[...]`. `SeoFormHelper::fields()` espone anch
 Nel controller create/update, escludere `seo` dai dati del padre. Dopo il salvataggio del padre chiamare l'helper nella stessa transazione, dopo aver verificato i permessi:
 
 ```php
+use IlBronza\CRUD\Traits\SavesSeoFromRequest;
+
 DB::transaction(function () use ($request, $product) {
     // Validare e salvare i campi del padre.
     $product->save();
-    if ($request->has('seo')) {
-        SeoFormHelper::save($product, $request->input('seo'));
-    }
+    SeoFormHelper::saveFromRequest($product, $request);
+    // Oppure, in un controller che usa SavesSeoFromRequest:
+    // $this->saveSeoFromRequest($product, $request);
 });
 ```
+
+`saveFromRequest()` è un no-op se la request non contiene `seo`.
 
 L'helper invalida la relazione caricata dopo il salvataggio. La route di aggiornamento fissa la lingua dal percorso e ignora un eventuale locale differente nel payload.
 
@@ -163,9 +167,19 @@ public function getSitemapLastModified(): ?\DateTimeInterface
 {
     return $this->updated_at; // includere eventuali modifiche SEO significative
 }
+
+public function getSitemapChangeFrequency(): ?\IlBronza\CRUD\Enums\SitemapChangeFrequency
+{
+    return \IlBronza\CRUD\Enums\SitemapChangeFrequency::Weekly; // o null per omettere
+}
+
+public function getSitemapPriority(): ?float
+{
+    return 0.8; // 0.0–1.0, o null per omettere
+}
 ```
 
-`publishedLocales()`, `isPublished()` e `isPrivate()` sono esempi di logica dell'applicazione, da implementare secondo il dominio. Ogni URL deve essere assoluto HTTP(S), senza fragment. Usare gli stessi locale dei record SEO; gli underscore vengono convertiti in trattini solo nell'output hreflang.
+`publishedLocales()`, `isPublished()` e `isPrivate()` sono esempi di logica dell'applicazione, da implementare secondo il dominio. Ogni URL deve essere assoluto HTTP(S), senza fragment. Usare gli stessi locale dei record SEO; gli underscore vengono convertiti in trattini nella normalizzazione del locale. `changefreq` e `priority` sono opzionali nel protocollo.
 
 Registrare le sorgenti implementando `IlBronza\CRUD\Interfaces\SitemapProvider`:
 
@@ -179,24 +193,51 @@ class ProductSitemapProvider implements \IlBronza\CRUD\Interfaces\SitemapProvide
 }
 ```
 
-Generazione e salvataggio a carico dell'applicazione (nessuna route pubblica aggiunta automaticamente):
+Registrare i provider in `config/crud.php` (array `driver` oppure classi `SitemapProvider`) e generare i file con Artisan:
 
 ```php
-$resolver = app(\IlBronza\CRUD\Seo\SeoUrlResolver::class);
-$generator = new \IlBronza\CRUD\Sitemap\SitemapGenerator(
-    new \IlBronza\CRUD\Sitemap\SeoSitemapAdapter($resolver)
-);
-$urls = [];
-foreach ($generator->documents([new ProductSitemapProvider]) as $index => $xml) {
-    $filename = 'sitemap-' . ($index + 1) . '.xml';
-    // Salvare $xml nello storage pubblico scelto.
-    $urls[] = url($filename);
-}
-$indexXml = $generator->index($urls);
+// config/crud.php
+'sitemap' => [
+    'url_resolver' => [App\Support\FrontendPage::class, 'url'], // opzionale per driver routes
+    'providers' => [
+        'static' => [
+            'driver' => 'routes',
+            'routes' => [
+                'home' => ['changefreq' => 'daily', 'priority' => 1.0],
+                'about' => ['changefreq' => 'weekly', 'priority' => 0.8],
+            ],
+        ],
+        'products' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Product::class,
+            'scopes' => ['visible'],
+            'changefreq' => 'weekly',
+            'priority' => 0.9,
+            // opzionale: altre query eloquenti nello stesso urlset
+            // 'extra' => [['model' => ..., 'scopes' => [...], 'where_has' => [...], 'url_model' => 'product', 'url_query' => ['variant' => 'slug']]],
+        ],
+    ],
+],
 ```
 
-Ogni traduzione ammessa include gli alternate reciproci e se stessa. `noindex`, `none` e canonical diversi dall'URL pubblico escludono la traduzione anche dagli alternate. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
+I model usati dal driver `eloquent` devono esporre `getPublicUrl($locale, $query = [])` oppure `getDefaultSeoUrl($locale)`.
 
-Il generatore limita ogni documento a 50.000 URL e 50 MiB non compressi, esegue escaping XML e deduplica globalmente gli URL (vince la prima voce). La memoria mantiene il documento corrente e gli URL già incontrati. Pubblicazione atomica, pulizia dei file precedenti e scheduling restano responsabilità dell'applicazione. Con sorgenti vuote non vengono prodotti urlset.
+```bash
+php artisan sitemap:generate
+# oppure
+php artisan sitemap:generate --path=/absolute/path/sitemap.xml
+```
+
+`crud.sitemap.output`:
+- `index` (default): `sitemap.xml` è un index; ogni provider/lingua diventa `sitemap-{locale}-{name}.xml`
+- `single`: un solo `sitemap.xml` urlset con tutti gli URL; se si supera il limite protocollo si torna a chunk + index
+
+`crud.sitemap.indexable` (default `true`): con `robots.sync` attivo, `sitemap:generate` aggiorna `robots.txt` aggiungendo `Sitemap: https://…/sitemap.xml` se il sito è indicizzabile, oppure rimuovendo tutte le righe `Sitemap:` se non lo è. Il resto del file robots resta invariato.
+
+Con `group_by_locale` attivo (default) ogni provider viene risolto per locale. Senza locale (lista vuota) in modalità `index` viene scritto un index vuoto, in `single` un urlset vuoto. Writer, `SitemapPage`, `PublicUrlSitemapItem` e i driver config sono nel package.
+
+Di default la sitemap non emette `xhtml:link` hreflang: gli alternate appartengono all'`<head>` HTML. Per ripristinare gli alternate in XML impostare `crud.sitemap.include_hreflang_alternates` oppure passare `includeHreflangAlternates: true` a `SitemapGenerator`. `noindex`, `none` e canonical diversi dall'URL pubblico escludono comunque la traduzione dal documento. Il confronto canonical è esatto: gli URL devono avere una normalizzazione coerente. Le sorgenti senza `HasSeo` possono implementare lo stesso contratto senza metadati SEO.
+
+Il generatore limita ogni documento a 50.000 URL e 50 MiB non compressi, esegue escaping XML e deduplica globalmente gli URL (vince la prima voce). La memoria mantiene il documento corrente e gli URL già incontrati. Con sorgenti vuote non vengono prodotti urlset figli.
 
 Verifica autonoma: `php tests/Standalone/sitemap.php`.

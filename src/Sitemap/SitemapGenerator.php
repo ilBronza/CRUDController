@@ -8,9 +8,13 @@ class SitemapGenerator
 {
     protected SeoSitemapAdapter $adapter;
 
-    public function __construct(?SeoSitemapAdapter $adapter = null)
+    /** Prefer HTML head hreflang; enable only when the sitemap itself must carry alternates. */
+    protected bool $includeHreflangAlternates;
+
+    public function __construct(?SeoSitemapAdapter $adapter = null, bool $includeHreflangAlternates = false)
     {
         $this->adapter = $adapter ?? new SeoSitemapAdapter;
+        $this->includeHreflangAlternates = $includeHreflangAlternates;
     }
 
     /** Produces XML documents; the caller chooses storage and public URLs. */
@@ -18,7 +22,9 @@ class SitemapGenerator
     {
         if ($maxUrls < 1 || $maxUrls > 50000)
             throw new \InvalidArgumentException('Sitemap size must be between 1 and 50000.');
-        $header = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
+        $header = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
+            .($this->includeHreflangAlternates ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '')
+            .'>';
         $xml = $header;
         $count = 0;
         $seen = [];
@@ -67,8 +73,14 @@ class SitemapGenerator
         $xml = '<url><loc>' . $this->escape($entry->url) . '</loc>';
         if ($entry->lastModified)
             $xml .= '<lastmod>' . $entry->lastModified->format(DATE_ATOM) . '</lastmod>';
-        foreach ($entry->alternates as $locale => $url)
-            $xml .= '<xhtml:link rel="alternate" hreflang="' . $this->escape($locale) . '" href="' . $this->escape($url) . '"/>';
+        if ($entry->changeFrequency)
+            $xml .= '<changefreq>' . $entry->changeFrequency->value . '</changefreq>';
+        if ($entry->priority !== null)
+            $xml .= '<priority>' . number_format($entry->priority, 1, '.', '') . '</priority>';
+        if ($this->includeHreflangAlternates) {
+            foreach ($entry->alternates as $locale => $url)
+                $xml .= '<xhtml:link rel="alternate" hreflang="' . $this->escape($locale) . '" href="' . $this->escape($url) . '"/>';
+        }
         return $xml . '</url>';
     }
 

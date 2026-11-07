@@ -120,6 +120,54 @@ return [
 
 	/*
 	|--------------------------------------------------------------------------
+	| Sitemap generation
+	|--------------------------------------------------------------------------
+	|
+	| Register named SitemapProvider classes, factories, or driver arrays.
+	| output:
+	|   - index  → sitemap.xml index + sitemap-{locale}-{name}.xml urlsets
+	|   - single → one sitemap.xml urlset with every URL (chunks + index only if >50k)
+	| With group_by_locale enabled (default), providers are resolved per locale.
+	| Provider classes may accept `locale` and `section`; factories receive
+	| ($locale, $section).
+	|
+	*/
+	'sitemap' => [
+		'path' => env('CRUD_SITEMAP_PATH'),
+		'output' => env('CRUD_SITEMAP_OUTPUT', 'index'), // index|single
+		// When true, sitemap:generate adds Sitemap: <url> to robots.txt; when false, removes it.
+		'indexable' => env('CRUD_SITE_INDEXABLE', true),
+		'robots' => [
+			'sync' => env('CRUD_SITEMAP_ROBOTS_SYNC', true),
+			'path' => env('CRUD_SITEMAP_ROBOTS_PATH'), // null → public_path('robots.txt')
+		],
+		'include_hreflang_alternates' => false,
+		'group_by_locale' => true,
+		// null → uikittemplate.availableLanguages, then app.locale
+		'locales' => null,
+		// Callable [Class::class, 'method'] or class with resolve($route, $locale, $parameters)
+		'url_resolver' => null,
+		'providers' => [
+			// Array drivers (routes|eloquent) or SitemapProvider class / factory:
+			// 'static' => [
+			//     'driver' => 'routes',
+			//     'routes' => [
+			//         'home' => ['changefreq' => 'daily', 'priority' => 1.0],
+			//         'about' => ['changefreq' => 'weekly', 'priority' => 0.8],
+			//     ],
+			// ],
+			// 'products' => [
+			//     'driver' => 'eloquent',
+			//     'model' => App\Models\Product::class,
+			//     'scopes' => ['visible'],
+			//     'changefreq' => 'weekly',
+			//     'priority' => 0.9,
+			// ],
+		],
+	],
+
+	/*
+	|--------------------------------------------------------------------------
 	| IlBronza packages version pin
 	|--------------------------------------------------------------------------
 	|
