@@ -15,6 +15,7 @@ use IlBronza\CRUD\Commands\TranslatableFieldsCommand;
 use IlBronza\CRUD\MetaManager;
 use IlBronza\CRUD\Middleware\CRUDAllowedMethods;
 use IlBronza\CRUD\Middleware\CRUDCanDelete;
+use IlBronza\CRUD\Middleware\CRUDConcurrentUrlAlert;
 use IlBronza\CRUD\Middleware\CRUDCheckForcedUrlMiddleware;
 use IlBronza\CRUD\Middleware\CRUDNormalizeEmptyArrays;
 use IlBronza\CRUD\Middleware\CRUDParseAjaxBooleansAndNull;
@@ -65,8 +66,7 @@ class CRUDServiceProvider extends ServiceProvider
 
         $router->pushMiddlewareToGroup('web', CRUDCheckForcedUrlMiddleware::class);
 
-        if(config('crud.useConcurrentRequestsAlert'))
-            $router->aliasMiddleware('CRUDParseComasAndDots', CRUDConcurrentUrlAlert::class);
+        $router->aliasMiddleware('CRUDConcurrentUrlAlert', CRUDConcurrentUrlAlert::class);
 
         app()->bind(BaseResourceRegistrar::class, function () {
             return new ResourceRegistrar(app()->make(Router::class));
@@ -173,6 +173,7 @@ class CRUDServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->register(ConcurrentUriServiceProvider::class);
         require_once __DIR__ . '/helpers.php';
 
         $router = $this->app['router'];

@@ -30,10 +30,14 @@ return [
 	'cardIntroEdit' => 'In this section, you can edit the data of the chosen object.<br />Remember to save the page before exiting.',
 	'cardIntroCreate' => 'In this section, you can create a <strong>new ":type" element</strong>.<br />Remember to save the page before exiting.',
 
-	'youAlreadyOpenedThisUrlOnADifferentPage' => 'This link is already opened in another window',
+	'youAlreadyOpenedThisUrlOnADifferentPage' => 'This page is already open in another tab. Only the tab with priority may perform operations.',
 	'youOwnThisUri' => 'You have priority on this window',
 	'aDifferentUserIsWatchingThisPage' => 'Another user has priority on this window',
-	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'The other window has been closed, this one has gained priority',
+	'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates' => 'This tab has gained priority. Preserve unsaved input, then refresh the page to see any changes.',
+	'concurrentUriChecking' => 'Checking page availability…',
+	'concurrentUriOffline' => 'Unable to verify priority. Operations are suspended until the connection is restored.',
+	'concurrentUriExpired' => 'Priority has expired. Check your connection or preserve unsaved input and refresh before retrying.',
+	'concurrentUriBusy' => 'An operation is already running on this page. Please retry shortly.',
 	'sortElements' => 'Sort Elements',
 
 	'cache' => 'Cache Management',

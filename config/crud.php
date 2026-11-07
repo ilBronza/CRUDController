@@ -71,10 +71,17 @@ return [
     'saveAndCopy' => env('CRUD_SAVE_AND_COPY_BUTTON', false),
 
     'useConcurrentRequestsAlert' => env('CRUD_USE_CONCURRENT_REQUESTS_ALERT', false),
+    // When false, tabs belonging to the same user may share a page.
+    'concurrentUriCheckSameUserTabs' => env('CRUD_CONCURRENT_URI_CHECK_SAME_USER_TABS', true),
 
     'concurrentUriPrefix' => env('CRUD_CONCURRENT_URI_PREFIX', 'concurrentUri'),
+    'concurrentUriCacheStore' => env('CRUD_CONCURRENT_URI_CACHE_STORE'),
+    // Add a tenant identifier here when tenants share both host and cache.
+    'concurrentUriScope' => env('CRUD_CONCURRENT_URI_SCOPE', ''),
     'concurrentUriCacheLifetime' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 10),
-    'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_CACHE_LIFETIME', 3000),
+    'concurrentUriJavascriptTickInterval' => env('CRUD_CONCURRENT_URI_JAVASCRIPT_TICK_INTERVAL', 3000),
+    // Must exceed the application's maximum duration of a protected operation.
+    'concurrentUriOperationLockLifetime' => env('CRUD_CONCURRENT_URI_OPERATION_LOCK_LIFETIME', 120),
 
     /*
     |--------------------------------------------------------------------------

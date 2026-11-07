@@ -15,12 +15,10 @@ class ConcurrentUriServiceProvider extends ServiceProvider
     public function register()
     {
         // Register the service the package provides.
-        $this->app->singleton(ConcurrentUriChecker::class, function ($app) {
+        $this->app->scoped(ConcurrentUriChecker::class, function ($app) {
             return new ConcurrentUriChecker();
         });
 
-        $this->app->singleton('concurrentUriChecker', function ($app) {
-            return app()->get(ConcurrentUriChecker::class);
-        });
+        $this->app->alias(ConcurrentUriChecker::class, 'concurrentUriChecker');
     }
 }

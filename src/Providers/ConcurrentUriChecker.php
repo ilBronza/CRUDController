@@ -2,186 +2,227 @@
 
 namespace IlBronza\CRUD\Providers;
 
-use Auth;
+use Closure;
 use IlBronza\CRUD\Helpers\ConcurrentUriData;
 use IlBronza\CRUD\Traits\ConcurrentUri\ConcurrentUriGettersAndSetters;
-use Illuminate\Support\Str;
+use Illuminate\Cache\NullStore;
+use Illuminate\Contracts\Cache\LockProvider;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use JsonException;
+use LogicException;
 
 class ConcurrentUriChecker
 {
-	public $created = false;
+    use ConcurrentUriGettersAndSetters;
 
-	use ConcurrentUriGettersAndSetters;
+    public function checksSameUserTabs(): bool
+    {
+        return (bool) config('crud.concurrentUriCheckSameUserTabs', true);
+    }
 
-	public function isMultipleOpening()
-	{
-		return ! $this->created;
-	}
+    protected function cache()
+    {
+        $cache = Cache::store(config('crud.concurrentUriCacheStore'));
+        if (! $cache->getStore() instanceof LockProvider || $cache->getStore() instanceof NullStore) {
+            throw new LogicException('Concurrent URI checking requires a cache store with atomic locks.');
+        }
 
-	public function createPrevalentUserData() : ConcurrentUriData
-	{
-		return new ConcurrentUriData();
-	}
+        return $cache;
+    }
 
-	public function createPrevalentUserDataByPageKey(string $pageKey) : ConcurrentUriData
-	{
-		$uriData = $this->createPrevalentUserData();
+    public function withPageLock(string $path, Closure $callback, bool $operation = false)
+    {
+        $seconds = $operation
+            ? $this->positiveIntegerConfig('concurrentUriOperationLockLifetime', 120)
+            : 10;
+        $lock = $this->cache()->lock($this->getUriCacheKey($path) . ':lock', $seconds);
+        abort_unless($lock->get(), 423, trans('crud::crud.concurrentUriBusy'));
 
-		$uriData->setPageKey($pageKey);
+        try {
+            return $callback($lock);
+        } finally {
+            $lock->release();
+        }
+    }
 
-		return $uriData;
-	}
+    public function getPrevalentUserDataByPath(string $path): ?ConcurrentUriData
+    {
+        $data = $this->cache()->get($this->getUriCacheKey($path));
+        if (! $data instanceof ConcurrentUriData) {
+            return null;
+        }
 
-	private function storePrevalentUserData(string $path, ConcurrentUriData $concurrentUriData) : ConcurrentUriData
-	{
-		cache()->forget($this->getUriCacheKey($path));
-		cache()->put(
-			$this->getUriCacheKey($path),
-			$concurrentUriData,
-			$this->getCacheLifetime()
-		);
+        // Array caches may return the same object; reads must not mutate stored state.
+        $data = clone $data;
+        $data->prune(now()->getTimestamp());
 
-		return $concurrentUriData;
-	}
+        return $data->pages ? $data : null;
+    }
 
-	public function storeGainedPrevalentUserData(string $path, string $pageKey)
-	{
-		$prevalentUserData = $this->createPrevalentUserDataByPageKey($pageKey);
+    public function getPrevalentUserData(): ?ConcurrentUriData
+    {
+        return $this->getPrevalentUserDataByPath($this->getBasePathKey());
+    }
 
-		return $this->storePrevalentUserData($path, $prevalentUserData);
-	}
+    public function check(string $path): ?ConcurrentUriData
+    {
+        return $this->getPrevalentUserDataByPath($path);
+    }
 
-	public function calculateAndStorePrevalentUserData(string $path)
-	{
-		$prevalentUserData = $this->createPrevalentUserData();
+    protected function persist(string $path, ConcurrentUriData $data): void
+    {
+        abort_unless($this->cache()->put($this->getUriCacheKey($path), $data, $this->getCacheLifetime()), 503,
+            trans('crud::crud.concurrentUriOffline'));
+    }
 
-		$this->created = true;
+    protected function status(?ConcurrentUriData $data, string $pageKey): string
+    {
+        if (! $data) {
+            return 'expired';
+        }
+        if ((string) $data->id !== (string) Auth::id()) {
+            return 'notAllowed';
+        }
+        if ($this->checksSameUserTabs() && $data->pageKey !== $pageKey) {
+            return 'morePages';
+        }
 
-		return $this->storePrevalentUserData($path, $prevalentUserData);
-	}
+        return 'kept';
+    }
 
-	public function getOrCreatePrevalentUserDataByPath(string $path)
-	{
-		if($prevalentUserData = $this->getPrevalentUserDataByPath($path))
-			return $prevalentUserData;
+    protected function response(string $status, ?ConcurrentUriData $data): array
+    {
+        $messages = [
+            'gained' => 'theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates',
+            'kept' => 'youOwnThisUri',
+            'morePages' => 'youAlreadyOpenedThisUrlOnADifferentPage',
+            'notAllowed' => 'aDifferentUserIsWatchingThisPage',
+            'expired' => 'concurrentUriExpired',
+        ];
 
-		return $this->calculateAndStorePrevalentUserData($path);
-	}
+        return [
+            // A visitor never receives another tab's ownership credential.
+            'userData' => $data ? ['id' => $data->id] : null,
+            'status' => $status,
+            'message' => trans('crud::crud.' . $messages[$status]),
+        ];
+    }
 
-	public function getPrevalentUserDataByPath(string $path) : ? ConcurrentUriData
-	{
-		return cache()->get(
-			$this->getUriCacheKey($path)
-		);
-	}
+    public function managePrevalentUserData(string $path, string $pageKey): array
+    {
+        abort_unless(Auth::check(), 401);
+        $lifetime = $this->getCacheLifetime();
 
-	public function getPrevalentUserData()
-	{
-		return $this->getOrCreatePrevalentUserDataByPath(
-			$this->getBasePathKey()
-		);
-	}
+        return $this->withPageLock($path, function () use ($path, $pageKey, $lifetime) {
+            $data = $this->getPrevalentUserDataByPath($path);
+            $status = $this->status($data, $pageKey);
+            if (! $data) {
+                $data = new ConcurrentUriData();
+                $data->setPageKey($pageKey);
+                $status = 'gained';
+            }
 
-	public function getPrevalentUserId()
-	{
-		return $this->getPrevalentUserData()->getId();
-	}
+            if (in_array($status, ['gained', 'kept'], true)) {
+                $data->pages[$pageKey] = now()->getTimestamp() + $lifetime;
+                $this->persist($path, $data);
+            }
 
-	public function getPrevalentPageKey()
-	{
-		return $this->getPrevalentUserData()->getPageKey();
-	}
+            return $this->response($status, $data);
+        });
+    }
 
-	public function userIsAllowed()
-	{
-		if(Auth::guest())
-			return false;
+    public function managePageLeaveByData(string $path, string $pageKey): bool
+    {
+        abort_unless(Auth::check(), 401);
 
-		$prevalendUserId = $this->getPrevalentUserId();
+        return $this->withPageLock($path, function () use ($path, $pageKey) {
+            $data = $this->getPrevalentUserDataByPath($path);
+            if (! $data || (string) $data->id !== (string) Auth::id()) {
+                return true;
+            }
 
-		return Auth::id() == $prevalendUserId;
-	}
+            unset($data->pages[$pageKey]);
+            $data->prune(now()->getTimestamp());
+            if ($data->pages) {
+                $this->persist($path, $data);
+            } else {
+                $this->cache()->forget($this->getUriCacheKey($path));
+            }
 
-	private function responseGainedPersistence(string $path, string $pageKey)
-	{
-		$this->storeGainedPrevalentUserData($path, $pageKey);
+            return true;
+        });
+    }
 
-		return [
-			'userData' => $this->getPrevalentUserData(),
-			'status' => 'gained',
-			'message' => trans('crud::crud.theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates')
-		];
-	}
+    public function runOwnedOperation(string $path, string $pageKey, Closure $operation)
+    {
+        abort_unless(Auth::check(), 401);
 
-	private function responseValidPersistence(string $path, ConcurrentUriData $concurrentUriData, string $pageKey)
-	{
-		$this->storePrevalentUserData($path, $concurrentUriData);
+        return $this->withPageLock($path, function ($lock) use ($path, $pageKey, $operation) {
+            $data = $this->getPrevalentUserDataByPath($path);
+            $status = $this->status($data, $pageKey);
+            // A write cannot acquire ownership, even after a lease expires.
+            if ($status === 'kept' && ! isset($data->pages[$pageKey])) {
+                $status = 'expired';
+            }
+            abort_unless($status === 'kept', 409, $this->response($status, $data)['message']);
 
-		return [
-			'userData' => $this->getPrevalentUserDataByPath($path),
-			'sentPageKey' => $pageKey,
-			'status' => 'kept',
-			'message' => null
-		];
-	}
+            try {
+                return $operation();
+            } finally {
+                // A request exceeding the configured lock duration must not overwrite a new owner.
+                if ($lock->isOwnedByCurrentProcess()) {
+                    $data->pages[$pageKey] = now()->getTimestamp() + $this->getCacheLifetime();
+                    $this->persist($path, $data);
+                }
+            }
+        }, true);
+    }
 
-	private function responseDifferentPage()
-	{
-		return [
-			'userData' => $this->getPrevalentUserData(),
-			'status' => 'morePages',
-			'message' => trans('crud::crud.youAlreadyOpenedThisUrlOnADifferentPage')
-		];
-	}
+    public function getPageContext(): array
+    {
+        abort_unless(Auth::check(), 401);
+        $path = $this->getBasePathKey();
 
-	public function responseNotAllowed()
-	{
-		return [
-			'userData' => $this->getPrevalentUserData(),
-			'status' => 'notAllowed',
-			'message' => trans('crud::crud.aDifferentUserIsWatchingThisPage')
-		];
-	}
+        return [
+            'url' => $path,
+            // The tab generates its own key on every document load, including duplicated tabs.
+            'token' => Crypt::encryptString(json_encode([
+                'path' => $path,
+                'user' => (string) Auth::id(),
+                'scope' => $this->getScope(),
+            ], JSON_THROW_ON_ERROR)),
+            'tickUrl' => route('concurrentUri.tick'),
+            'leaveUrl' => route('concurrentUri.leavePage'),
+            'interval' => $this->getJavascriptTickInterval(),
+            'lifetime' => $this->getCacheLifetime() * 1000,
+            'messages' => [
+                'checking' => trans('crud::crud.concurrentUriChecking'),
+                'offline' => trans('crud::crud.concurrentUriOffline'),
+                'expired' => trans('crud::crud.concurrentUriExpired'),
+                'owner' => trans('crud::crud.youOwnThisUri'),
+                'gained' => trans('crud::crud.theOtherUserClosedThisUriBetterToRefreshPageToSeeUpdates'),
+            ],
+        ];
+    }
 
-	public function check(string $path)
-	{
-		return $this->getPrevalentUserDataByPath($path);
-	}
+    public function pathFromToken(string $token): string
+    {
+        abort_unless(Auth::check(), 401);
+        try {
+            $data = json_decode(Crypt::decryptString($token), true, 512, JSON_THROW_ON_ERROR);
+        } catch (DecryptException|JsonException $exception) {
+            abort(403, 'Invalid concurrent page context.');
+        }
 
-	public function managePrevalentUserData(string $path, string $pageKey)
-	{
-		if(! $currentPrevalent = $this->getPrevalentUserDataByPath($path))
-			return $this->responseGainedPersistence($path, $pageKey);
+        abort_unless(is_array($data)
+            && isset($data['path'], $data['user'], $data['scope'])
+            && is_string($data['path'])
+            && $data['user'] === (string) Auth::id()
+            && $data['scope'] === $this->getScope(), 403, 'Invalid concurrent page context.');
 
-		if(Auth::id() != $currentPrevalent->getId())
-			return $this->responseNotAllowed();
-
-		if($pageKey == $currentPrevalent->getPageKey())
-			return $this->responseValidPersistence($path, $currentPrevalent, $pageKey);
-
-		return $this->responseDifferentPage();
-	}
-
-	private function removePrevalenUserData(string $path, ConcurrentUriData $currentUriData) : bool
-	{
-		cache()->forget(
-			$this->getUriCacheKey($path)
-		);
-
-		return true;
-	}
-
-	public function managePageLeaveByData(string $path, string $pageKey) : bool
-	{
-		if(! $currentPrevalent = $this->getPrevalentUserDataByPath($path))
-			return true;
-
-		if(Auth::id() != $currentPrevalent->getId())
-			return true;
-
-		if($pageKey == $currentPrevalent->getPageKey())
-			return $this->removePrevalenUserData($path, $currentPrevalent);
-
-		return true;
-	}
+        return $data['path'];
+    }
 }

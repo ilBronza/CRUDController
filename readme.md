@@ -1,5 +1,7 @@
 # CRUD
 
+Documentazione: [accessi simultanei e controllo delle schede](docs/concurrent-uri.md).
+
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
 [![Build Status][ico-travis]][link-travis]
