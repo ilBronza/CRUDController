@@ -39,6 +39,7 @@ class ConcurrentUriTest extends TestCase
                 $router->get('concurrent-test/' . $path, fn () => view()->file(__DIR__ . '/../Fixtures/views/concurrent-uri.blade.php'));
             }
             $router->post('concurrent-test/operation', fn () => response()->json(['saved' => true]));
+            $router->post('concurrent-test/iframe', fn () => view()->file(__DIR__ . '/../Fixtures/views/concurrent-uri.blade.php'));
         });
     }
 
@@ -117,6 +118,34 @@ class ConcurrentUriTest extends TestCase
         $this->tick($page)->assertOk()->assertJsonPath('status', 'kept');
         $this->travel(6)->seconds();
         $this->write($page)->assertOk()->assertJsonPath('saved', true);
+    }
+
+    public function test_posted_iframe_html_initializes_the_client_without_acquiring_another_page(): void
+    {
+        $page = $this->page();
+        $this->tick($page)->assertOk();
+        $response = $this->post('/concurrent-test/iframe', [
+            '_crud_concurrent_token' => $page['token'],
+            '_crud_page_key' => self::FIRST,
+            'iframed' => true,
+        ])->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $response->assertSee('window.ibConcurrentUriConfig =', false);
+        $response->assertSee('window.ibConcurrentUri =', false);
+        $this->assertNull($this->checker()->check('concurrent-test/iframe'));
+        $this->write($page)->assertOk();
+    }
+
+    public function test_posted_iframe_still_requires_the_owning_page_credentials(): void
+    {
+        $page = $this->page();
+        $this->tick($page)->assertOk();
+        $this->postJson('/concurrent-test/iframe', [
+            '_crud_concurrent_token' => $page['token'],
+            '_crud_page_key' => self::SECOND,
+            'iframed' => true,
+        ])->assertStatus(409);
+        $this->postJson('/concurrent-test/iframe', ['iframed' => true])
+            ->assertUnprocessable()->assertJsonValidationErrors(['token', 'pageKey']);
     }
 
     public function test_same_user_second_tab_conflicts_by_default_and_cannot_write(): void

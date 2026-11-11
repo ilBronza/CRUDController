@@ -1,7 +1,19 @@
 <script>
 (function () {
     'use strict';
-    const config = window.ibConcurrentUriConfig;
+    function getParentClient() {
+        try {
+            if (window.parent !== window && window.parent.location.origin === window.location.origin) {
+                return window.parent.ibConcurrentUri || null;
+            }
+        } catch (_) {
+            // Frames on another origin must never share page credentials.
+        }
+        return null;
+    }
+
+    const parentClient = getParentClient();
+    const config = parentClient?.config || window.ibConcurrentUriConfig;
     if (!config || window.ibConcurrentUri) return;
 
     const originalFetch = window.fetch.bind(window);
@@ -22,10 +34,12 @@
     }
 
     function isOwner() {
+        if (parentClient) return parentClient.isOwner();
         return owner && Date.now() < deadline;
     }
 
     function unavailableMessage() {
+        if (parentClient) return parentClient.message?.() || config.messages.expired;
         return owner && Date.now() >= deadline ? config.messages.expired : currentMessage;
     }
 
@@ -40,11 +54,16 @@
             const text = banner.querySelector('[data-concurrent-uri-message]');
             if (text) text.textContent = message;
         }
+        window.dispatchEvent(new Event('ib-concurrent-uri-state'));
     }
 
     function unsafeLocalRequest(url, method) {
+        const target = new URL(url, window.location.href);
+        // These client exclusions do not bypass the server-side middleware.
+        const independentPaths = config.clientExcludedPaths || [];
         return !['GET', 'HEAD', 'OPTIONS'].includes(String(method || 'GET').toUpperCase())
-            && new URL(url, window.location.href).origin === window.location.origin;
+            && target.origin === window.location.origin
+            && !independentPaths.includes(target.pathname);
     }
 
     function heartbeatUrl(url) {
@@ -54,6 +73,7 @@
     }
 
     function credentials() {
+        if (parentClient) return parentClient.headers();
         return { 'X-CRUD-Concurrent-Token': config.token, 'X-CRUD-Page-Key': pageKey };
     }
 
@@ -62,9 +82,10 @@
             form.querySelectorAll('input[name="_crud_concurrent_token"], input[name="_crud_page_key"]').forEach(input => input.remove());
             return;
         }
+        const headers = credentials();
         for (const [name, value] of Object.entries({
-            _crud_concurrent_token: config.token,
-            _crud_page_key: pageKey,
+            _crud_concurrent_token: headers['X-CRUD-Concurrent-Token'],
+            _crud_page_key: headers['X-CRUD-Page-Key'],
         })) {
             let input = form.querySelector('input[name="' + name + '"]');
             if (!input) {
@@ -96,6 +117,7 @@
     }
 
     async function tick() {
+        if (parentClient) return parentClient.refresh();
         if (inFlight || stopped) return;
         clearTimeout(timer);
         const epoch = generation;
@@ -172,22 +194,32 @@
         return originalSend.apply(this, arguments);
     };
 
-    document.addEventListener('submit', function (event) {
-        const form = event.target;
-        const method = event.submitter?.getAttribute('formmethod') || form.method;
-        const action = event.submitter?.getAttribute('formaction') || form.action || window.location.href;
-        if (!unsafeLocalRequest(action, method)) {
-            attachForm(form, action, method);
-            return;
-        }
-        if (!isOwner()) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
+    function prepareForm(form, submitter) {
+        const method = submitter?.getAttribute('formmethod') || form.method;
+        const action = submitter?.getAttribute('formaction') || form.action || window.location.href;
+        if (unsafeLocalRequest(action, method) && !isOwner()) {
             setState(false, unavailableMessage());
             tick();
-            return;
+            return false;
         }
         attachForm(form, action, method);
+
+        return true;
+    }
+
+    // Datatable modals submit temporary forms synchronously. Native submit()
+    // skips the submit event and runs before MutationObserver can attach context.
+    const originalSubmit = HTMLFormElement.prototype.submit;
+    HTMLFormElement.prototype.submit = function () {
+        if (!prepareForm(this)) return;
+        return originalSubmit.apply(this, arguments);
+    };
+
+    document.addEventListener('submit', function (event) {
+        if (!prepareForm(event.target, event.submitter)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
     }, true);
 
     function start() {
@@ -218,23 +250,44 @@
         }
     }
 
-    window.ibConcurrentUri = { isOwner, headers: credentials, refresh: tick };
-    pageKey = newPageKey();
-    setState(false, config.messages.checking);
-    window.addEventListener('pagehide', leave);
-    window.addEventListener('pageshow', event => {
-        if (event.persisted) start(); // A new key makes delayed release messages harmless.
-    });
-    window.addEventListener('focus', () => {
-        if (!isOwner()) setState(false, config.messages.checking);
-        tick();
-    });
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
+    window.ibConcurrentUri = { isOwner, headers: credentials, refresh: tick, config, message: unavailableMessage };
+    if (parentClient) {
+        const syncParentState = () => {
+            const allowed = isOwner();
+            setState(allowed, allowed ? config.messages.owner : unavailableMessage(), allowed ? 'success' : 'warning');
+        };
+        const subscribe = () => {
+            window.parent.addEventListener('ib-concurrent-uri-state', syncParentState);
+            syncParentState();
+        };
+        subscribe();
+        window.addEventListener('pagehide', () => {
+            window.parent.removeEventListener('ib-concurrent-uri-state', syncParentState);
+        });
+        window.addEventListener('pageshow', event => {
+            if (event.persisted) {
+                subscribe();
+                attachForms();
+            }
+        });
+    } else {
+        pageKey = newPageKey();
+        setState(false, config.messages.checking);
+        window.addEventListener('pagehide', leave);
+        window.addEventListener('pageshow', event => {
+            if (event.persisted) start(); // A new key makes delayed release messages harmless.
+        });
+        window.addEventListener('focus', () => {
             if (!isOwner()) setState(false, config.messages.checking);
             tick();
-        }
-    });
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (!isOwner()) setState(false, config.messages.checking);
+                tick();
+            }
+        });
+    }
 
     function ready() {
         attachForms();
@@ -245,7 +298,7 @@
                 node.querySelectorAll('form').forEach(form => attachForm(form));
             }));
         }).observe(document.body, { childList: true, subtree: true });
-        tick();
+        if (!parentClient) tick();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true });
     else ready();

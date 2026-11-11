@@ -27,6 +27,7 @@ L'intera funzionalità rimane disattivata per default. Se l'applicazione usa una
 | `concurrentUriCacheStore` | `CRUD_CONCURRENT_URI_CACHE_STORE` | store cache predefinito |
 | `concurrentUriPrefix` | `CRUD_CONCURRENT_URI_PREFIX` | `concurrentUri` |
 | `concurrentUriScope` | `CRUD_CONCURRENT_URI_SCOPE` | stringa vuota |
+| `concurrentUriClientExcludedPaths` | — | `[]` |
 
 Intervallo, durata della presenza e durata del lock devono essere interi positivi. La presenza deve durare almeno tre intervalli di heartbeat. La variabile della durata cache non modifica più l'intervallo JavaScript.
 
@@ -42,7 +43,7 @@ La presenza è associata alla pagina di provenienza dell'operazione. URL diversi
 
 ## Integrazione delle viste e delle richieste
 
-Aggiornare insieme Crud e UikitTemplate. Le due viste `uikittemplate::utilities.concurrentUri.headerbar` e `scripts` delegano ora alle viste omonime di Crud. Aggiornare eventuali override pubblicati dell'applicazione; eliminare i vecchi script che copiavano la `pageKey` del proprietario. La nuova chiave viene generata nel browser per ogni documento, comprese le schede duplicate, e cambia al ripristino dalla cache di navigazione.
+Aggiornare insieme Crud e UikitTemplate. Le due viste `uikittemplate::utilities.concurrentUri.headerbar` e `scripts` delegano ora alle viste omonime di Crud. Aggiornare eventuali override pubblicati dell'applicazione; eliminare i vecchi script che copiavano la `pageKey` del proprietario. La nuova chiave viene generata nel browser per ogni scheda principale, comprese le schede duplicate, e cambia al ripristino dalla cache di navigazione. Gli iframe dello stesso origin ereditano il contesto della pagina madre, anche quando sono annidati.
 
 Per un layout personalizzato includere:
 
@@ -52,7 +53,11 @@ Per un layout personalizzato includere:
 @include('crud::utilities.concurrentUri.scripts')
 ```
 
-Il layout deve fornire il meta tag `csrf-token`. Il middleware prepara il contesto nella richiesta e rende le risposte di pagina non memorizzabili in cache. Il JavaScript integra form HTML, `fetch` e `XMLHttpRequest` (quindi anche jQuery e Dropzone) sulle richieste mutative allo stesso origin. Le integrazioni che catturano questi trasporti prima del caricamento dello script, i worker e gli altri client personalizzati devono trasmettere esplicitamente il contesto.
+Il layout deve fornire il meta tag `csrf-token`. Il middleware prepara il contesto anche per le pagine HTML restituite da un POST autorizzato e rende le risposte non memorizzabili in cache. Il client deve essere incluso prima delle richieste AJAX della pagina. Il JavaScript integra form HTML, `fetch` e `XMLHttpRequest` (quindi anche jQuery e Dropzone) sulle richieste mutative allo stesso origin. Le integrazioni che catturano questi trasporti prima del caricamento dello script, i worker e gli altri client personalizzati devono trasmettere esplicitamente il contesto.
+
+Gli iframe ereditano dinamicamente credenziali e precedenza dalla madre: non generano una presenza indipendente e non inviano heartbeat o richieste di rilascio proprie. Chiuderli non libera la precedenza della scheda principale. Scadenza, perdita della precedenza e cambio di identità della madre si riflettono anche nei figli. Gli iframe di un altro origin non possono ereditare il contesto. Le chiamate POST delle DataTables possono restare invariate. Anche gli invii nativi `form.submit()` ricevono il contesto prima della partenza.
+
+`concurrentUriClientExcludedPaths` permette all'applicazione di elencare percorsi esatti esterni al CRUD, come logout o preferenze di sessione: il client non blocca queste richieste e non aggiunge credenziali CRUD. Questa opzione non esclude il controllo del middleware sul server.
 
 Gli header sono `X-CRUD-Concurrent-Token` e `X-CRUD-Page-Key`; nei form equivalgono a `_crud_concurrent_token` e `_crud_page_key`. `window.ibConcurrentUri.headers()` restituisce gli header della scheda; `isOwner()` indica la presenza locale valida e `refresh()` richiede un nuovo controllo. Le route personalizzate devono applicare `CRUDConcurrentUrlAlert` se devono imporre lo stesso vincolo. Il contesto è cifrato e autenticato, vincolato all'utente e allo scope della pagina. Non sostituisce autorizzazioni e CSRF già previsti dall'applicazione.
 

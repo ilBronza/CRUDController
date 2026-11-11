@@ -198,6 +198,7 @@ class ConcurrentUriChecker
             'leaveUrl' => route('concurrentUri.leavePage'),
             'interval' => $this->getJavascriptTickInterval(),
             'lifetime' => $this->getCacheLifetime() * 1000,
+            'clientExcludedPaths' => config('crud.concurrentUriClientExcludedPaths', []),
             'messages' => [
                 'checking' => trans('crud::crud.concurrentUriChecking'),
                 'offline' => trans('crud::crud.concurrentUriOffline'),

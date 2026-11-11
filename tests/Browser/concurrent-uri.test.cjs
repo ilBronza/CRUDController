@@ -39,10 +39,23 @@ async function fixture(t, initialStatus = 'gained') {
         + '<div id="ib-concurrent-uri"><div class="uk-alert"><p data-concurrent-uri-message></p></div></div>'
         + '<form method="post" action="/operation"><input name="name" value="Unsaved draft"><button>Save</button></form>'
         + '<script>window.ibConcurrentUriConfig=' + JSON.stringify(config) + ';</script>' + source + '</body></html>';
+    const frameHtml = html.replace(JSON.stringify(config), JSON.stringify({
+        ...config, url: 'frame', token: 'signed-frame-context',
+    })).replace('</body>', `<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/frame-rows');
+            xhr.onload = () => { window.rowsLoaded = true; };
+            xhr.send('rows');
+        });
+    </script></body>`);
     await context.route('**/*', async route => {
         const request = route.request();
         const url = new URL(request.url());
         requests.push({ path: url.pathname, method: request.method(), headers: request.headers(), body: request.postData() });
+        if (url.pathname === '/frame') {
+            return route.fulfill({ contentType: 'text/html', body: frameHtml });
+        }
         if (url.pathname.endsWith('/tick')) {
             if (blocked) await new Promise(resolve => pending.push(resolve));
             if (fail) return route.abort('failed');
@@ -237,4 +250,76 @@ test('a submitter targeting another origin never leaks hidden page credentials',
     const body = new URLSearchParams(request.postData());
     assert.equal(body.has('_crud_concurrent_token'), false);
     assert.equal(body.has('_crud_page_key'), false);
+});
+
+async function openPostedFrame(page) {
+    const name = await page.evaluate(() => {
+        const name = 'picker-' + crypto.randomUUID();
+        const iframe = document.createElement('iframe');
+        iframe.name = name;
+        document.body.appendChild(iframe);
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/frame';
+        form.target = name;
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+        return name;
+    });
+    const container = typeof page.mainFrame === 'function' ? page.mainFrame() : page;
+    const frame = container.childFrames().find(child => child.name() === name);
+    await frame.waitForFunction(() => window.rowsLoaded);
+    return frame;
+}
+
+test('a posted iframe inherits its parent credentials before its initial AJAX POST', options, async t => {
+    const { page, requests } = await fixture(t);
+    const parentHeaders = await page.evaluate(() => window.ibConcurrentUri.headers());
+    const frame = await openPostedFrame(page);
+    assert.deepEqual(await frame.evaluate(() => window.ibConcurrentUri.headers()), parentHeaders);
+    const rows = requests.find(request => request.path === '/frame-rows');
+    assert.equal(rows.method, 'POST');
+    assert.equal(rows.headers['x-crud-concurrent-token'], parentHeaders['X-CRUD-Concurrent-Token']);
+    assert.equal(rows.headers['x-crud-page-key'], parentHeaders['X-CRUD-Page-Key']);
+    const opening = requests.find(request => request.path === '/frame');
+    assert.equal(new URLSearchParams(opening.body).get('_crud_page_key'), parentHeaders['X-CRUD-Page-Key']);
+    assert.equal(requests.some(request => request.path.endsWith('/tick')
+        && new URLSearchParams(request.body).get('url') === 'frame'), false);
+    await page.evaluate(() => document.querySelector('iframe').remove());
+    assert.equal(requests.some(request => request.path.endsWith('/leave-page')), false);
+    assert.equal(await page.evaluate(() => window.ibConcurrentUri.isOwner()), true);
+});
+
+test('inherited frames follow ownership loss and preserve unsaved input', options, async t => {
+    const fixtureData = await fixture(t);
+    const frame = await openPostedFrame(fixtureData.page);
+    fixtureData.status('morePages');
+    await fixtureData.page.evaluate(() => window.ibConcurrentUri.refresh());
+    await fixtureData.page.waitForFunction(() => !window.ibConcurrentUri.isOwner());
+    assert.equal(await frame.evaluate(() => window.ibConcurrentUri.isOwner()), false);
+    assert.equal(await frame.locator('[data-concurrent-uri-message]').textContent(), 'morePages');
+    assert.equal(await frame.evaluate(() => document.querySelector('form').dispatchEvent(new Event('submit', {
+        bubbles: true, cancelable: true,
+    }))), false);
+    assert.equal(await frame.evaluate(() => fetch('/operation', { method: 'POST' }).then(() => true, () => false)), false);
+    assert.equal(await frame.locator('input[name="name"]').inputValue(), 'Unsaved draft');
+});
+
+test('nested frames use the live parent identity after a cached page is restored', options, async t => {
+    const { page, requests } = await fixture(t);
+    const frame = await openPostedFrame(page);
+    const nested = await openPostedFrame(frame);
+    const oldHeaders = await nested.evaluate(() => window.ibConcurrentUri.headers());
+    await page.evaluate(() => {
+        window.dispatchEvent(new PageTransitionEvent('pagehide'));
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await page.waitForFunction(() => window.ibConcurrentUri.isOwner());
+    const headers = await page.evaluate(() => window.ibConcurrentUri.headers());
+    assert.notEqual(headers['X-CRUD-Page-Key'], oldHeaders['X-CRUD-Page-Key']);
+    assert.deepEqual(await nested.evaluate(() => window.ibConcurrentUri.headers()), headers);
+    await nested.evaluate(() => fetch('/nested-operation', { method: 'POST' }));
+    const write = requests.find(request => request.path === '/nested-operation');
+    assert.equal(write.headers['x-crud-page-key'], headers['X-CRUD-Page-Key']);
 });

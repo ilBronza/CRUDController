@@ -71,6 +71,8 @@ return [
     'saveAndCopy' => env('CRUD_SAVE_AND_COPY_BUTTON', false),
 
     'useConcurrentRequestsAlert' => env('CRUD_USE_CONCURRENT_REQUESTS_ALERT', false),
+    // Client-only exceptions for actions outside CRUD; server guards remain active.
+    'concurrentUriClientExcludedPaths' => [],
     // When false, tabs belonging to the same user may share a page.
     'concurrentUriCheckSameUserTabs' => env('CRUD_CONCURRENT_URI_CHECK_SAME_USER_TABS', true),
 

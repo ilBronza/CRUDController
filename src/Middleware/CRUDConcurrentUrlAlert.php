@@ -29,9 +29,17 @@ class CRUDConcurrentUrlAlert
             ])->validate();
 
             $path = $this->concurrentUriChecker->pathFromToken($context['token']);
-            return $this->concurrentUriChecker->runOwnedOperation($path, $context['pageKey'], fn () => $next($request));
+            return $this->concurrentUriChecker->runOwnedOperation($path, $context['pageKey'],
+                fn () => $this->pageResponse($request, $next));
         }
 
+        return $this->pageResponse($request, $next);
+    }
+
+    protected function pageResponse($request, Closure $next)
+    {
+        // POST actions can render iframe pages too. Bootstrap their client before
+        // the page's own AJAX starts, while keeping the incoming ownership guard.
         $request->attributes->set('crud.concurrentUri', $this->concurrentUriChecker->getPageContext());
         $response = $next($request);
         $response->headers->set('Cache-Control', 'no-store, private');
