@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits;
 
+use IlBronza\CRUD\ResourceFilters\ResourceFilters;
 use Auth;
 use DB;
 use Exception;
@@ -281,8 +282,18 @@ trait CRUDIndexTrait
 		{
 			// One entry per model: a different index replaces it, never reads its cells.
 			return hash('sha256', serialize([
-				static::class, $request->method(), $request->url(), app()->getLocale(),
-				$request->except(['_', '_token', 'draw', 'cachedtablekey']), $definition,
+				static::class,
+				$request->method(),
+				$request->url(),
+				app()->getLocale(),
+				ResourceFilters::currentCacheContext(),
+				$request->except([
+					'_',
+					'_token',
+					'draw',
+					'cachedtablekey',
+				]),
+				$definition,
 			]));
 		}
 		catch (\Throwable $exception)
@@ -463,6 +474,9 @@ trait CRUDIndexTrait
 	public function getIndexModelIds()
 	{
 		$placeholder = $this->getPlaceholderElement();
+
+		if (ResourceFilters::currentCacheContext() !== null)
+			return $placeholder->newQuery()->pluck($placeholder->getQualifiedKeyName())->all();
 
 		return DB::table(
 			$placeholder->getTable()

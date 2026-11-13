@@ -2,6 +2,7 @@
 
 namespace IlBronza\CRUD\Traits\Model;
 
+use IlBronza\CRUD\ResourceFilters\ResourceFilters;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -34,6 +35,7 @@ trait CRUDCacheTrait
 
 	public static function getIndexCacheKey() : string
 	{
+		// The index keeps a single invalidatable slot. Its response carries its own context.
 		return static::staticCacheKey('index');
 	}
 
@@ -62,7 +64,7 @@ trait CRUDCacheTrait
 			class_basename(static::class),
 			$key,
 			json_encode($relations)
-		]));
+		])) . ($key === 'index' ? '' : ResourceFilters::currentCacheContext());
 	}
 
 	static function findIfCached($id) : ?static
@@ -218,7 +220,7 @@ trait CRUDCacheTrait
 			$this->getKey(),
 			$key,
 			$this->updated_at
-		]));
+		])) . ResourceFilters::currentCacheContext();
 	}
 
 	public function cacheMethod(string $method)

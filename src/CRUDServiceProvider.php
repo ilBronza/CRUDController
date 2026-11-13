@@ -29,6 +29,14 @@ use IlBronza\CRUD\ResourceRegistrar;
 use IlBronza\CRUD\Traits\IlBronzaPackages\IlBronzaServiceProviderPackagesTrait;
 use Illuminate\Routing\ResourceRegistrar as BaseResourceRegistrar;
 use Illuminate\Routing\Router;
+use IlBronza\CRUD\ResourceFilters\ResourceFilters;
+use IlBronza\CRUD\ResourceFilters\UseResourceFilters;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -47,7 +55,31 @@ class CRUDServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
-        // $router = $this->app->make(Router::class);
+        $this->app->booted(function () use ($router) {
+            $this->callAfterResolving(\Illuminate\Contracts\Http\Kernel::class, function () use ($router) {
+                // Preserve web middleware appended directly to the router by other providers.
+                $router->pushMiddlewareToGroup('web', UseResourceFilters::class);
+                $position = array_search(SubstituteBindings::class, $router->middlewarePriority, true);
+                if ($position !== false && ! in_array(UseResourceFilters::class, $router->middlewarePriority, true))
+                    array_splice($router->middlewarePriority, $position, 0, [
+                        UseResourceFilters::class,
+                    ]);
+            });
+        });
+
+        $this->app['events']->listen([
+            JobProcessing::class,
+            CommandStarting::class,
+        ], function ($event) {
+            app(ResourceFilters::class)->enteringBackgroundTask($event->job ?? $event->input);
+        });
+        $this->app['events']->listen([
+            CommandFinished::class,
+            JobProcessed::class,
+            JobExceptionOccurred::class,
+        ], function ($event) {
+            app(ResourceFilters::class)->leavingBackgroundTask($event->job ?? $event->input);
+        });
 
 	    $router->aliasMiddleware('IframeCheckerMiddleware', IframeCheckerMiddleware::class);
 
@@ -191,6 +223,9 @@ class CRUDServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(__DIR__.'/../config/crud.php', 'crud');
 
+        $this->mergeConfigFrom(__DIR__.'/../config/resource-filters.php', 'resource-filters');
+        $this->app->scoped(ResourceFilters::class);
+
         // Register the service the package provides.
         $this->app->singleton('CRUDMenuUtilities', function ($app) {
             return new CRUDMenuUtilities;
@@ -231,6 +266,7 @@ class CRUDServiceProvider extends ServiceProvider
         // Publishing the configuration file.
         $this->publishes([
             __DIR__.'/../config/crud.php' => config_path('crud.php'),
+            __DIR__.'/../config/resource-filters.php' => config_path('resource-filters.php'),
         ], 'crud.config');
 
         // Publishing the views.

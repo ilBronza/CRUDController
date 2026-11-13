@@ -9,6 +9,17 @@ use IlBronza\CRUD\Http\Controllers\Utilities\Media\MediaCollectionController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Media\SetMediaIntegrityCheckController;
 use IlBronza\CRUD\Http\Controllers\Utilities\Relationships\AssociateBelongsToManyController;
 use Illuminate\Support\Facades\Route;
+use IlBronza\CRUD\ResourceFilters\ResourceFilterController;
+
+Route::middleware([
+    'web',
+    'auth',
+])->prefix('crud/resource-filters')->name('crud.resourceFilters.')->controller(ResourceFilterController::class)->group(function () {
+    Route::get('{resource}', 'edit')->name('edit');
+    Route::put('{resource}', 'update')->block()->name('update');
+    Route::delete('{resource}', 'reset')->block()->name('reset');
+    Route::delete('/', 'resetAll')->block()->name('resetAll');
+});
 
 
 Route::get('close-iframe', function(Request $request)

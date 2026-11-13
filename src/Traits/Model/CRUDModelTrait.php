@@ -3,6 +3,7 @@
 namespace IlBronza\CRUD\Traits\Model;
 
 use IlBronza\CRUD\Helpers\ModelManagers\CrudModelUpdater;
+use IlBronza\CRUD\ResourceFilters\HasResourceFilters;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
@@ -15,6 +16,7 @@ trait CRUDModelTrait
 {
 	static $teaserFields = [];
 
+	use HasResourceFilters;
 	use CRUDModelRoutingTrait;
 	use CRUDModelButtonsTrait;
 	use CRUDModelUserRightsTrait;

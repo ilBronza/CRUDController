@@ -2,6 +2,8 @@
 
 namespace IlBronza\CRUD;
 
+use IlBronza\CRUD\ResourceFilters\ResourceFilters;
+
 use function route;
 
 class CRUDMenuUtilities
@@ -10,6 +12,10 @@ class CRUDMenuUtilities
     {
         if(! $menu = app('menu'))
             return;
+
+        if ($navbar = config('resource-filters.navbar'))
+            foreach (app(ResourceFilters::class)->menuButtons() as $button)
+                $button->addToNavbar($menu->provideNavbar($navbar));
 
         $settings = $menu->provideButton([
                 'text' => 'menu::menu.settings',
