@@ -1,0 +1,93 @@
+--- a/app/Http/Controllers/Overrides/Operators/OperatorsByOrdersTimelineController.php
++++ b/app/Http/Controllers/Overrides/Operators/OperatorsByOrdersTimelineController.php
+@@ -6,6 +6,7 @@
+ use IlBronza\Buttons\Button;
+ use IlBronza\Operators\Http\Controllers\Timelines\OperatorsByOrdersTimelineController as IbOperatorsByOrdersTimelineController;
+ use Illuminate\Support\Collection;
++use IlBronza\Operators\ResourceFilters\OperatorTimelineRows;
+ 
+ /**
+  * Loads rows with the project OperatorOrderrow, whose Gantt labels and tooltips show the client.
+@@ -48,9 +49,9 @@
+ 
+     protected function getSubgroupsTimelineItems(): Collection
+     {
+-        return OperatorOrderrow::query()
++        return OperatorTimelineRows::constrain(OperatorOrderrow::query())
+             ->with([
+-                'order',
++                'order.client',
+                 'sellable.target',
+                 'sellableSupplier.supplier.target',
+             ])
+--- a/app/Http/Controllers/Overrides/Operators/OperatorsByContracttypesTimelineController.php
++++ b/app/Http/Controllers/Overrides/Operators/OperatorsByContracttypesTimelineController.php
+@@ -6,15 +6,16 @@
+ use IlBronza\Operators\Http\Controllers\Timelines\OperatorsByContracttypesTimelineController as IbOperatorsByContracttypesTimelineController;
+ use IlBronza\Timeline\Interfaces\TimelineGroupInterface;
+ use Illuminate\Support\Collection;
++use IlBronza\Operators\ResourceFilters\OperatorTimelineRows;
+ 
+ /** Loads rows with the project OperatorOrderrow, whose Gantt labels and tooltips show the client. */
+ class OperatorsByContracttypesTimelineController extends IbOperatorsByContracttypesTimelineController
+ {
+     protected function getSubgroupsTimelineItems(): Collection
+     {
+-        return OperatorOrderrow::query()
++        return OperatorTimelineRows::constrain(OperatorOrderrow::query(), requireAssignmentGroup: true)
+             ->with([
+-                'order',
++                'order.client',
+                 'sellable.target',
+                 'sellableSupplier.supplier.target',
+             ])
+--- a/app/Models/PackageOverrides/Operators/OperatorContracttype.php
++++ b/app/Models/PackageOverrides/Operators/OperatorContracttype.php
+@@ -19,17 +19,6 @@
+     public function mustAutomaticallyUpdatePrices(): bool
+     {
+         return false;
+-    }
+-
+-    public function getName(): ?string
+-    {
+-        if (! $this->getOperator()) {
+-            $this->delete();
+-
+-            return 'CANCELLATO';
+-        }
+-
+-        return $this->getOperator()->getName();
+     }
+ 
+     public function getBackgroundColor()
+--- a/app/Models/PackageOverrides/Products/Order.php
++++ b/app/Models/PackageOverrides/Products/Order.php
+@@ -2,7 +2,6 @@
+ 
+ namespace App\Models\PackageOverrides\Products;
+ 
+-use IlBronza\Clients\Models\Client;
+ use IlBronza\CRUD\Traits\Model\HasColorTrait;
+ use IlBronza\Products\Models\Order as IbOrder;
+ use IlBronza\Timeline\Interfaces\TimelineGroupInterface;
+@@ -42,18 +41,9 @@
+         return null;
+     }
+ 
+-    /** Client names keyed by id, loaded once per request so Gantt labels do not query per bar. */
+-    private static ?array $clientNames = null;
+-
+     public function getClientName(): ?string
+     {
+-        if (! $this->client_id) {
+-            return null;
+-        }
+-
+-        self::$clientNames ??= Client::gpc()::query()->pluck('name', 'id')->all();
+-
+-        return self::$clientNames[$this->client_id] ?? null;
++        return $this->client?->getName();
+     }
+ 
+     /** Gantt label: "code · client", or just the code when the order has no client. */
