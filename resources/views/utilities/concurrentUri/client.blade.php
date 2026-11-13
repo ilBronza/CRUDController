@@ -27,6 +27,7 @@
     let stopped = false;
     let receivedStatus = false;
     let currentMessage = config.messages.checking;
+    let currentState = 'checking';
 
     function newPageKey() {
         return Array.from(window.crypto.getRandomValues(new Uint8Array(24)),
@@ -43,10 +44,17 @@
         return owner && Date.now() >= deadline ? config.messages.expired : currentMessage;
     }
 
-    function setState(allowed, message, level = 'warning') {
+    function getState() {
+        if (parentClient) return parentClient.state?.() || (parentClient.isOwner() ? 'owner' : 'unavailable');
+        return owner && Date.now() >= deadline ? 'expired' : currentState;
+    }
+
+    function setState(allowed, message, level = 'warning', state = allowed ? 'owner' : 'unavailable') {
         owner = allowed;
         currentMessage = message;
+        currentState = state;
         window.concurrentUriStatus = allowed ? 'owner' : 'notOwner';
+        document.body?.classList.toggle('ib-concurrent-uri-owner', isOwner());
         const banner = document.querySelector('#ib-concurrent-uri .uk-alert');
         if (banner) {
             banner.classList.remove('uk-alert-success', 'uk-alert-warning', 'uk-alert-danger');
@@ -54,7 +62,9 @@
             const text = banner.querySelector('[data-concurrent-uri-message]');
             if (text) text.textContent = message;
         }
-        window.dispatchEvent(new Event('ib-concurrent-uri-state'));
+        window.dispatchEvent(new CustomEvent('ib-concurrent-uri-state', {
+            detail: { state: getState(), owner: isOwner(), message, level },
+        }));
     }
 
     function unsafeLocalRequest(url, method) {
@@ -148,16 +158,18 @@
                 const message = !receivedStatus ? config.messages.owner : data.message;
                 setState(true, message || config.messages.owner, 'success');
                 expiryTimer = setTimeout(() => {
-                    setState(false, config.messages.expired);
+                    setState(false, config.messages.expired, 'warning', 'expired');
                     tick();
                 }, Math.max(0, deadline - Date.now()));
             } else {
                 setState(false, data.message || config.messages.offline,
-                    data.status === 'notAllowed' ? 'danger' : 'warning');
+                    data.status === 'notAllowed' ? 'danger' : 'warning',
+                    ['morePages', 'notAllowed'].includes(data.status) ? 'conflict' : 'unavailable');
             }
             receivedStatus = true;
         } catch (error) {
-            if (epoch === generation) setState(false, stopped ? config.messages.expired : config.messages.offline);
+            if (epoch === generation) setState(false, stopped ? config.messages.expired : config.messages.offline,
+                'warning', stopped ? 'expired' : 'offline');
         } finally {
             clearTimeout(timeout);
             if (epoch === generation) {
@@ -198,7 +210,7 @@
         const method = submitter?.getAttribute('formmethod') || form.method;
         const action = submitter?.getAttribute('formaction') || form.action || window.location.href;
         if (unsafeLocalRequest(action, method) && !isOwner()) {
-            setState(false, unavailableMessage());
+            setState(false, unavailableMessage(), 'warning', getState());
             tick();
             return false;
         }
@@ -227,7 +239,7 @@
         stopped = false;
         receivedStatus = false;
         deadline = 0;
-        setState(false, config.messages.checking);
+        setState(false, config.messages.checking, 'warning', 'checking');
         attachForms();
         tick();
     }
@@ -241,7 +253,7 @@
         clearTimeout(expiryTimer);
         if (inFlight) inFlight.abort();
         inFlight = null;
-        setState(false, config.messages.checking);
+        setState(false, config.messages.checking, 'warning', 'checking');
         // pagehide does not fire when the user cancels a beforeunload prompt.
         if (!navigator.sendBeacon || !navigator.sendBeacon(config.leaveUrl, body)) {
             originalFetch(config.leaveUrl, {
@@ -250,11 +262,11 @@
         }
     }
 
-    window.ibConcurrentUri = { isOwner, headers: credentials, refresh: tick, config, message: unavailableMessage };
+    window.ibConcurrentUri = { isOwner, headers: credentials, refresh: tick, config, message: unavailableMessage, state: getState };
     if (parentClient) {
         const syncParentState = () => {
             const allowed = isOwner();
-            setState(allowed, allowed ? config.messages.owner : unavailableMessage(), allowed ? 'success' : 'warning');
+            setState(allowed, allowed ? config.messages.owner : unavailableMessage(), allowed ? 'success' : 'warning', getState());
         };
         const subscribe = () => {
             window.parent.addEventListener('ib-concurrent-uri-state', syncParentState);
@@ -272,18 +284,18 @@
         });
     } else {
         pageKey = newPageKey();
-        setState(false, config.messages.checking);
+        setState(false, config.messages.checking, 'warning', 'checking');
         window.addEventListener('pagehide', leave);
         window.addEventListener('pageshow', event => {
             if (event.persisted) start(); // A new key makes delayed release messages harmless.
         });
         window.addEventListener('focus', () => {
-            if (!isOwner()) setState(false, config.messages.checking);
+            if (!isOwner()) setState(false, config.messages.checking, 'warning', 'checking');
             tick();
         });
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                if (!isOwner()) setState(false, config.messages.checking);
+                if (!isOwner()) setState(false, config.messages.checking, 'warning', 'checking');
                 tick();
             }
         });

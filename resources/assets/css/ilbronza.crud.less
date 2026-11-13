@@ -111,3 +111,20 @@ input::placeholder {
   opacity: 0.1;
 }
 
+/* Priority is shown without taking space away from the page. */
+body.ib-concurrent-uri-owner #ib-concurrent-uri {
+  display: none;
+}
+@media screen {
+  body.ib-concurrent-uri-owner::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    background-color: #32d296;
+    pointer-events: none;
+    z-index: 10000;
+  }
+}
